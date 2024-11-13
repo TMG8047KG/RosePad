@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "rosepad",
+  "productName": "Rosepad",
   "version": "0.0.1",
   "identifier": "com.roseworld.rosepad",
   "build": {
@@ -38,7 +38,9 @@
             "fs:allow-appconfig-write",
             "fs:allow-appconfig-read",
             "dialog:default",
-            "dialog:allow-open"
+            "dialog:allow-open",
+            "core:event:default",
+            "core:event:allow-listen"
           ]
         }
       ]
@@ -53,6 +55,11 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "wix": {
+        "template": "./windows/msi/main.wxs"
+      }
+    }
   }
 }
