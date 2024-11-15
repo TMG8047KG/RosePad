@@ -1,9 +1,10 @@
 [package]
-name = "rosepad"
+name = "RosePad"
 version = "0.0.1"
 description = "Simple and Beatiful Text Editor"
 authors = ["Alexsandar Goranov"]
 edition = "2021"
+repository = "https://github.com/TMG8047KG/RosePad"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

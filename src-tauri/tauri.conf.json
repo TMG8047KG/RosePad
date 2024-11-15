@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Rosepad",
+  "productName": "RosePad",
   "version": "0.0.1",
   "identifier": "com.roseworld.rosepad",
   "build": {
@@ -56,10 +56,19 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "windows": {
-      "wix": {
-        "template": "./windows/msi/main.wxs"
+    "fileAssociations": [
+      {
+        "ext": [".rpad"],
+        "description": "RosePad Project File",
+        "name": "Rpad"
+      },
+      {
+        "ext": [".txt"]
       }
+    ],
+    "publisher": "RoseWorld",
+    "windows": {
+      "allowDowngrades": false
     }
   }
 }

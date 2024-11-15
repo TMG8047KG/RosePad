@@ -1,11 +1,18 @@
 import { open } from '@tauri-apps/plugin-dialog';
 import { create, writeFile, readTextFile, BaseDirectory, exists, mkdir } from '@tauri-apps/plugin-fs';
+import { invoke } from '@tauri-apps/api/core';
 
-import './nav'
+import './components/nav'
 import './MainPage.css'
-import NavBar from './nav';
+import NavBar from './components/nav';
 
 let projectDirectory:any = settings();
+
+async function getOpenFilePath() {
+  const path = await invoke('get_args')
+  console.log(path)
+  alert(path)
+}
 
 async function settings() {
   const file = "settings.json";
@@ -58,10 +65,10 @@ function App() {
         <p>A simple and beatiful way to write notes, letters, poems and such.</p>
         <button onClick={ ()=> {createProject(projectDirectory, "Rose")} }>Create Project</button>
         <button onClick={ selectDir }>SelectDir</button>
+        <button onClick={ getOpenFilePath }>Get</button>
       </div>
       <div className='projects'>
         <div>
-
         </div>
       </div>
       </div>
