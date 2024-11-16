@@ -18,8 +18,10 @@ function NavBar() {
       };
     return(
         <div className="titleBar" data-tauri-drag-region>
-            <img src="/rose.svg" className="logo" data-tauri-drag-region/>
-            <div className='title' data-tauri-drag-region >RosePad</div>
+            <div className='logotitle'>
+                <img src="/rose.svg" className="logo" data-tauri-drag-region/>
+                <div className='title' data-tauri-drag-region >RosePad</div>
+            </div>
             <div className='titleBarButtons' data-tauri-drag-region>
                 <button onClick={handleMinimize}>
                     <img src="/minimize.svg" alt='minimize'/>

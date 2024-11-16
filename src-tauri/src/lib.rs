@@ -2,13 +2,12 @@ use std::env;
 
 #[tauri::command]
 async fn get_args() -> Vec<String> {
-  let mut arg_list = vec![];
-  for arg in env::args() {
-    arg_list.push(arg);
-  }
-  return arg_list;
+    let mut arg_list = vec![];
+    for arg in env::args() {
+        arg_list.push(arg);
+    }
+    return arg_list;
 }
-
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

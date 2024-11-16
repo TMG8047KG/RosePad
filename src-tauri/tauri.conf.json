@@ -40,7 +40,9 @@
             "dialog:default",
             "dialog:allow-open",
             "core:event:default",
-            "core:event:allow-listen"
+            "core:event:allow-listen",
+            "core:path:default",
+            "core:path:allow-join"
           ]
         }
       ]
@@ -50,10 +52,6 @@
     "active": true,
     "targets": "all",
     "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
       "icons/icon.ico"
     ],
     "fileAssociations": [
@@ -68,7 +66,16 @@
     ],
     "publisher": "RoseWorld",
     "windows": {
-      "allowDowngrades": false
+      
+      "allowDowngrades": false,
+      "wix": {
+        "bannerPath": "../public/Banner.bmp",
+        "dialogImagePath": "../public/dialog.bmp"
+      },
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "installMode": "both"
+      }
     }
   }
 }

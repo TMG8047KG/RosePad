@@ -14,14 +14,3 @@ html body{
 main{
     height: 100vh;
 }
-
-.container{
-    display: grid;
-    grid-template-columns: 40% 60%;
-    text-align: center;
-    height: calc(100% - 30px);
-}
-
-.projects{
-    background: rgb(53, 53, 53);
-}

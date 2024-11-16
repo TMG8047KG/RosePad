@@ -1,0 +1,32 @@
+.main{
+    display: grid;
+    grid-template-columns: 80px auto;
+    height: calc(100% - 30px);
+}
+
+.sidebar{
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    text-align: center;
+}
+
+.button{
+    border: 0px;
+    margin-top: 5px;
+    background: rgb(49, 49, 49);
+    border-radius: 10px;
+    color: rgb(255, 188, 188);
+    font-size: 15px;
+    font-weight: 700;
+    height: 3rem;
+    width: 3rem;
+}
+
+.editor{
+    background: rgb(53, 53, 53);
+}
+
+.editor:focus{
+    outline: none;
+}

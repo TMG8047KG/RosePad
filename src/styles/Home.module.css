@@ -1,0 +1,41 @@
+.container{
+    display: grid;
+    grid-template-columns: 40% 60%;
+    text-align: center;
+    height: calc(100% - 30px);
+}
+
+.infoBox{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding-right: 10px;
+}
+
+.infoBox h1{
+    margin: 0;
+    padding: 0;
+}
+
+.projects{
+    margin: 5px 0px 20px 0px;
+    background: rgb(53, 53, 53);
+    border-radius: 15px 0px 0px 15px;
+    box-shadow: rgb(32, 32, 32) 0px 1px 10px 1px;
+}
+
+.button{
+    border: 0px;
+    background: rgb(49, 49, 49);
+    padding: 10px;
+    border-radius: 10px;
+    color: rgb(255, 188, 188);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.button:hover{
+    background: rgb(65, 44, 44);
+    color: rgb(236, 157, 157);
+}
