@@ -1,4 +1,4 @@
-use std::env;
+use std::{env};
 
 #[tauri::command]
 async fn get_args() -> Vec<String> {
@@ -13,6 +13,7 @@ async fn get_args() -> Vec<String> {
 pub fn run() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![get_args])
+        .plugin(tauri_plugin_persisted_scope::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .run(tauri::generate_context!())

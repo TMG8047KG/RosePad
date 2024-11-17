@@ -8,15 +8,19 @@ import { create, writeFile, readTextFile, BaseDirectory, exists, mkdir, writeTex
 import { invoke } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { join } from '@tauri-apps/api/path';
+import { documentDir } from '@tauri-apps/api/path';
+import {  } from '@tauri-apps/plugin-fs'
 
 const settingsFile = "settings.json"
 
 settings();
 
+getOpenFilePath();
+
 // TODO: Open project when opening app from file
 async function getOpenFilePath() {
   const path = await invoke('get_args')
+  console.log(path);
 }
 
 async function settings() {
@@ -40,7 +44,7 @@ async function selectDir(){
     directory: true,
     canCreateDirectories: true,
     title: 'Select a project folder',
-    defaultPath: 'Documents'
+    defaultPath: await documentDir(),
   });
   if(dir){
     let data = {
@@ -54,23 +58,10 @@ async function selectDir(){
 }
 
 async function createProject(dir:string, name:string) { 
-  if (!await exists(dir)) {
-    console.error("Directory does not exist:", dir);
-    throw new Error("Invalid directory.");
-  }
-
   const filePath = `${dir}\\${name}.rpad`;
-  console.log(`Creating project at: ${filePath}`);
-
-  try {
-    const file = await create(filePath);
-    await file.write(new TextEncoder().encode("Hello world!"));
-    await file.close();
-    console.log("File created successfully:", filePath);
-  } catch (error) {
-    console.error("Error creating file:", error);
-    throw error;
-  }
+  const file = await create(filePath);
+  await file.write(new TextEncoder().encode("Hello world!"));
+  await file.close();
 }
 
 function App() {
@@ -79,31 +70,17 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCreateProject = async (name: string) => {
-    try {
-      const raw = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
-      const data = JSON.parse(raw);
-      let dir = data.projectPath;
-  
-      if (dir === "null") {
-        console.log("No project directory found. Prompting user...");
-        dir = await selectDir();
-      }
-  
-      if (!dir) {
-        console.error("No directory selected or provided.");
-        return; // Prevent execution if dir is invalid
-      }
-  
-      const normalizedDir = await join(dir, "");
-      console.log("Using directory:", normalizedDir);
-  
-      await createProject(normalizedDir, name);
-      setIsModalOpen(false);
-      navigator(`/editor/${name}`);
-    } catch (error) {
-      console.error("Error in handleCreateProject:", error);
+    const raw = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig })
+    const data = JSON.parse(raw)
+    let dir = data.projectPath;
+    console.log(dir);
+    if(dir == "null" || !dir){
+      dir = await selectDir()
     }
-  };  
+    await createProject(dir, name);
+    setIsModalOpen(false);
+    navigator(`/editor/${name}`);
+  };
 
   return (
     <main>

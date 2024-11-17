@@ -41,8 +41,14 @@
             "dialog:allow-open",
             "core:event:default",
             "core:event:allow-listen",
-            "core:path:default",
-            "core:path:allow-join"
+            {
+              "identifier": "fs:read-all",
+              "allow": [{ "path": "**" }]
+            },
+            {
+              "identifier": "fs:write-all",
+              "allow": [{ "path": "**" }]
+            }
           ]
         }
       ]
@@ -66,7 +72,6 @@
     ],
     "publisher": "RoseWorld",
     "windows": {
-      
       "allowDowngrades": false,
       "wix": {
         "bannerPath": "../public/Banner.bmp",
