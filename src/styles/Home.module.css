@@ -19,6 +19,9 @@
 }
 
 .projects{
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin: 5px 0px 20px 0px;
     background: rgb(53, 53, 53);
     border-radius: 15px 0px 0px 15px;
@@ -38,4 +41,51 @@
 .button:hover{
     background: rgb(65, 44, 44);
     color: rgb(236, 157, 157);
+}
+
+.list{
+    display: grid;
+    background: rgb(45, 45, 45);
+    padding: 10px;
+    width: 70%;
+    border-radius: 15px;
+}
+
+.list h2{
+    margin: 0;
+    padding: 5px;
+}
+
+.list .project:last-child{
+    border-radius: 0px 0px 10px 10px;
+}
+
+.list .project:nth-child(2){
+    border-radius: 10px 10px 0px 0px;
+}
+
+.project + .project{
+    border-top: solid rgb(255, 188, 188) 1px;
+}
+
+.project{
+    display: flex;
+    border-radius: 0;
+    padding: 5px;
+    margin: 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.project:hover{
+    background: rgb(65, 44, 44);
+    color: rgb(236, 157, 157);
+}
+
+.project h3,p{
+    margin: 0;
+}
+
+.project h3{
+    padding: 5px;
 }

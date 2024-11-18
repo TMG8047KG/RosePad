@@ -41,6 +41,8 @@
             "dialog:allow-open",
             "core:event:default",
             "core:event:allow-listen",
+            "core:path:default",
+            "core:path:allow-resolve-directory",
             {
               "identifier": "fs:read-all",
               "allow": [{ "path": "**" }]

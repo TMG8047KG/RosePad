@@ -9,7 +9,6 @@ import { invoke } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { documentDir } from '@tauri-apps/api/path';
-import {  } from '@tauri-apps/plugin-fs'
 
 const settingsFile = "settings.json"
 
@@ -92,10 +91,23 @@ function App() {
           <button className={style.button} onClick={ ()=> setIsModalOpen(true) }>Create Project</button>
         </div>
         <div className={style.projects}>
-          <div>
-            <Prompt isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleCreateProject}/>
+          <div className={style.list}>
+            <h2>Projects</h2>
+            <button className={style.project}>
+              <h3>Example</h3>
+              <p>Date: 00-00-00</p>
+            </button>
+            <button className={style.project}>
+              <h3>Example</h3>
+              <p>Date: 00-00-00</p>
+            </button>
+            <button className={style.project}>
+              <h3>Example</h3>
+              <p>Date: 00-00-00</p>
+            </button>
           </div>
         </div>
+        <Prompt isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleCreateProject}/>
       </div>
     </main>
   )
