@@ -32,6 +32,7 @@
     border: 0px;
     background: rgb(49, 49, 49);
     padding: 10px;
+    margin: 5px;
     border-radius: 10px;
     color: rgb(255, 188, 188);
     font-size: 15px;
@@ -46,46 +47,12 @@
 .list{
     display: grid;
     background: rgb(45, 45, 45);
-    padding: 10px;
+    padding: 5px;
     width: 70%;
     border-radius: 15px;
 }
 
 .list h2{
     margin: 0;
-    padding: 5px;
-}
-
-.list .project:last-child{
-    border-radius: 0px 0px 10px 10px;
-}
-
-.list .project:nth-child(2){
-    border-radius: 10px 10px 0px 0px;
-}
-
-.project + .project{
-    border-top: solid rgb(255, 188, 188) 1px;
-}
-
-.project{
-    display: flex;
-    border-radius: 0;
-    padding: 5px;
-    margin: 0;
-    justify-content: center;
-    align-items: center;
-}
-
-.project:hover{
-    background: rgb(65, 44, 44);
-    color: rgb(236, 157, 157);
-}
-
-.project h3,p{
-    margin: 0;
-}
-
-.project h3{
-    padding: 5px;
+    padding: 5px 0px 10px 0px;
 }
