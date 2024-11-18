@@ -31,12 +31,26 @@
 }
 
 .editor{
+    padding: 10px;
     resize: none;
     max-width: 100%;
-    word-break: break-word;    
+    word-break: break-word;
+    overflow-y: auto;
+    overflow-x: hidden;
     background: rgb(53, 53, 53);
+
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.editor::-webkit-scrollbar{
+    display: none;
 }
 
 .editor:focus{
     outline: none;
+}
+
+.editor::selection{
+    background: rgb(97, 97, 97);
 }
