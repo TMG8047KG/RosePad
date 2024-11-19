@@ -30,6 +30,29 @@
     color: rgb(236, 157, 157);
 }
 
+.color{
+    margin: 10px 0px 0px 0px;
+    border: none;
+    background: rgb(49, 49, 49);
+    color: rgb(255, 188, 188);
+    border-radius: 10px;
+    padding: 5px;
+    height: 3rem;
+    width: 3rem;
+    box-shadow: rgb(32, 32, 32) 0px 2px 5px 0.5px;
+}
+
+.color::-webkit-color-swatch {
+    border: none;
+    border-radius: 5px;
+    padding: 0;
+}
+.color::-webkit-color-swatch-wrapper {
+    border: none;
+    border-radius: 10px;
+    padding: 0;
+}
+
 .editor{
     padding: 10px;
     resize: none;
