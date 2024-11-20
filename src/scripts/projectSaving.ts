@@ -61,5 +61,16 @@ export async function getProjectsOrdered() {
     const rawJson = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
     let json = JSON.parse(rawJson);
     let projects = json.projects;
+    projects.sort(projects.last_updated)
+    projects.reverse()
+    return projects
+}
+
+export async function save(text: string, name: string) {
+    const rawJson = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
+    let json = JSON.parse(rawJson);
+    let path = `${json.projectPath}/${name}`;
+    let projects = json.projects;
+    //finish
     return projects
 }

@@ -4,6 +4,18 @@ import style from './styles/Editor.module.css'
 
 import { useNavigate } from "react-router-dom"
 import { useRef } from "react"
+import { save } from "./scripts/projectSaving"
+
+
+async function handleSaving() {
+  let text = document.getElementById("editor")?.innerHTML as string;
+  let path = window.location.href;
+  let page = path.split("/");
+  let name = page[page.length-1]
+   await save(text, name);
+}
+
+
 
 function Editor() {
   const navigator = useNavigate()
@@ -20,6 +32,7 @@ function Editor() {
       document.execCommand('foreColor', false, color);
     }
   };
+
   
   return (
     <main>
@@ -27,7 +40,7 @@ function Editor() {
       <div className={style.main}>
         <div className={style.sidebar}>
           <button className={style.button} onClick={ () => navigator('/')}>Back</button>
-          <button className={style.button}>Save</button>
+          <button className={style.button} onClick={ () => handleSaving() }>Save</button>
           <button className={style.button} onClick={() => handleFormat('bold')}>
             <svg aria-hidden="true" width="24" height="24" fill="none" viewBox="0 0 24 24">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5h4.5a3.5 3.5 0 1 1 0 7H8m0-7v7m0-7H6m2 7h6.5a3.5 3.5 0 1 1 0 7H8m0-7v7m0 0H6"/>
@@ -50,7 +63,7 @@ function Editor() {
           </button>
           <input className={style.color} type="color" onChange={(e) => handleColorChange(e.target.value)} title="Change Text Color"/>
         </div>
-        <div className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning>
+        <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning>
         </div>
       </div>
     </main>
@@ -58,3 +71,7 @@ function Editor() {
 }
 
 export default Editor;
+
+function useRouter(): { query: any } {
+  throw new Error("Function not implemented.")
+}

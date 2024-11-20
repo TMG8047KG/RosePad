@@ -3,6 +3,7 @@ import style from './project.module.css'
 
 function Project(project:any) {
     const navigator = useNavigate();
+    console.log(project.name);
     return(
         <button className={style.project} onClick={ () => { navigator(`/editor/${project.name}`) }}>
               <h3>{ project.name }</h3>
