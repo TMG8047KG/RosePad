@@ -3,19 +3,21 @@ import './styles/Main.css'
 import style from './styles/Editor.module.css'
 
 import { useNavigate } from "react-router-dom"
-import { useRef } from "react"
-import { save } from "./scripts/projectSaving"
+import { useEffect, useRef } from "react"
+import { loadFile, saveProject } from "./scripts/projectSaving"
 
+async function loadProject(editorRef: React.RefObject<HTMLDivElement>) {
+  let path = sessionStorage.getItem("path");
+  let name = sessionStorage.getItem("name");
+  if (!path || !name || !editorRef.current) return;
+  editorRef.current.innerHTML = await loadFile(`${path}\\${name}.rpad`)
+}
 
 async function handleSaving() {
   let text = document.getElementById("editor")?.innerHTML as string;
-  let path = window.location.href;
-  let page = path.split("/");
-  let name = page[page.length-1]
-   await save(text, name);
+  const name = sessionStorage.getItem("name") as string;
+  await saveProject(text, name);
 }
-
-
 
 function Editor() {
   const navigator = useNavigate()
@@ -33,6 +35,9 @@ function Editor() {
     }
   };
 
+  useEffect(() => {
+    loadProject(editorRef);
+  }, [editorRef]);
   
   return (
     <main>
@@ -63,7 +68,7 @@ function Editor() {
           </button>
           <input className={style.color} type="color" onChange={(e) => handleColorChange(e.target.value)} title="Change Text Color"/>
         </div>
-        <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning>
+        <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning spellCheck="false">
         </div>
       </div>
     </main>
@@ -71,7 +76,3 @@ function Editor() {
 }
 
 export default Editor;
-
-function useRouter(): { query: any } {
-  throw new Error("Function not implemented.")
-}

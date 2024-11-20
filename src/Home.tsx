@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { addProject, getProjectsOrdered, selectDir, settings, settingsFile } from './scripts/projectSaving';
 
-
 settings();
 
 async function createProject(dir:string, name:string) { 
@@ -18,7 +17,6 @@ async function createProject(dir:string, name:string) {
   await file.close();
   addProject(name, dir);
 }
-
 
 function App() {
   const navigator = useNavigate();
@@ -42,10 +40,24 @@ function App() {
     if(dir == "null" || !dir){
       dir = await selectDir()
     }
+    sessionStorage.setItem("name", name);
+    sessionStorage.setItem("path", dir)
     await createProject(dir, name);
     setIsModalOpen(false);
     navigator(`/editor/${name}`);
   };
+
+  //TODO: Future file opening stuff
+  // const openedFromFile = async () => {
+  //   const path = await pathFromOpenedFile();
+  //   if(path){
+  //     let name = path.split("/");
+  //     sessionStorage.setItem("path", path);
+  //     sessionStorage.setItem("name", name[name.length-1]);
+  //     navigator(`/editor/${name[name.length-1]}`);
+  //   }
+  // }
+  // openedFromFile();
 
   return (
     <main>
@@ -59,8 +71,8 @@ function App() {
         <div className={style.projects}>
           <div className={style.list}>
             <h2>Projects</h2>
-            { projects.map((project) => 
-              <Project key={project.id} name={project.name} date={project.last_updated}/>
+            { projects.map(project => 
+              <Project key={project.id} name={project.name} date={project.last_updated} path={project.path}/>
             )}
           </div>
         </div>

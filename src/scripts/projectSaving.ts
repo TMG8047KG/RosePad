@@ -1,13 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
 import { BaseDirectory, documentDir } from "@tauri-apps/api/path";
 import { open } from '@tauri-apps/plugin-dialog';
-import { exists, mkdir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readTextFile, writeFile, writeTextFile } from "@tauri-apps/plugin-fs";
 
 export const settingsFile = "settings.json"
 
-export async function getOpenFilePath() {
+export async function pathFromOpenedFile() {
     const path = await invoke('get_args')
-    console.log(path);
+    return path as string;
 }
 
 export async function settings() {
@@ -61,16 +61,27 @@ export async function getProjectsOrdered() {
     const rawJson = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
     let json = JSON.parse(rawJson);
     let projects = json.projects;
-    projects.sort(projects.last_updated)
+    projects.sort((a: { last_updated: string | number | Date; }, b: { last_updated: string | number | Date; }) => {
+        const dateA = new Date(a.last_updated).getTime();
+        const dateB = new Date(b.last_updated).getTime();
+        return dateA - dateB;
+    });
     projects.reverse()
     return projects
 }
 
-export async function save(text: string, name: string) {
+export async function saveProject(text: string, name: string) {
     const rawJson = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
     let json = JSON.parse(rawJson);
-    let path = `${json.projectPath}/${name}`;
-    let projects = json.projects;
-    //finish
-    return projects
+    let project = json.projects.find((projectName: { name: string; }) => projectName.name === name);
+    project.last_updated = new Date().toLocaleString();
+    const path = `${project.path}\\${name}.rpad`;
+    let updatedJson = JSON.stringify(json, null, 2);
+    await writeTextFile(settingsFile, updatedJson, { baseDir: BaseDirectory.AppConfig });
+    await writeTextFile(path, text);
+}
+
+export async function loadFile(path: string | URL) {
+    const text = await readTextFile(path);
+    return text;
 }
