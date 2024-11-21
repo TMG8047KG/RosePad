@@ -13,7 +13,7 @@
     padding-right: 10px;
 }
 
-.infoBox h1{
+.title{
     margin: 0;
     padding: 0;
 }
@@ -44,15 +44,33 @@
     color: rgb(236, 157, 157);
 }
 
-.list{
+.listField{
     display: grid;
+    grid-template-rows: 2.6rem;
     background: rgb(45, 45, 45);
     padding: 5px;
     width: 70%;
+    height: 16rem;
     border-radius: 15px;
 }
 
-.list h2{
+.listField h2{
     margin: 0;
-    padding: 5px 0px 10px 0px;
+    padding: 5px 0px 5px 0px;
 }
+
+.list{
+    overflow-y: auto;
+    overflow-x: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    border-radius: 10px;
+}
+
+.noProjectsMessage {
+    text-align: center;
+    color: #888;
+    font-size: 1.2rem;
+    margin-top: 1rem;
+}
+  

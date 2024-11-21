@@ -7,7 +7,7 @@ import Project from './components/project';
 import { create, readTextFile, BaseDirectory} from '@tauri-apps/plugin-fs';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { addProject, getProjectsOrdered, selectDir, settings, settingsFile } from './scripts/projectSaving';
+import { addProject, getProjectsOrdered, pathFromOpenedFile, selectDir, settings, settingsFile } from './scripts/projectHandler';
 
 settings();
 
@@ -15,7 +15,9 @@ async function createProject(dir:string, name:string) {
   const filePath = `${dir}\\${name}.rpad`;
   const file = await create(filePath);
   await file.close();
-  addProject(name, dir);
+  sessionStorage.setItem("name", `${name}`); //file_name
+  sessionStorage.setItem("path", filePath) //with extension
+  addProject(name, filePath);
 }
 
 function App() {
@@ -30,6 +32,12 @@ function App() {
     fetchProjects();
   }, []);
 
+  const handleProjectDeletion = async (projectName: string) => {
+    setProjects((prevProjects) =>
+      prevProjects.filter((project) => project.name !== projectName)
+    );
+  };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCreateProject = async (name: string) => {
@@ -40,40 +48,50 @@ function App() {
     if(dir == "null" || !dir){
       dir = await selectDir()
     }
-    sessionStorage.setItem("name", name);
-    sessionStorage.setItem("path", dir)
     await createProject(dir, name);
     setIsModalOpen(false);
     navigator(`/editor/${name}`);
   };
 
-  //TODO: Future file opening stuff
-  // const openedFromFile = async () => {
-  //   const path = await pathFromOpenedFile();
-  //   if(path){
-  //     let name = path.split("/");
-  //     sessionStorage.setItem("path", path);
-  //     sessionStorage.setItem("name", name[name.length-1]);
-  //     navigator(`/editor/${name[name.length-1]}`);
-  //   }
-  // }
-  // openedFromFile();
+  const openedFromFile = async () => {
+    const path = await pathFromOpenedFile(); //full path (aka with /file_name.extension)
+    if(path){
+      let name = path.split("/");
+      sessionStorage.setItem("path", path);
+      sessionStorage.setItem("name", name[name.length-1]); //file_name.extension
+      await addProject(name[name.length-1], path)
+      navigator(`/editor/${name[name.length-1]}`);
+    }
+  }
+  openedFromFile();
 
   return (
     <main>
       <NavBar/>
       <div className={style.container}>
         <div className={style.infoBox}>
-          <h1>RosePad</h1>
+          <h1 className={style.title}>RosePad</h1>
           <p>A simple and beatiful way to write notes, letters, poems and such.</p>
           <button className={style.button} onClick={ ()=> setIsModalOpen(true) }>Create Project</button>
         </div>
         <div className={style.projects}>
-          <div className={style.list}>
+          <div className={style.listField}>
             <h2>Projects</h2>
-            { projects.map(project => 
-              <Project key={project.id} name={project.name} date={project.last_updated} path={project.path}/>
-            )}
+            <div className={style.list}>
+              {projects.length > 0 ? (
+                projects.map((project) => (
+                  <Project
+                    key={project.name}
+                    name={project.name}
+                    date={project.last_updated}
+                    path={project.path}
+                    onDelete={handleProjectDeletion}
+                  />
+                ))
+              ) : (
+                <p className={style.noProjectsMessage}>There aren't any projects!</p>
+              )}
+            </div>
           </div>
         </div>
         <Prompt isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleCreateProject}/>

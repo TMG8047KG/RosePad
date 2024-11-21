@@ -2,7 +2,7 @@
     border-radius: 0px 0px 10px 10px;
 }
 
-.project:nth-child(2){
+.project:first-child{
     border-radius: 10px 10px 0px 0px;
 }
 
@@ -11,12 +11,15 @@
 }
 
 .project{
+    background: rgb(37, 37, 37);
     display: flex;
     border-radius: 0;
     padding: 5px;
     margin: 0;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    height: 2rem;
+    transition: ease 0.3s;
 }
 
 .project:hover{
@@ -24,11 +27,47 @@
     color: rgb(236, 157, 157);
 }
 
-.project h3,p{
+.data{
+    display: flex;
+    align-items: center;
+}
+
+.name{
+    overflow: hidden;
     margin: 0;
-}
-
-.project h3{
     padding: 5px;
+    max-width: 40%;
+    text-overflow: ellipsis;
+    color: rgb(255, 174, 174);
 }
 
+.p{
+    margin: 0;
+    font-size: 80%;
+    text-align: start;
+    padding-left: 3px;
+    color: rgb(140, 140, 140);
+}
+
+.name + .data {
+    border-left: solid rgb(90, 90, 90) 2px;
+}
+
+.delete{
+    color: transparent;
+    border: 0;
+    padding: 0;
+    margin-left: 10px;
+    width: 1.5rem;
+    height: 1.5rem;
+    transition: ease 0.3s;
+}
+
+.project:hover .delete{
+    background: rgb(65, 44, 44);
+    color: rgb(75, 75, 75);
+}
+
+.project:hover .delete:hover{
+    color: rgb(119, 119, 119);
+}

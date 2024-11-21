@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "RosePad",
-  "version": "0.0.1",
-  "identifier": "com.roseworld.rosepad",
+  "version": "0.0.2",
+  "identifier": "com.roseworld.RosePad",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -62,6 +62,10 @@
     "icon": [
       "icons/icon.ico"
     ],
+    "iOS": {
+      "minimumSystemVersion": "13.0"
+    },
+    "shortDescription": "Simple and Beatiful Text Editor",
     "fileAssociations": [
       {
         "ext": [".rpad"],
