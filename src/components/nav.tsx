@@ -1,9 +1,11 @@
 import { Window } from '@tauri-apps/api/window';
 import './nav.css'
+import { invoke } from '@tauri-apps/api/core';
 
 function NavBar() {
     const handleClose = async () => {
         const currentWindow = await Window.getCurrent();
+        await invoke("clear_activity")
         currentWindow.close();
       };
     

@@ -88,7 +88,7 @@ export async function loadFile(path: string | URL) {
     return text;
 }
 
-export async function deleteProject(name: string | URL) {
+export async function deleteProject(name: string) {
     const rawJson = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
     let json = JSON.parse(rawJson);
     let project = json.projects.find((projectName: { name: string; }) => projectName.name === name);
@@ -97,4 +97,11 @@ export async function deleteProject(name: string | URL) {
     json.projects.splice(index, 1);
     const updatedJson = JSON.stringify(json, null, 2);
     await writeTextFile(settingsFile, updatedJson, { baseDir: BaseDirectory.AppConfig })
+}
+
+export async function projectExists(path: string | URL) {
+    const raw = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig })
+    const data = JSON.parse(raw)
+    const projects = data.projects;
+    return projects.some((project: { path: string | URL; }) => project.path === path)
 }

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import style from './project.module.css'
 import { deleteProject } from '../scripts/projectHandler';
+import { rpc_project } from '../scripts/discord_rpc';
 
 
 function Project({name, date, path, onDelete }: {name: string; date: string; path: string; onDelete: (name: string) => void;}) {
@@ -8,6 +9,7 @@ function Project({name, date, path, onDelete }: {name: string; date: string; pat
     
     const openProject = () =>{
         sessionStorage.setItem("path", path);
+        rpc_project(name, path)
         navigator(`/editor/${name}`)
     }
 

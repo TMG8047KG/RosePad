@@ -6,6 +6,10 @@
     border-radius: 10px 10px 0px 0px;
 }
 
+.project:only-child{
+    border-radius: 10px;
+}
+
 .project + .project{
     border-top: solid rgba(255, 188, 188, 0.3) 1px;
 }
@@ -30,22 +34,25 @@
 .data{
     display: flex;
     align-items: center;
+    min-width: 50%;
+    justify-content: space-between;
 }
 
 .name{
-    overflow: hidden;
+    overflow-x: hidden;
     margin: 0;
     padding: 5px;
-    max-width: 40%;
     text-overflow: ellipsis;
     color: rgb(255, 174, 174);
+    white-space: nowrap;
 }
 
 .p{
     margin: 0;
-    font-size: 80%;
+    font-size: 70%;
     text-align: start;
     padding-left: 3px;
+    min-width: 80%;
     color: rgb(140, 140, 140);
 }
 
@@ -57,10 +64,10 @@
     color: transparent;
     border: 0;
     padding: 0;
-    margin-left: 10px;
     width: 1.5rem;
     height: 1.5rem;
     transition: ease 0.3s;
+    justify-items: center;
 }
 
 .project:hover .delete{

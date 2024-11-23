@@ -7,14 +7,17 @@ import Project from './components/project';
 import { create, readTextFile, BaseDirectory} from '@tauri-apps/plugin-fs';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { addProject, getProjectsOrdered, pathFromOpenedFile, selectDir, settings, settingsFile } from './scripts/projectHandler';
+import { addProject, getProjectsOrdered, pathFromOpenedFile, projectExists, selectDir, settings, settingsFile } from './scripts/projectHandler';
+import { rpc_main_menu, rpc_project } from './scripts/discord_rpc';
 
 settings();
+
 
 async function createProject(dir:string, name:string) { 
   const filePath = `${dir}\\${name}.rpad`;
   const file = await create(filePath);
   await file.close();
+  await rpc_project(name, filePath);
   sessionStorage.setItem("name", `${name}`); //file_name
   sessionStorage.setItem("path", filePath) //with extension
   addProject(name, filePath);
@@ -55,15 +58,19 @@ function App() {
 
   const openedFromFile = async () => {
     const path = await pathFromOpenedFile(); //full path (aka with /file_name.extension)
-    if(path){
-      let name = path.split("/");
+    const exists = await projectExists(path);
+    if(path && !exists){
+      const splitPath = path.split("/");
+      const name = splitPath[splitPath.length-1];
       sessionStorage.setItem("path", path);
-      sessionStorage.setItem("name", name[name.length-1]); //file_name.extension
-      await addProject(name[name.length-1], path)
-      navigator(`/editor/${name[name.length-1]}`);
+      sessionStorage.setItem("name", name); //file_name.extension
+      await addProject(name, path);
+      await rpc_project(name, path);
+      navigator(`/editor/${name}`);
     }
   }
   openedFromFile();
+  rpc_main_menu();
 
   return (
     <main>
