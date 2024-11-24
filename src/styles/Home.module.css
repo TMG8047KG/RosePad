@@ -10,7 +10,11 @@
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    padding-right: 10px;
+}
+
+.infoBox p{
+    padding: 10px;
+    margin: 0;
 }
 
 .title{
@@ -37,6 +41,7 @@
     color: rgb(255, 188, 188);
     font-size: 15px;
     font-weight: 700;
+    transition: ease 0.3s;
 }
 
 .button:hover{
@@ -50,7 +55,7 @@
     background: rgb(45, 45, 45);
     padding: 5px;
     width: 70%;
-    height: 16rem;
+    max-height: 16rem;
     border-radius: 15px;
 }
 
@@ -73,4 +78,14 @@
     font-size: 1.2rem;
     margin-top: 1rem;
 }
-  
+
+.shadow{
+    position: fixed;
+    background: rgb(0, 0, 0);
+    bottom: 30px;
+
+    margin: -30px;
+    width: 160px;
+    box-shadow: rgb(134, 0, 0) 0px 0px 100px 10px;
+    rotate: 30deg;
+}

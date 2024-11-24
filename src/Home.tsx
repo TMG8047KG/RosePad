@@ -51,6 +51,9 @@ function App() {
     if(dir == "null" || !dir){
       dir = await selectDir()
     }
+    if(data.projects.some((projectName: { name: string; }) => projectName.name === name)){
+      return alert("A project with this name already exists!");  
+    }
     await createProject(dir, name);
     setIsModalOpen(false);
     navigator(`/editor/${name}`);
@@ -60,7 +63,7 @@ function App() {
     const path = await pathFromOpenedFile(); //full path (aka with /file_name.extension)
     const exists = await projectExists(path);
     if(path && !exists){
-      const splitPath = path.split("/");
+      const splitPath = path.split("/\\");
       const name = splitPath[splitPath.length-1];
       sessionStorage.setItem("path", path);
       sessionStorage.setItem("name", name); //file_name.extension
@@ -74,6 +77,7 @@ function App() {
 
   return (
     <main>
+      <div className={style.shadow}/>
       <NavBar/>
       <div className={style.container}>
         <div className={style.infoBox}>

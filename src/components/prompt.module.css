@@ -17,7 +17,7 @@
   background-color: rgb(53, 53, 53);
   padding: 10px;
   border-radius: 8px;
-  width: 300px;
+  width: 24rem;
   text-align: center;
 }
 
@@ -55,5 +55,10 @@ button + button{
 
 button:hover {
   background-color: #5f5f5f;
+}
+
+.error{  
+  color: red;
+  font-size: 12px;
 }
   

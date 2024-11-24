@@ -9,13 +9,15 @@ interface ProjectNameModalProps {
 }
 
 const ProjectNameModal: React.FC<ProjectNameModalProps> = ({ isOpen, onClose, onSubmit }) => {
-  const [name, setName] = useState('');
+  let [name, setName] = useState('');
+  const [errorMessage, setErrorMessage] = React.useState("");
 
   const handleSubmit = () => {
-    if (name) {
-      onSubmit(name);  // Pass the name back to the parent
+    if (!name.replace(/[a-zA-Z0-9_-]+/g, '')) {
+      console.log(name);
+      onSubmit(name);
     } else {
-      alert('Project name is required');
+      setErrorMessage("A valid name is required! (Allowed symbols a-z,A-Z,0-9 and _-)")
     }
   };
 
@@ -25,10 +27,11 @@ const ProjectNameModal: React.FC<ProjectNameModalProps> = ({ isOpen, onClose, on
     <div className={style.modalOverlay}>
       <div className={style.modal}>
         <h2>Enter a project name</h2>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Project name" className={style.input}/>
+        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Project name" className={style.input} />
+        {errorMessage && <div className={style.error}> {errorMessage} </div>}
         <div className={style.modalActions}>
             <button onClick={handleSubmit}>Create</button>
-            <button onClick={onClose}>Cancel</button>
+            <button onClick={ () => {onClose(), setErrorMessage("")}}>Cancel</button>
         </div>
       </div>
     </div>

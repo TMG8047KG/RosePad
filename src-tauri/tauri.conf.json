@@ -13,7 +13,7 @@
     "windows": [
       {
         "title": "RosePad",
-        "width": 800,
+        "width": 1000,
         "height": 600,
         "center": true,
         "decorations": false,
@@ -43,6 +43,8 @@
             "core:event:allow-listen",
             "core:path:default",
             "core:path:allow-resolve-directory",
+            "core:menu:default",
+            "core:menu:allow-new",
             {
               "identifier": "fs:read-all",
               "allow": [{ "path": "**" }]

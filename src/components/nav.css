@@ -16,7 +16,7 @@
 .titleBarButtons{
     display: inline-flex;
     align-items: center;
-    margin-right: 3px;
+    margin-right: 5px;
     height: 100%;
 }
 
@@ -25,7 +25,7 @@
     justify-content: center;
     background: none;
     border: none;
-    margin-left: 5px;
+    padding: 8px;
     width: 24px;
     height: 24px;
 }
