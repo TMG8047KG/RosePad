@@ -30,6 +30,15 @@
     color: rgb(236, 157, 157);
 }
 
+.textData{
+    display: block;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: rgb(105, 105, 105);
+    margin: auto 0px 10px 0px;
+}
+
 .color{
     margin: 10px 0px 0px 0px;
     border: none;
@@ -61,7 +70,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     background: rgb(53, 53, 53);
-
+    font-weight: 100;
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
@@ -74,6 +83,6 @@
     outline: none;
 }
 
-.editor::selection{
+*::selection{
     background: rgb(97, 97, 97);
 }

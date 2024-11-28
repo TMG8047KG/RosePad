@@ -3,7 +3,7 @@ import './styles/Main.css'
 import style from './styles/Editor.module.css'
 
 import { useNavigate } from "react-router-dom"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { loadFile, saveProject } from "./scripts/projectHandler"
 
 async function loadProject(editorRef: React.RefObject<HTMLDivElement>) {
@@ -11,6 +11,11 @@ async function loadProject(editorRef: React.RefObject<HTMLDivElement>) {
   console.log(path);
   if (!path || !editorRef.current) return;
   editorRef.current.innerHTML = await loadFile(path)
+  const text = editorRef.current.innerText.replace(/\n/g, "");
+  const field = document.getElementById("characters");
+    if (field) {
+      field.innerText = `Symbols\n${text.length}`;
+    }
 }
 
 async function handleSaving() {
@@ -19,7 +24,8 @@ async function handleSaving() {
   await saveProject(text, path);
 }
 
-function Editor() {
+
+function Editor() {  
   const navigator = useNavigate()
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -35,8 +41,28 @@ function Editor() {
     }
   };
 
+  const handleContentChange = () => {
+    if (editorRef.current) {
+    const text = editorRef.current.innerText.replace(/\n/g, "");
+    const field = document.getElementById("characters");
+    if (field) {
+      field.innerText = `Symbols\n${text.length}`;
+    }
+  }
+  };
+
   useEffect(() => {
     loadProject(editorRef);
+
+    if (editorRef.current) {
+      const editor = editorRef.current;
+
+      editor.addEventListener("keyup", handleContentChange);
+
+      return () => {
+        editor.removeEventListener("keyup", handleContentChange);
+      };
+    }
   }, [editorRef]);
   
   return (
@@ -67,6 +93,9 @@ function Editor() {
             </svg>
           </button>
           <input className={style.color} type="color" onChange={(e) => handleColorChange(e.target.value)} title="Change Text Color"/>
+          <div id="characters" className={style.textData}>
+            Symbols<br></br>0
+          </div>
         </div>
         <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning spellCheck="false">
         </div>
