@@ -3,7 +3,7 @@ import './styles/Main.css'
 import style from './styles/Editor.module.css'
 
 import { useNavigate } from "react-router-dom"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { loadFile, saveProject } from "./scripts/projectHandler"
 
 async function loadProject(editorRef: React.RefObject<HTMLDivElement>) {
