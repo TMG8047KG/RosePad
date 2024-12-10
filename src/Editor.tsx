@@ -29,6 +29,34 @@ function Editor() {
   const navigator = useNavigate()
   const editorRef = useRef<HTMLDivElement>(null);
 
+  const handleStyle = (style: string) =>{
+    const seletion = window.getSelection();
+    
+    if(!seletion || seletion.rangeCount === 0){ return; }
+
+    const range = seletion?.getRangeAt(0);
+
+    const walk = document.createTreeWalker(
+      range.commonAncestorContainer,
+      NodeFilter.SHOW_ELEMENT,
+      {
+        acceptNode: (node: Node) =>
+          range.intersectsNode(node) && (node instanceof HTMLSpanElement) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+      }
+    );
+
+    const hasSpan = walk.nextNode() !== null || seletion.getRangeAt(0).commonAncestorContainer.parentElement instanceof HTMLSpanElement;
+
+    if(hasSpan){
+      let span = document.createElement('span');
+      console.log(seletion.toString());
+      span.innerHTML = seletion.toString()
+      span.style.cssText = style
+      range.deleteContents()
+      range.insertNode(span)
+    }
+  }
+  
   const handleFormat = (command: string) => {
     if (editorRef.current) {
       document.execCommand(command, false, '');
@@ -72,6 +100,7 @@ function Editor() {
         <div className={style.sidebar}>
           <button className={style.button} onClick={ () => navigator('/')}>Back</button>
           <button className={style.button} onClick={ () => handleSaving() }>Save</button>
+          <button className={style.button} onClick={ () => handleStyle("color: red;") }>Test</button>
           <button className={style.button} onClick={() => handleFormat('bold')}>
             <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
               <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5h4.5a3.5 3.5 0 1 1 0 7H8m0-7v7m0-7H6m2 7h6.5a3.5 3.5 0 1 1 0 7H8m0-7v7m0 0H6"/>
