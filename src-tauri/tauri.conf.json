@@ -62,7 +62,8 @@
     "active": true,
     "targets": "all",
     "icon": [
-      "icons/icon.ico"
+      "icons/icon.ico",
+      "icons/Square310x310Logo.png"
     ],
     "iOS": {
       "minimumSystemVersion": "13.0"
