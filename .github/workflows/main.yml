@@ -1,7 +1,9 @@
 name: "Test"
 
 on: [workflow_dispatch]
-
+  push:
+    branches:
+      - release
 # This workflow will build your tauri app without uploading it anywhere.
 
 jobs:
