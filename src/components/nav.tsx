@@ -2,6 +2,8 @@ import { Window } from '@tauri-apps/api/window';
 import './nav.css'
 import { invoke } from '@tauri-apps/api/core';
 import { Menu } from '@tauri-apps/api/menu';
+import { getVersion } from '@tauri-apps/api/app';
+import { useEffect, useState } from 'react';
 
 
 // Menu experiment
@@ -23,6 +25,8 @@ async function clickHandler(event: React.MouseEvent) {
   
 
 function NavBar() {
+    const [version, setVersion] = useState<string>();
+
     const handleClose = async () => {
         const currentWindow = await Window.getCurrent();
         currentWindow.close();
@@ -38,11 +42,21 @@ function NavBar() {
         const currentWindow = await Window.getCurrent();
         currentWindow.minimize();
       };
+
+      useEffect(() => {
+            const handleVersion = async () => {
+            setVersion(`v${await getVersion()}`);
+        };
+        handleVersion();
+      }, [])
+      
+
     return(
         <div className="titleBar" data-tauri-drag-region onContextMenu={ clickHandler }>
             <div className='logotitle'>
                 <img src="/rose.svg" className="logo" data-tauri-drag-region/>
                 <div className='title' data-tauri-drag-region >RosePad</div>
+                <div className='version'>{ version }</div>
             </div>
             <div className='titleBarButtons' data-tauri-drag-region>
                 <button onClick={handleMinimize}>

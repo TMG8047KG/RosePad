@@ -13,6 +13,15 @@
     margin-left: 5px;
 }
 
+.version{
+    align-self: center;
+    text-align: center;
+    margin-left: 5px;
+    font-size: 60%;
+    color: gray;
+}
+
+
 .titleBarButtons{
     display: inline-flex;
     align-items: center;

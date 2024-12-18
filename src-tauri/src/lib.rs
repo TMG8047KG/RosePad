@@ -19,8 +19,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_args,
             discord_rpc::update_activity,
-            discord_rpc::clear_activity])
-        .plugin(tauri_plugin_persisted_scope::init())
+            discord_rpc::clear_activity
+        ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .run(tauri::generate_context!())
