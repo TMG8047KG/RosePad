@@ -70,6 +70,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
     border-radius: 10px;
+    max-height: 13.4rem;
 }
 
 .noProjectsMessage {
@@ -88,4 +89,11 @@
     width: 160px;
     box-shadow: rgb(134, 0, 0) 0px 0px 100px 10px;
     rotate: 30deg;
+}
+
+.settings{
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin: 5px;
 }

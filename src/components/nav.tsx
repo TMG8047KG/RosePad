@@ -5,6 +5,8 @@ import { Menu } from '@tauri-apps/api/menu';
 import { getVersion } from '@tauri-apps/api/app';
 import { useEffect, useState } from 'react';
 
+import { useLocation } from 'react-router-dom';
+import SettingsButton from "./buttonSettings"
 
 // Menu experiment
 const menuPromise = Menu.new({
@@ -21,8 +23,6 @@ async function clickHandler(event: React.MouseEvent) {
     const menu = await menuPromise;
     menu.popup();
 }
-  
-  
 
 function NavBar() {
     const [version, setVersion] = useState<string>();
@@ -50,23 +50,25 @@ function NavBar() {
         handleVersion();
       }, [])
       
-
+      const settings = useLocation().pathname.match("/editor/");
+    
     return(
         <div className="titleBar" data-tauri-drag-region onContextMenu={ clickHandler }>
             <div className='logotitle'>
-                <img src="/rose.svg" className="logo" data-tauri-drag-region/>
+                <img src="/images/rose.svg" className="logo" data-tauri-drag-region/>
                 <div className='title' data-tauri-drag-region >RosePad</div>
                 <div className='version'>{ version }</div>
+                {settings ?  <SettingsButton/> : ""}
             </div>
             <div className='titleBarButtons' data-tauri-drag-region>
                 <button onClick={handleMinimize}>
-                    <img src="/minimize.svg" alt='minimize'/>
+                    <img src="/images/minimize.svg" alt='minimize'/>
                 </button>
                 <button onClick={handleMaximize}>            
-                    <img src="/maximize.svg" alt='maximize'/>
+                    <img src="/images/maximize.svg" alt='maximize'/>
                 </button>
                 <button onClick={handleClose}>            
-                    <img src="/close.svg" alt='close'/>
+                    <img src="/images/close.svg" alt='close'/>
                 </button>
             </div>
         </div>

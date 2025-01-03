@@ -3,14 +3,25 @@ import style from './styles/Home.module.css'
 import NavBar from './components/nav';
 import Prompt from './components/prompt';
 import Project from './components/project';
+import SettingsButton from "./components/buttonSettings"
+
 
 import { create, readTextFile, BaseDirectory} from '@tauri-apps/plugin-fs';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { addProject, getProjectsOrdered, pathFromOpenedFile, projectExists, selectDir, settings, settingsFile } from './scripts/projectHandler';
 import { rpc_main_menu, rpc_project } from './scripts/discord_rpc';
+import { listen } from '@tauri-apps/api/event';
+
+let path = "";
 
 settings();
+
+listen("backgroundColor", (event) => {
+  const payload = event.payload;
+  const background = document.getElementById("con");
+  if(background) background.style.background = payload as string;
+})
 
 
 async function createProject(dir:string, name:string) { 
@@ -60,16 +71,18 @@ function App() {
   };
 
   const openedFromFile = async () => {
-    const path = await pathFromOpenedFile(); //full path (aka with /file_name.extension)
-    const exists = await projectExists(path);
-    if(path && !exists){
-      const splitPath = path.split("/\\");
-      const name = splitPath[splitPath.length-1];
-      sessionStorage.setItem("path", path);
-      sessionStorage.setItem("name", name); //file_name.extension
-      await addProject(name, path);
-      await rpc_project(name, path);
-      navigator(`/editor/${name}`);
+    if(!path){
+      path = await pathFromOpenedFile(); //full path (aka with /file_name.extension)
+      const exists = await projectExists(path);
+      if(path){
+        const splitPath = path.split(/[/\\]/g);
+        const name = splitPath[splitPath.length-1];
+        sessionStorage.setItem("path", path);
+        sessionStorage.setItem("name", name); //file_name.extension
+        if(!exists) await addProject(name, path);
+        await rpc_project(name, path);
+        navigator(`/editor/${name}`);
+      }
     }
   }
   openedFromFile();
@@ -79,7 +92,7 @@ function App() {
     <main>
       <div className={style.shadow}/>
       <NavBar/>
-      <div className={style.container}>
+      <div id='con' className={style.container}>
         <div className={style.infoBox}>
           <h1 className={style.title}>RosePad</h1>
           <p>A simple and beatiful way to write notes, letters, poems and such.</p>
@@ -106,6 +119,10 @@ function App() {
           </div>
         </div>
         <Prompt isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleCreateProject}/>
+        <div className={style.settings}>
+          <SettingsButton/>
+        </div>
+        
       </div>
     </main>
   )

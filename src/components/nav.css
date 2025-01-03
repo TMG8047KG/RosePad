@@ -10,13 +10,11 @@
 .title{
     align-self: center;
     text-align: center;
-    margin-left: 5px;
 }
 
 .version{
     align-self: center;
     text-align: center;
-    margin-left: 5px;
     font-size: 60%;
     color: gray;
 }
@@ -57,5 +55,10 @@
 
 .logotitle{
     display: inline-flex;
+    align-items: center;
     margin-left: 10px;
+}
+
+.logotitle * + *{
+    margin-left: 5px;
 }
