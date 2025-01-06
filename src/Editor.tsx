@@ -4,7 +4,7 @@ import style from './styles/Editor.module.css'
 
 import { useNavigate } from "react-router-dom"
 import { useEffect, useRef } from "react"
-import { loadFile, saveProject } from "./scripts/projectHandler"
+import { loadFile, saveProject, selectDir } from "./scripts/projectHandler"
 
 async function loadProject(editorRef: React.RefObject<HTMLDivElement>) {
   const path = sessionStorage.getItem("path");
@@ -24,10 +24,45 @@ async function handleSaving() {
   await saveProject(text, path);
 }
 
-
 function Editor() {  
   const navigator = useNavigate()
   const editorRef = useRef<HTMLDivElement>(null);
+
+  const handleTextFormat = (styleC: string, value: string) => {
+    const selection = document.getSelection();
+    if(!selection || selection.rangeCount === 0){ return; }
+    const range = selection?.getRangeAt(0);
+    console.log(selection);
+    console.log(range);
+
+    //gets all of the selected shitnodes
+    const nodes = document.createTreeWalker(
+      range.commonAncestorContainer,
+      NodeFilter.SHOW_ELEMENT,{
+        acceptNode: (node) =>
+          range.intersectsNode(node) && (node instanceof HTMLSpanElement) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+      }
+    )
+
+    //This shit aint doing what I want ;(
+
+    //checks all of the nodes for a specific style (aka the thing from the button)
+    let currentNode;
+    while((currentNode = nodes.nextNode())){
+      if(currentNode instanceof Element){
+        const style = window.getComputedStyle(currentNode)
+        console.log(style.getPropertyValue(styleC));
+        if(style.getPropertyValue(styleC) == value){
+          //This makes me cry and sob aggressively (It also removes the node by moving everything outside of it and commiting suicide)
+          const parent = currentNode.parentNode;
+          while(currentNode.firstChild){
+            parent?.insertBefore(currentNode.firstChild, currentNode)
+          }
+          currentNode.remove()
+        }
+      }
+    }
+  }
 
   const handleFormat = (command: string) => {
     if (editorRef.current) {
@@ -72,7 +107,10 @@ function Editor() {
         <div className={style.sidebar}>
           <button className={style.button} onClick={ () => navigator('/')}>Back</button>
           <button className={style.button} onClick={ () => handleSaving() }>Save</button>
-          <button className={style.button} onClick={() => handleFormat('bold')}>
+          <button className={style.button} onClick={() => handleTextFormat('font-weight', '700')}>
+            Test
+          </button>
+          <button className={style.button} onClick={() => handleFormat('font-weight: bold;')}>
             <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
               <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5h4.5a3.5 3.5 0 1 1 0 7H8m0-7v7m0-7H6m2 7h6.5a3.5 3.5 0 1 1 0 7H8m0-7v7m0 0H6"/>
             </svg>
