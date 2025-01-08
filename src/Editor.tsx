@@ -24,6 +24,19 @@ async function handleSaving() {
   await saveProject(text, path);
 }
 
+function splitOn(bound: any, cutElement: { parentNode: any; nextSibling: any }) {
+  // cutElement must be a descendant of bound
+  for (var parent = cutElement.parentNode; bound != parent; parent = grandparent) {
+      var right = parent.cloneNode(false);
+      while (cutElement.nextSibling)
+          right.appendChild(cutElement.nextSibling);
+      var grandparent = parent.parentNode;
+      grandparent.insertBefore(right, parent.nextSibling);
+      grandparent.insertBefore(cutElement, right);
+  }
+  
+}
+
 function Editor() {  
   const navigator = useNavigate()
   const editorRef = useRef<HTMLDivElement>(null);
@@ -38,30 +51,56 @@ function Editor() {
     //gets all of the selected shitnodes
     const nodes = document.createTreeWalker(
       range.commonAncestorContainer,
-      NodeFilter.SHOW_ELEMENT,{
-        acceptNode: (node) =>
-          range.intersectsNode(node) && (node instanceof HTMLSpanElement) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
-      }
+      NodeFilter.SHOW_ELEMENT
     )
 
-    //This shit aint doing what I want ;(
-
-    //checks all of the nodes for a specific style (aka the thing from the button)
     let currentNode;
+    
     while((currentNode = nodes.nextNode())){
-      if(currentNode instanceof Element){
+      console.log(currentNode);
+      if(currentNode instanceof Element && currentNode.textContent){
         const style = window.getComputedStyle(currentNode)
         console.log(style.getPropertyValue(styleC));
         if(style.getPropertyValue(styleC) == value){
           //This makes me cry and sob aggressively (It also removes the node by moving everything outside of it and commiting suicide)
           const parent = currentNode.parentNode;
-          while(currentNode.firstChild){
-            parent?.insertBefore(currentNode.firstChild, currentNode)
-          }
-          currentNode.remove()
+          
+          //split node
+
+          const contentBefore = document.createTextNode(
+            currentNode.textContent.slice(0, range.startOffset)
+          );
+          const selectedContent = document.createTextNode(
+            currentNode.textContent.slice(0, range.endOffset)
+          );
+          const contentAfter = document.createTextNode(
+            currentNode.textContent.slice(range.endOffset)
+          );
+
+          console.log(contentBefore);
+          console.log(selectedContent);
+          console.log(contentAfter);
+    
+          const beforeSplit = currentNode.cloneNode(false);
+          const afterSplit = currentNode.cloneNode(false);
+          beforeSplit.appendChild(contentBefore);
+          afterSplit.appendChild(contentAfter);
+
+          // Insert the nodes
+          parent?.insertBefore(selectedContent, currentNode);
+          parent?.insertBefore(afterSplit, currentNode);
+
+          // Remove the original node
+          parent?.removeChild(currentNode);
+          return;
         }
       }
     }
+    let spanRange = editorRef.current?.cloneNode()
+    
+    //This shit aint doing what I want ;(
+
+    //checks all of the nodes for a specific style (aka the thing from the button)
   }
 
   const handleFormat = (command: string) => {
