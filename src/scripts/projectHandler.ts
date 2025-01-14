@@ -60,6 +60,15 @@ export async function addProject(name:string, path:string|URL) {
     await writeTextFile(settingsFile, json, { baseDir: BaseDirectory.AppConfig })
 }
 
+export async function updateProjectPath(path: string|URL, newPath: string|URL) {
+    const rawJson = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
+    let json = JSON.parse(rawJson);
+    let project = json.projects.find((projectPath: { path: string; }) => projectPath.path === path);
+    project.path = newPath;
+    let updatedJson = JSON.stringify(json, null, 2);
+    await writeTextFile(settingsFile, updatedJson, { baseDir: BaseDirectory.AppConfig });
+}
+
 export async function getProjectsOrdered() {
     const rawJson = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
     let json = JSON.parse(rawJson);

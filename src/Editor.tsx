@@ -4,7 +4,8 @@ import style from './styles/Editor.module.css'
 
 import { useNavigate } from "react-router-dom"
 import { useEffect, useRef } from "react"
-import { loadFile, saveProject, selectDir } from "./scripts/projectHandler"
+import { loadFile, saveProject, selectDir, updateProjectPath } from "./scripts/projectHandler"
+import { save } from "@tauri-apps/plugin-dialog"
 
 async function loadProject(editorRef: React.RefObject<HTMLDivElement>) {
   const path = sessionStorage.getItem("path");
@@ -22,6 +23,26 @@ async function handleSaving() {
   let text = document.getElementById("editor")?.innerHTML as string;
   const path = sessionStorage.getItem("path") as string;
   await saveProject(text, path);
+}
+
+async function handleSavingAs() {
+  let text = document.getElementById("editor")?.innerHTML as string;
+  const oldPath = sessionStorage.getItem("path") as string;
+  const path = await save({
+    filters: [
+      {
+        name: 'RosePad Files',
+        extensions: ['rpad', 'txt'],
+      }
+    ],
+    defaultPath: oldPath 
+  });
+  console.log(path);
+  
+  if(path){
+    await updateProjectPath(oldPath, path);
+    await saveProject(text, path);  
+  } 
 }
 
 function Editor() {  
@@ -71,6 +92,7 @@ function Editor() {
         <div className={style.sidebar}>
           <button className={style.button} onClick={ () => navigator('/')}>Back</button>
           <button className={style.button} onClick={ () => handleSaving() }>Save</button>
+          <button className={style.button} onClick={ () => handleSavingAs() }>Save as</button>
           <button className={style.button} onClick={() => handleFormat('font-weight: bold;')}>
             <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
               <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5h4.5a3.5 3.5 0 1 1 0 7H8m0-7v7m0-7H6m2 7h6.5a3.5 3.5 0 1 1 0 7H8m0-7v7m0 0H6"/>
