@@ -26,3 +26,6 @@ tauri-plugin-fs = "2"
 tauri-plugin-dialog = "2"
 discord-ipc-rp = "0.1.1"
 lazy_static = "1.4"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = "2"

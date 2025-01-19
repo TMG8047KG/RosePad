@@ -1,5 +1,7 @@
 use std::env;
 
+use tauri::Manager;
+
 mod discord_rpc;
 mod settings;
 
@@ -17,11 +19,11 @@ pub fn run() {
     let _ = discord_rpc::connect_rpc();
 
     tauri::Builder::default()
-        // .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-        //     let _ = app.get_webview_window("main")
-        //                .expect("no main window")
-        //                .set_focus();
-        // }))
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            let _ = app.get_webview_window("main")
+            .expect("no main window")
+            .set_focus();
+        }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![

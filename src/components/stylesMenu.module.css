@@ -1,0 +1,53 @@
+.box{
+    position: fixed;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgb(77, 77, 77);
+    padding: 5px;
+    border-radius: 15px;
+}
+
+.box *+*{
+    margin-left: 5px;
+}
+
+.button{
+    border: 0px;
+    padding: 0px;
+    background: rgb(49, 49, 49);
+    border-radius: 10px;
+    color: rgb(255, 188, 188);
+    font-size: 15px;
+    font-weight: 700;
+    height: 2rem;
+    width: 2rem;
+    box-shadow: rgb(32, 32, 32) 0px 1px 5px 0.1px;
+}
+
+.button:hover{
+    background: rgb(65, 44, 44);
+    color: rgb(236, 157, 157);
+}
+
+.color{
+    border: none;
+    background: rgb(49, 49, 49);
+    color: rgb(255, 188, 188);
+    border-radius: 10px;
+    padding: 5px;
+    height: 2rem;
+    width: 2rem;
+    box-shadow: rgb(32, 32, 32) 0px 1px 5px 0.1px;
+}
+
+.color::-webkit-color-swatch {
+    border: none;
+    border-radius: 5px;
+    padding: 0;
+}
+.color::-webkit-color-swatch-wrapper {
+    border: none;
+    border-radius: 10px;
+    padding: 0;
+}
