@@ -22,7 +22,7 @@ const StyleMenu: React.FC<styleMenuProps> = ({ editor }) => {
 
     return(
         <div className={style.box} id="styles">
-            <button className={style.button} onClick={() => handleFormat('font-weight: bold;')}>
+            <button className={style.button} onClick={() => handleFormat('bold')}>
               <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5h4.5a3.5 3.5 0 1 1 0 7H8m0-7v7m0-7H6m2 7h6.5a3.5 3.5 0 1 1 0 7H8m0-7v7m0 0H6"/>
               </svg>
