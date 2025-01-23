@@ -14,6 +14,7 @@ pub async fn settings(app: tauri::AppHandle) {
     .min_inner_size(400.0, 500.0)
     .center()
     .focused(true)
+    .decorations(false)
     .build()
     .unwrap();
 }

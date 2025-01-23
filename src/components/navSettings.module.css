@@ -5,20 +5,13 @@
     justify-content: space-between;
     align-items: center;
     box-shadow: black -90vw -5px 45px 0px;
+    background: rgb(56, 56, 56);
 }
 
 .title{
     align-self: center;
     text-align: center;
 }
-
-.version{
-    align-self: center;
-    text-align: center;
-    font-size: 60%;
-    color: gray;
-}
-
 
 .titleBarButtons{
     display: inline-flex;
@@ -35,12 +28,12 @@
     padding: 0;
     width: 24px;
     height: 24px;
-    color: rgb(37, 37, 37);
+    color: rgb(140, 140, 140);
 }
 
 .titleBarButtons button:hover{
-    background: rgba(37, 37, 37, 0.25);
-    color: rgb(140, 140, 140);
+    background: rgba(255, 255, 255, 0.10);
+    color: rgb(37, 37, 37);
     border-radius: 6px;
 }
 

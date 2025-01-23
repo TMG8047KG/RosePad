@@ -4,6 +4,7 @@ import style from './styles/Settings.module.css'
 // import { emit } from '@tauri-apps/api/event';
 import { selectDir, settingsFile } from './scripts/projectHandler';
 import { useEffect, useState } from 'react';
+import NavSettings from './components/navSettings';
 
 function Settings() {
     const [dir, setDir] = useState("");
@@ -28,6 +29,7 @@ function Settings() {
 
     return (
         <main>
+            <NavSettings/>
             <div className={style.container}>
                 <div>
                     <h3 className={style.heads}>Project Directory</h3>
