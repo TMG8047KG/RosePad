@@ -2,8 +2,6 @@ import { Window } from '@tauri-apps/api/window';
 import './nav.css'
 import { invoke } from '@tauri-apps/api/core';
 import { Menu } from '@tauri-apps/api/menu';
-import { getVersion } from '@tauri-apps/api/app';
-import { useEffect, useState } from 'react';
 
 import { useLocation } from 'react-router-dom';
 import SettingsButton from "./buttonSettings"
@@ -25,8 +23,6 @@ async function clickHandler(event: React.MouseEvent) {
 }
 
 function NavBar() {
-    const [version, setVersion] = useState<string>();
-
     const handleClose = async () => {
         const currentWindow = await Window.getCurrent();
         currentWindow.close();
@@ -48,25 +44,21 @@ function NavBar() {
         const currentWindow = await Window.getCurrent();
         currentWindow.minimize();
       };
-
-      useEffect(() => {
-            const handleVersion = async () => {
-            setVersion(`v${await getVersion()}`);
-        };
-        handleVersion();
-      }, [])
       
-      const settings = useLocation().pathname.match("/editor/");
+      const inEditor = useLocation().pathname.match("/editor/");
     
     return(
         <div className="titleBar" data-tauri-drag-region onContextMenu={ clickHandler }>
             <div className='logotitle'>
                 <img src="/images/rose.svg" className="logo" data-tauri-drag-region/>
                 <div className='title' data-tauri-drag-region >RosePad</div>
-                <div className='version'>{ version }</div>
-                {settings ?  <SettingsButton/> : ""}
+                
+                {inEditor ? <div className='projectName' data-tauri-drag-region>{sessionStorage.getItem("projectName")}</div> : ""}
             </div>
             <div className='titleBarButtons' data-tauri-drag-region>
+                <div className='settings'>
+                    {inEditor ?  <SettingsButton/> : ""}
+                </div>
                 <button onClick={handleMinimize}>
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M14 10L20 4M14 10H18.5M14 10V5.5M4 4L10 10M10 10V5.5M10 10H5.5M14 14L20 20M14 14V18.5M14 14H18.5M10 14L4 20M10 14H5.5M10 14V18.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

@@ -5,6 +5,10 @@
     justify-content: space-between;
     align-items: center;
     box-shadow: black -90vw -5px 45px 0px;
+    -webkit-user-select: none; /* Safari */        
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
+    user-select: none;
 }
 
 .title{
@@ -63,4 +67,17 @@
 
 .logotitle * + *{
     margin-left: 5px;
+}
+
+.projectName{
+    align-self: center;
+    text-align: center;
+    font-size: small;
+    color: gray;
+}
+
+.settings{
+    margin-right: 5px;
+    padding-right: 5px;
+    border-right: solid rgba(37, 37, 37, 0.25) 2px;
 }

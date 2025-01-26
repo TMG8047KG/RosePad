@@ -9,6 +9,7 @@ function Project({name, date, path, onDelete }: {name: string; date: string; pat
     
     const openProject = () =>{
         sessionStorage.setItem("path", path);
+        sessionStorage.setItem("projectName", name);
         rpc_project(name, path)
         navigator(`/editor/${name}`)
     }
