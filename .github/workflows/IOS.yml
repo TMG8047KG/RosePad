@@ -1,0 +1,30 @@
+name: Build iOS App for Device
+on: [workflow_dispatch]
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust and Tauri
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
+          rustup target add aarch64-apple-ios
+          npm install -g @tauri-apps/cli
+
+      - name: Install Xcode
+        run: |
+          sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+          sudo xcodebuild -license accept
+
+      - name: Build for iOS Device (No Code Signing)
+        run: |
+          npm install
+          tauri ios build --target aarch64-apple-ios
+
+      - name: Open Xcode Project for Signing
+        run: |
+          open ./src-tauri/ios/YourApp.xcodeproj
+        # This step requires manual intervention (see notes below)
