@@ -1,17 +1,33 @@
-name: Build iOS App for Device
-on: [workflow_dispatch]
+name: "IOS"
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
 jobs:
-  build:
+  # Your existing job for macOS/Windows/Linux
+  test-ios-simulator:
     runs-on: macos-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install Rust and Tauri
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install Rust and iOS targets
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source $HOME/.cargo/env
-          rustup target add aarch64-apple-ios
+          rustup target add aarch64-apple-ios-sim  # For Apple Silicon simulators
           npm install -g @tauri-apps/cli
 
       - name: Install Xcode
@@ -19,12 +35,13 @@ jobs:
           sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
           sudo xcodebuild -license accept
 
-      - name: Build for iOS Device (No Code Signing)
+      - name: Build for iOS Simulator
         run: |
-          npm install
-          tauri ios build --target aarch64-apple-ios
+          pnpm install
+          tauri ios build --target aarch64-apple-ios-sim
 
-      - name: Open Xcode Project for Signing
-        run: |
-          open ./src-tauri/ios/YourApp.xcodeproj
-        # This step requires manual intervention (see notes below)
+      - name: Upload Simulator App Bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-simulator-app
+          path: src-tauri/target/aarch64-apple-ios-sim/release/*.app
