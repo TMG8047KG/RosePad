@@ -33,7 +33,7 @@ jobs:
 
       - name: Build iOS app (Unsigned)
         run: |
-          cargo tauri build --target aarch64-apple-ios --no-bundles
+          pnpm tauri build --target aarch64-apple-ios --no-bundles
           mkdir -p output
           cp -r target/aarch64-apple-ios/debug/bundle/ios/RosePad.app output/
 
