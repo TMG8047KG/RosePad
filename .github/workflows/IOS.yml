@@ -1,47 +1,55 @@
-name: "IOS"
+name: Build Tauri iOS (Unsigned)
 
 on:
-  workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
+  pull_request:
 
 jobs:
-  # Your existing job for macOS/Windows/Linux
-  test-ios-simulator:
+  build:
     runs-on: macos-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          node-version: lts/*
+          targets: aarch64-apple-ios
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: |
+          brew install tauri-cli
+          rustup target add aarch64-apple-ios
+
+      - name: Install Xcode CLI tools
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      - name: Install Cargo Bundle for Tauri
+        run: cargo install cargo-bundle
+
+      - name: Build iOS app (Unsigned)
+        run: |
+          cargo tauri build --target aarch64-apple-ios --no-bundles
+          mkdir -p output
+          cp -r target/aarch64-apple-ios/debug/bundle/ios/RosePad.app output/
+
+      - name: Upload Unsigned .app for Simulator
+        uses: actions/upload-artifact@v4
         with:
-          version: 9
+          name: RosePad-iOS-App
+          path: output/RosePad.app
 
-      - name: Install Rust and iOS targets
+      - name: Create Unsigned .ipa (Optional)
         run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          source $HOME/.cargo/env
-          rustup target add aarch64-sim  # For Apple Silicon simulators
-          npm install -g @tauri-apps/cli
+          mkdir -p Payload
+          cp -r output/RosePad.app Payload/
+          zip -r RosePad.ipa Payload/
 
-      - name: Install Xcode
-        run: |
-          sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
-          sudo xcodebuild -license accept
-
-      - name: Build for iOS Simulator
-        run: |
-          pnpm install
-          tauri ios build --target aarch64-sim
-
-      - name: Upload Simulator App Bundle
-        uses: actions/upload-artifact@v3
+      - name: Upload Unsigned .ipa (Optional)
+        uses: actions/upload-artifact@v4
         with:
-          name: ios-simulator-app
-          path: src-tauri/target/aarch64-sim/release/*.app
+          name: RosePad-iOS-IPA
+          path: RosePad.ipa
