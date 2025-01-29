@@ -21,7 +21,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install tauri-cli
+          brew install pnpm
+          pnpm install
           rustup target add aarch64-apple-ios
 
       - name: Install Xcode CLI tools
