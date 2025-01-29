@@ -27,7 +27,7 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source $HOME/.cargo/env
-          rustup target add aarch64-apple-ios-sim  # For Apple Silicon simulators
+          rustup target add aarch64-sim  # For Apple Silicon simulators
           npm install -g @tauri-apps/cli
 
       - name: Install Xcode
@@ -38,10 +38,10 @@ jobs:
       - name: Build for iOS Simulator
         run: |
           pnpm install
-          tauri ios build --target aarch64-apple-ios-sim
+          tauri ios build --target aarch64-sim
 
       - name: Upload Simulator App Bundle
         uses: actions/upload-artifact@v3
         with:
           name: ios-simulator-app
-          path: src-tauri/target/aarch64-apple-ios-sim/release/*.app
+          path: src-tauri/target/aarch64-sim/release/*.app
