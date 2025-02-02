@@ -1,0 +1,56 @@
+name: Build Tauri iOS (Unsigned)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios
+
+      - name: Install dependencies
+        run: |
+          brew install pnpm
+          pnpm install
+          rustup target add aarch64-apple-ios
+
+      - name: Install Xcode CLI tools
+        run: sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
+      - name: Install Cargo Bundle for Tauri
+        run: cargo install cargo-bundle
+
+      - name: Build iOS app (Unsigned)
+        run: |
+          pnpm tauri build --target aarch64-apple-ios --no-bundle
+          mkdir -p output
+          cp -r target/aarch64-apple-ios/debug/bundle/ios/RosePad.app output/
+
+      - name: Upload Unsigned .app for Simulator
+        uses: actions/upload-artifact@v4
+        with:
+          name: RosePad-iOS-App
+          path: output/RosePad.app
+
+      - name: Create Unsigned .ipa (Optional)
+        run: |
+          mkdir -p Payload
+          cp -r output/RosePad.app Payload/
+          zip -r RosePad.ipa Payload/
+
+      - name: Upload Unsigned .ipa (Optional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: RosePad-iOS-IPA
+          path: RosePad.ipa
