@@ -6,6 +6,7 @@
     background: rgb(77, 77, 77);
     padding: 5px;
     border-radius: 15px;
+    z-index: 100;
 }
 
 .box *+*{

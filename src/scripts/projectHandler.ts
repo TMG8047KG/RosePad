@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { BaseDirectory, documentDir } from "@tauri-apps/api/path";
 import { open } from '@tauri-apps/plugin-dialog';
 import { exists, mkdir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
@@ -6,10 +7,19 @@ import { exists, mkdir, readTextFile, remove, writeTextFile } from "@tauri-apps/
 export const settingsFile = "settings.json"
 
 export async function pathFromOpenedFile() {
-    const path = await invoke('get_args')
+    let path = await invoke('get_args')
     if(Array.isArray(path)  && path.length >= 1){
         return path[1] as string;
     }
+    await listen("file-open", event => {
+        console.log("event read");
+        
+        path = event.payload;
+        console.log(path);
+        if(Array.isArray(path)  && path.length >= 1){
+            return path[1] as string;
+        }
+    })
     return path as string;
 }
 

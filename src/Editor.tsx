@@ -107,7 +107,8 @@ function Editor() {
             Symbols<br></br>0
           </div>
         </div>
-        <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning spellCheck="false">
+        <div className={style.container}>
+          <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning spellCheck="false"></div>
         </div>
       </div>
     </main>

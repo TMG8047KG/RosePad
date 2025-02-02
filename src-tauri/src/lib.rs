@@ -1,6 +1,6 @@
 use std::env;
 
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 mod discord_rpc;
 mod settings;
@@ -17,12 +17,18 @@ async fn get_args() -> Vec<String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let _ = discord_rpc::connect_rpc();
-
     tauri::Builder::default()
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            let _ = app.get_webview_window("main")
-            .expect("no main window")
-            .set_focus();
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            let window = app.get_window("main").unwrap();
+            window.show().unwrap();
+            window.set_focus().unwrap();
+            let mut arg_list = vec![];
+            for arg in args {
+                println!("{}", arg);
+                arg_list.push(arg);
+            }
+            println!("it's running!");
+            window.emit("file-open", arg_list).unwrap();
         }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())

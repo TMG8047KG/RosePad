@@ -30,6 +30,7 @@ async function createProject(dir:string, name:string) {
   await file.close();
   await rpc_project(name, filePath);
   sessionStorage.setItem("name", `${name}`); //file_name
+  sessionStorage.setItem("projectName", name);
   sessionStorage.setItem("path", filePath) //with extension
   addProject(name, filePath);
 }
@@ -70,15 +71,23 @@ function App() {
     navigator(`/editor/${name}`);
   };
 
+
+  //TODO: Figure out why this started not working like before
   const openedFromFile = async () => {
     if(!path){
+      console.log("shit is running");
       path = await pathFromOpenedFile(); //full path (aka with /file_name.extension)
       const exists = await projectExists(path);
       if(path){
         const splitPath = path.split(/[/\\]/g);
-        const name = splitPath[splitPath.length-1];
+        let name = splitPath[splitPath.length-1];
+        const project = name.split(".");
         sessionStorage.setItem("path", path);
+        if(project[1] == "rpad"){
+          name = project[0] //file_name
+        }
         sessionStorage.setItem("name", name); //file_name.extension
+        sessionStorage.setItem("projectName", name); 
         if(!exists) await addProject(name, path);
         await rpc_project(name, path);
         navigator(`/editor/${name}`);
