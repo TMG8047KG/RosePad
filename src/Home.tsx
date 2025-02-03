@@ -72,7 +72,7 @@ function App() {
   };
 
 
-  //TODO: Figure out why this started not working like before
+  //TODO: Figure out this to work with single instance
   const openedFromFile = async () => {
     if(!path){
       console.log("shit is running");

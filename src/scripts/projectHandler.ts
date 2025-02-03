@@ -8,15 +8,13 @@ export const settingsFile = "settings.json"
 
 export async function pathFromOpenedFile() {
     let path = await invoke('get_args')
-    if(Array.isArray(path)  && path.length >= 1){
+    if(Array.isArray(path) && path.length >= 1){
         return path[1] as string;
     }
-    await listen("file-open", event => {
-        console.log("event read");
-        
-        path = event.payload;
+    listen("file-open", (event) => {
+        path = event.payload as string;
         console.log(path);
-        if(Array.isArray(path)  && path.length >= 1){
+        if(Array.isArray(path) && path.length >= 1){
             return path[1] as string;
         }
     })
