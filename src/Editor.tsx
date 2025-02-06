@@ -27,7 +27,6 @@ async function handleSaving() {
 }
 
 async function handleSavingAs() {
-  let text = document.getElementById("editor")?.innerHTML as string;
   const oldPath = sessionStorage.getItem("path") as string;
   const path = await save({
     filters: [
@@ -41,6 +40,13 @@ async function handleSavingAs() {
   console.log(path);
   
   if(path){
+    const extension = path.split(".");
+    let text = "";
+    if(extension[1] == "rpad"){
+      text = document.getElementById("editor")?.innerHTML as string;
+    }else{
+      text = document.getElementById("editor")?.innerText as string;
+    }
     await updateProjectPath(oldPath, path);
     await saveProject(text, path);  
   } 
@@ -79,17 +85,30 @@ function Editor() {
     }
   }
 
+  const handleStyleMenuClose = () => {
+    const menu = document.getElementById("styles");
+    if(menu) {
+      menu.style.display = "none";
+    };
+  }
+
   useEffect(() => {
     loadProject(editorRef);
     
     const editor = editorRef.current;
     if (editor) {
-      editor.addEventListener("keyup", handleContentChange);
+      editor.addEventListener("keyup", () => {
+        handleContentChange()
+        handleStyleMenuClose()
+      });
       editor.addEventListener("selectstart", () => {
         editor.addEventListener("mouseup", handleStylesMenu)
       });
       return () => {
-        editor.removeEventListener("keyup", handleContentChange);
+        editor.removeEventListener("keyup", () => {
+          handleContentChange()
+          handleStyleMenuClose()
+        });
       };
     }
   }, [editorRef]);
