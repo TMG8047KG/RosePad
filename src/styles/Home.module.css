@@ -97,3 +97,12 @@
     left: 0;
     margin: 5px;
 }
+
+@media only screen and (max-height: 1080px) {
+    .listField{
+        max-height: 50rem;
+    }
+    .list{
+        max-height: 40.2rem;
+    }
+}

@@ -16,7 +16,8 @@
 
 .project{
     background: rgb(37, 37, 37);
-    display: flex;
+    display: grid;
+    grid-template-columns: 50% 40% 10%;
     border-radius: 0;
     padding: 5px;
     margin: 0;
@@ -24,6 +25,11 @@
     align-items: center;
     height: 2rem;
     transition: ease 0.3s;
+}
+
+.buttons{
+    display: flex;
+    align-items: center;
 }
 
 .project:hover{
