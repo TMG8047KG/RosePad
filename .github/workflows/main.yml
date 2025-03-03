@@ -1,4 +1,4 @@
-name: "Test"
+name: "RosePad Installers"
 
 on:
   workflow_dispatch:
@@ -61,7 +61,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v__VERSION__
-          releaseName: 'RosePad v__VERSION__'
+          releaseName: 'RosePad v__VERSION__ ${{matrix.platform}}'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
           prerelease: true

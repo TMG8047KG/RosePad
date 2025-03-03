@@ -58,8 +58,8 @@ const ProjectNameModal: React.FC<ProjectNameModalProps> = ({ isOpen, onClose, on
         <input type="text" value={name} onChange={(e) => {setName(e.target.value); nameRef.current = e.target.value;}} placeholder="Project name" className={style.input} autoFocus/>
         {errorMessage && <div className={style.error}> {errorMessage} </div>}
         <div className={style.modalActions}>
-            <button onClick={handleSubmit}>Create</button>
-            <button onClick={ () => {onClose(), setErrorMessage("")}}>Cancel</button>
+          <button className={style.button} onClick={handleSubmit}>Create</button>
+          <button className={style.button} onClick={() => {onClose(), setErrorMessage("")}}>Cancel</button>
         </div>
       </div>
     </div>

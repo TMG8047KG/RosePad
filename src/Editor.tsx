@@ -76,8 +76,9 @@ function Editor() {
       menu.style.display = "flex";
 
       const rect = range.getBoundingClientRect();
-      const box = menu.getBoundingClientRect();      
-      menu.style.top = `${rect.bottom}px`;
+      const box = menu.getBoundingClientRect();
+      const vertical = window.innerHeight - rect.bottom < box.height ? rect.bottom-box.height : rect.bottom;
+      menu.style.top = `${vertical}px`;
       const horizontal = window.innerWidth - rect.left < box.width ? rect.right-box.width : rect.left;
       menu.style.left = `${horizontal}px`;
     }else{
@@ -91,7 +92,7 @@ function Editor() {
       menu.style.display = "none";
     };
   }
-
+  
   useEffect(() => {
     loadProject(editorRef);
     
@@ -103,10 +104,15 @@ function Editor() {
       });
       editor.addEventListener("selectstart", () => {
         editor.addEventListener("mouseup", handleStylesMenu)
+        handleStyleMenuClose()
       });
       return () => {
         editor.removeEventListener("keyup", () => {
           handleContentChange()
+          handleStyleMenuClose()
+        });
+        editor.removeEventListener("selectstart", () => {
+          editor.removeEventListener("mouseup", handleStylesMenu)
           handleStyleMenuClose()
         });
       };

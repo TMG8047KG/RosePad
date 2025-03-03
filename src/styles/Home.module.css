@@ -15,11 +15,14 @@
 .infoBox p{
     padding: 10px;
     margin: 0;
+    font-size: 3.8vmin;
+    color: rgb(201, 201, 201);
 }
 
 .title{
     margin: 0;
     padding: 0;
+    font-size: 6.8vmin;
 }
 
 .projects{
@@ -30,14 +33,15 @@
     background: rgb(53, 53, 53);
     border-radius: 15px 0px 0px 15px;
     box-shadow: rgb(32, 32, 32) 0px 1px 10px 1px;
+    color: gray;
 }
 
 .button{
     border: 0px;
     background: rgb(49, 49, 49);
-    padding: 10px;
+    padding: 10px 20px 10px 20px;
     margin: 5px;
-    border-radius: 10px;
+    border-radius: 15px;
     color: rgb(255, 188, 188);
     font-size: 15px;
     font-weight: 700;
@@ -55,8 +59,8 @@
     background: rgb(45, 45, 45);
     padding: 5px;
     width: 80%;
-    max-height: 16rem;
     border-radius: 15px;
+    transition: ease 0.3s;
 }
 
 .listField h2{
@@ -70,7 +74,8 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
     border-radius: 10px;
-    max-height: 13.4rem;
+    max-height: 8rem;
+    transition: ease 0.3s;
 }
 
 .noProjectsMessage {
@@ -92,17 +97,59 @@
 }
 
 .settings{
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 0;
     margin: 5px;
 }
 
-@media only screen and (max-height: 1080px) {
+@media only screen and (min-height: 300px) {
     .listField{
-        max-height: 50rem;
+        max-height: 15rem;
+    }
+    .list{
+        max-height: 8rem;
+    }
+}
+
+@media only screen and (min-height: 400px) {
+    .listField{
+        max-height: 16rem;
+    }
+    .list{
+        max-height: 13.4rem;
+    }
+}
+
+@media only screen and (min-height: 500px) {
+    .listField{
+        max-height: 24rem;
+    }
+    .list{
+        max-height: 21.4rem;
+    }
+}
+
+@media only screen and (min-height: 800px) {
+    .listField{
+        max-height: 34.8rem;
+    }
+    .list{
+        max-height: 32.2rem;
+    }
+}
+
+@media only screen and (min-height: 1000px) {
+    .listField{
+        max-height: 42.8rem;
     }
     .list{
         max-height: 40.2rem;
+    }
+}
+
+@media only screen and (min-height: 700px), only screen and (min-width: 1100px)  {
+    .button{
+        font-size: 24px;
     }
 }
