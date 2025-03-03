@@ -1,4 +1,4 @@
-use tauri::Manager;
+use tauri::{window::Color, Manager};
 
 #[tauri::command]
 pub async fn settings(app: tauri::AppHandle) {
@@ -12,6 +12,7 @@ pub async fn settings(app: tauri::AppHandle) {
     .title("RosePad Settings")
     .inner_size(400.0, 600.0)
     .min_inner_size(400.0, 500.0)
+    .background_color(Color(65, 65, 65, 255))
     .center()
     .focused(true)
     .decorations(false)
