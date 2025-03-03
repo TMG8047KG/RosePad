@@ -47,6 +47,12 @@ function App() {
     fetchProjects();
   }, []);
 
+  const handleProjectRename = async (oldName: string, newName: string, newPath: string) => {
+    setProjects(prevProjects => 
+      prevProjects.map(project => project.name === oldName ? {...project, name: newName, path: newPath} : project)
+    );
+  };
+
   const handleProjectDeletion = async (projectName: string) => {
     setProjects((prevProjects) =>
       prevProjects.filter((project) => project.name !== projectName)
@@ -75,7 +81,6 @@ function App() {
   //TODO: Figure out this to work with single instance
   const openedFromFile = async () => {
     if(!path){
-      console.log("shit is running");
       path = await pathFromOpenedFile(); //full path (aka with /file_name.extension)
       const exists = await projectExists(path);
       if(path){
@@ -119,7 +124,7 @@ function App() {
                     date={project.last_updated}
                     path={project.path}
                     onDelete={handleProjectDeletion}
-                  />
+                    onRename={handleProjectRename}/>
                 ))
               ) : (
                 <p className={style.noProjectsMessage}>There aren't any projects!</p>

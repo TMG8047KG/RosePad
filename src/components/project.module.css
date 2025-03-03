@@ -30,6 +30,7 @@
 .buttons{
     display: flex;
     align-items: center;
+    justify-content: end;
 }
 
 .project:hover{
@@ -60,6 +61,11 @@
     padding-left: 3px;
     min-width: 80%;
     color: rgb(140, 140, 140);
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .name + .data {
@@ -83,4 +89,10 @@
 
 .project:hover .delete:hover{
     color: rgb(119, 119, 119);
+}
+
+@media only screen and (max-height: 400px), only screen and (max-width: 650px)  {
+    .p{
+        font-size: 60%;
+    }
 }
