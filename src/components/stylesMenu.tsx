@@ -88,7 +88,7 @@ const StyleMenu: React.FC<styleMenuProps> = ({ editor }) => {
           </div>
           <div className={style.divider}></div>
           <div className={style.bottom}>
-            <select className={style.headers} onChange={(e) => applyHeading(e.target.value)}defaultValue="">
+            <select className={style.headers} onChange={(e) => applyHeading(e.target.value)}defaultValue="p">
               <option value="" disabled>Headers</option>
               <option value="h1">H1</option>
               <option value="h2">H2</option>
