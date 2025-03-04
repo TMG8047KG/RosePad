@@ -56,6 +56,7 @@
     font-weight: 700;
     transition: ease 0.3s;
     width: 100%;
+    margin: 0;
 }
 
 .button:hover{
