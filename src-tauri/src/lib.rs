@@ -1,6 +1,7 @@
 use std::env;
 
 use tauri::{Emitter, Manager};
+use tauri_plugin_updater::UpdaterExt;
 
 mod discord_rpc;
 mod settings;
@@ -18,6 +19,7 @@ async fn get_args() -> Vec<String> {
 pub fn run() {
     let _ = discord_rpc::connect_rpc();
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             let window = app.get_window("main").unwrap();
             window.show().unwrap();
@@ -38,6 +40,37 @@ pub fn run() {
             discord_rpc::clear_activity,
             settings::settings
         ])
+        .setup(|app| {
+            let handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+              update(handle).await.unwrap();
+            });
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+
+async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
+    if let Some(update) = app.updater()?.check().await? {
+      let mut downloaded = 0;
+  
+      // alternatively we could also call update.download() and update.install() separately
+      update
+        .download_and_install(
+          |chunk_length, content_length| {
+            downloaded += chunk_length;
+            println!("downloaded {downloaded} from {content_length:?}");
+          },
+          || {
+            println!("download finished");
+          },
+        )
+        .await?;
+  
+      println!("update installed");
+      app.restart();
+    }
+    Ok(())
 }

@@ -9,7 +9,7 @@ import Settings from "../Settings";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/" element={<App/>}/>
         <Route path="/editor/:file" element={<Editor/>}/>

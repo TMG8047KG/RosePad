@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "RosePad",
   "version": "0.0.8",
-  "identifier": "com.roseworld.RosePad",
+  "identifier": "com.roseworld.rosepad",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -68,6 +68,7 @@
     }
   },
   "bundle": {
+    "category": "Productivity",
     "active": true,
     "targets": "all",
     "icon": [
@@ -86,7 +87,7 @@
       }
     ],
     "publisher": "RoseWorld",
-    "license": "MIT",
+    "license": "GPL",
     "licenseFile": "../LICENSE",
     "windows": {
       "allowDowngrades": false,
@@ -97,6 +98,18 @@
       "nsis": {
         "installerIcon": "icons/icon.ico",
         "installMode": "both"
+      }
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFBMTEzRjYzOUMwOUExRgpSV1FmbXNBNTloT2hBVDA3RWhLL1FqWmY5NHlkVUNUVGw0NWcwUG9OZUM0ZUhOUzQrNitKQzB2dgo=",
+      "endpoints": [
+        "https://github.com/TMG8047KG/RosePad/releases/latest/download/latest.json"
+      ],
+      "windows":{
+        "installMode": "passive"
       }
     }
   }
