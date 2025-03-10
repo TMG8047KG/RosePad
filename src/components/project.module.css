@@ -74,6 +74,7 @@
 
 .delete{
     color: transparent;
+    background: transparent;
     border: 0;
     padding: 0;
     width: 1.5rem;
@@ -83,7 +84,7 @@
 }
 
 .project:hover .delete{
-    background: rgb(65, 44, 44);
+    background: transparent;
     color: rgb(75, 75, 75);
 }
 

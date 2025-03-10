@@ -11,13 +11,13 @@ A simple cross-platform text editor made for writing notes, letters, poems, and 
 
 ---
 ### Idea
-The idea behind this project is to combine the simplicity and style from the notepad and the text formatting functions of the word, while being able to handle all or most of the text file extensions in one app.
-The reason for this is because I got pissed at how I couldn't style my text in notepad and I then switched to word and word is just too cluttered and awful to work with, so here are we.
+The idea behind this project is to combine the simplicity and style from the Notepad and the text formatting functions of Microsoft Word, while being able to handle all or most of the text file extensions in one app.
+The reason for this is because I got pissed at how I couldn't style my text in Notepad and I then switched to Word, which is just too cluttered and awful to work with, so here are we.
 
 ---
 
 ### Supported Platforms
-All platforms that are tested and that you can download RosePad on them.
+All supported platforms and the app's working status on that platforms.
 
 | **Platforms** 	| **Supported** 	| **Tested** 	|
 |:-------------:	|:-------------:	|:----------:	|
@@ -26,8 +26,11 @@ All platforms that are tested and that you can download RosePad on them.
 |     MacOS     	|       ✅       	|      ❌     	|
 |    Android    	|       ❌       	|      ❌     	|
 |      IOS      	|       ❌       	|      ❌     	|
+> [!NOTE]
+> On some versions or distros of Linux you might need to do extra steps after you download it to get it to work.
+
 > [!CAUTION]
-> If you are using the application on one of the untested platforms there is a chance something unexpected to break or not work! <br>
+> If you are using RosePad on one of the untested platforms there is a chance something unexpected to happen and break or just not work! <br>
 > If that happens, please contact me or report the [issue](https://github.com/TMG8047KG/RosePad/issues)
 
 ---
@@ -36,16 +39,15 @@ All platforms that are tested and that you can download RosePad on them.
 > [!NOTE]
 > This app is developed using Tauri v2 in combination with React and Typescript.
 
-Firstly, you will need to [install `pnpm`](https://pnpm.io/installation) to be able to run and build the application. After you've downloaded everything you can clone the repo.
-After that, if you want to modify the code, you can open it in some IDE you like; if not, you can build it and run it entirely through the terminal.
-**In the terminal** you should run this (while being in the folder):
-1. `pnpm install`
-2. `pnpm tauri dev`
-<br>_To run it in Developer mode_
-3. `pnpm tauri build`
-<br>_To build it (Windows)_<br>
+Firstly, you will need to [install `pnpm`](https://pnpm.io/installation), [node.js](https://nodejs.org/en) and [rust](https://www.rust-lang.org/tools/install) to be able to run and build the application. After you've downloaded everything you can clone the repo, and if you want you can modify the code, in any IDE you like; You can build it and run it entirely through the IDE terminal or an external one.
 
-After you've built it you should get an .msi installer in the target directory. From which you can download it :3
+**In the terminal** you should run this (while being in the folder):
+1. `pnpm install` 
+2. Build/Run the app
+  - `pnpm tauri dev`<br>_To run it in Developer mode_
+  - `pnpm tauri build`<br>_To build it_<br>
+
+After you've built it you should get an .msi and .exe installer in the target directory. From which you can download it :3
 
 
 

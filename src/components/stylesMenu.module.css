@@ -59,6 +59,7 @@
 .button{
     border: 0px;
     padding: 0px;
+    margin: 0;
     background: rgb(49, 49, 49);
     border-radius: 10px;
     color: rgb(255, 188, 188);
@@ -67,6 +68,10 @@
     height: 2rem;
     width: 2rem;
     box-shadow: rgb(32, 32, 32) 0px 1px 3px 0.1px;
+}
+
+.button + .button{
+    margin-left: 5px;
 }
 
 .button:hover{
