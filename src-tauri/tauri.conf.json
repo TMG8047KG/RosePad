@@ -98,9 +98,13 @@
       "nsis": {
         "installerIcon": "icons/icon.ico",
         "installMode": "both"
+      },
+      "webviewInstallMode": {
+        "silent": true,
+        "type": "offlineInstaller"
       }
     },
-    "createUpdaterArtifacts": true
+    "createUpdaterArtifacts": false
   },
   "plugins": {
     "updater": {
