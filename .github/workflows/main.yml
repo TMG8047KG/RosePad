@@ -45,7 +45,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: v__VERSION__
+          tagName: test
           releaseName: 'RosePad v__VERSION__'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
@@ -56,6 +56,6 @@ jobs:
         if: matrix.platform == 'windows-latest'
         shell: pwsh
         run: |
-          $oldPath = "target\release\bundle\nsis\RosePad v__VERSION__.msi"
-          $newPath = "target\release\bundle\nsis\RosePad_Windows v__VERSION__.msi"
+          $oldPath = 'D:\a\RosePad\RosePad\src-tauri\target\release\bundle\msi\RosePad_v__VERSION__.msi'
+          $newPath = 'D:\a\RosePad\RosePad\src-tauri\target\release\bundle\msi\RosePad_Windows_v__VERSION__.msi'
           Move-Item -Path $oldPath -Destination $newPath
