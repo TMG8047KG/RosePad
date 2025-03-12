@@ -1,4 +1,4 @@
-name: "RosePad Installers"
+name: "RosePad MacOS installer"
 
 on:
   workflow_dispatch:
