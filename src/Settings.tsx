@@ -11,10 +11,17 @@ import { getVersion } from '@tauri-apps/api/app';
 function Settings() {
     const [dir, setDir] = useState("");
     const [version, setVersion] = useState<string>();
+    const [autoSave, setAutoSaveActive] = useState(false);
 
     // const handleColorChange = (color: string) => {
     //     emit("backgroundColor", color)
     // };
+
+    const handleAutoSaveChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = event.target.checked;
+        setAutoSaveActive(checked);
+        localStorage.setItem("autoSave", checked.toString());
+    }
 
     const tooltipAC = () => {
         var tooltip = document.getElementById("discordToolTip");
@@ -39,6 +46,11 @@ function Settings() {
             setVersion(`${await getVersion()}`);
         };
         handleVersion();
+        const loadAutoSave = () => {
+            const savedAutoSave = localStorage.getItem("autoSave");
+            setAutoSaveActive(savedAutoSave === "true")
+        }
+        loadAutoSave();
     }, []);
 
     const handleDirChange = async () =>{
@@ -55,6 +67,16 @@ function Settings() {
                     <div className={style.pathInput}>
                         <p>{dir}</p>
                         <button className={style.button} onClick={ () => handleDirChange() }>Select</button>
+                    </div>
+                </div>
+                <div>
+                    <h3 className={style.heads}>Editor Preferences</h3>
+                    <div className={style.option}>
+                        <p>Auto-Save</p>
+                        <label className={style.switch}>
+                            <input type="checkbox" checked={autoSave} onChange={handleAutoSaveChange}/>
+                            <span className={style.slider}></span>
+                        </label>
                     </div>
                 </div>
                 <div className={style.socials}>
@@ -77,6 +99,7 @@ function Settings() {
                     <h3 className={style.heads}>Version</h3>
                     <p>{ version }</p>
                 </div>
+                
             </div>
         </main> 
     )

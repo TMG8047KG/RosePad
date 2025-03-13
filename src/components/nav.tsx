@@ -6,6 +6,10 @@ import { Menu } from '@tauri-apps/api/menu';
 import { useLocation } from 'react-router-dom';
 import SettingsButton from "./buttonSettings"
 
+interface NavBar{
+    isSaved?: boolean;
+}
+
 // Menu experiment
 const menuPromise = Menu.new({
     id: "test",
@@ -22,7 +26,7 @@ async function clickHandler(event: React.MouseEvent) {
     menu.popup();
 }
 
-function NavBar() {
+function NavBar({isSaved = false}) {
     const handleClose = async () => {
         const currentWindow = await Window.getCurrent();
         currentWindow.close();
@@ -54,6 +58,7 @@ function NavBar() {
                 <div className='title' data-tauri-drag-region >RosePad</div>
                 
                 {inEditor ? <div className='projectName' data-tauri-drag-region>{sessionStorage.getItem("projectName")}</div> : ""}
+                {inEditor ? isSaved ? "" : <div className='projectDot' data-tauri-drag-region>•</div> : ""}
             </div>
             <div className='titleBarButtons' data-tauri-drag-region>
                 <div className='settings'>
