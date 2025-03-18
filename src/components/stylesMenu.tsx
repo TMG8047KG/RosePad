@@ -11,31 +11,41 @@ const StyleMenu: React.FC<styleMenuProps> = ({ editor }) => {
     const handleFormat = (command: string) => {
         if (editor.current) {
           document.execCommand(command, false, '');
+          notifyChange();
         }
       };
     
       const handleColorChange = (color: string) => {
         if (editor.current) {
           document.execCommand('foreColor', false, color);
+          notifyChange();
         }
       };
 
       const applyHeading = (level: string) => {
         if (editor.current) {
           document.execCommand('formatBlock', false, level);
+          notifyChange();
         }
       };
       
       const handleAlignment = (alignment: string) => {
         if (editor.current) {
           document.execCommand(alignment, false, '');
+          notifyChange();
         }
       };
 
       const handleFontSize = (size: string) => {
         if (editor.current) {
           document.execCommand('fontSize', false, size);
+          notifyChange();
         }
+      };
+
+      const notifyChange = () => {
+        const event = new Event('stylechange');
+        editor.current?.dispatchEvent(event);
       };
 
     return(

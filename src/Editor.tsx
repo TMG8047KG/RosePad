@@ -122,6 +122,7 @@ function Editor() {
     loadProject(editorRef);
     
     const editor = editorRef.current;
+
     if (editor) {
       editor.addEventListener("keyup", () => {
         handleContentChange();
@@ -131,6 +132,11 @@ function Editor() {
         editor.addEventListener("mouseup", handleStylesMenu);
         handleStyleMenuClose();
       });
+
+      editor.addEventListener("stylechange", handleContentChange);
+      
+      window.addEventListener("storage", handleSaving);
+
       return () => {
         editor.removeEventListener("keyup", () => {
           handleContentChange();
@@ -140,6 +146,8 @@ function Editor() {
           editor.removeEventListener("mouseup", handleStylesMenu);
           handleStyleMenuClose();
         });
+        editor.removeEventListener("stylechange", handleContentChange);
+        window.removeEventListener("storage", handleSaving)
       };
     }
   }, [editorRef]);
