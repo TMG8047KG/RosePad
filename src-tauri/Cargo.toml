@@ -1,6 +1,6 @@
 [package]
 name = "rosepad"
-version = "0.0.8"
+version = "0.1.0"
 description = "Simple and Beatiful Text Editor"
 authors = ["Alexsandar Goranov"]
 edition = "2021"
