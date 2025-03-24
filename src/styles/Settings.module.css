@@ -7,6 +7,10 @@
     margin-left: 10px;
 }
 
+.heads + div{
+    margin-bottom: 5px;
+}
+
 .container{
     padding: 5px;
 }
@@ -17,8 +21,9 @@
     align-items: center;
     background: rgb(51, 51, 51);
     padding: 5px;
-    border-radius: 20px;
+    border-radius: 25px;
     color: gray;
+    height: 30px;
 }
 
 .pathInput p {
@@ -32,8 +37,8 @@
 .pathInput button{
     border: 0px;
     background: rgb(39, 39, 39);
-    padding: 5px 10px 5px 10px;
-    border-radius: 15px;
+    padding: 7px 10px 7px 10px;
+    border-radius: 25px;
     color: rgb(255, 188, 188);
     font-size: 15px;
     font-weight: 600;
@@ -64,10 +69,6 @@
     color: rgb(236, 157, 157);
 }
 
-.container div + *{
-    margin-top: 5px;
-}
-
 .version{
     margin: 0;
     display: flex;
@@ -83,16 +84,18 @@
 .links{
     display: flex;
     align-items: center;
-    padding: 0px 5px 0px 5px;
-    gap: 5px;
+    padding: 5px;
+    background: rgb(51, 51, 51);
+    border-radius: 25px;
 }
 
 .link{
+    display: flex;
     position: relative;
-    display: inline;
     width: 30px;
     color: rgb(255, 188, 188);
     transition: ease 0.3s;
+    justify-self: center;
 }
 
 .link:hover{
@@ -135,9 +138,8 @@
     position: relative;
     display: inline-block;
     width: 60px;
-    height: 32px;
+    height: 30px;
     justify-self: end;
-    margin-right: 5px;
 }
 
 .switch input { 
@@ -170,7 +172,7 @@
     height: 24px;
     width: 24px;
     left: 4px;
-    bottom: 4px;
+    bottom: 3px;
     background-color: rgb(255, 188, 188);
     -webkit-transition: .4s;
     transition: .4s;
@@ -190,6 +192,12 @@ input:checked + .slider:before {
 .option{
     display: grid;
     grid-template-columns: auto auto;
+    background: rgb(51, 51, 51);
+    align-content: center;
+    align-items: center;
+    padding: 5px;
+    border-radius: 25px;
+    height: 30px;
 }
 
 .option p {
@@ -198,3 +206,4 @@ input:checked + .slider:before {
     padding: 5px;
     font-size: 18px;
 }
+
