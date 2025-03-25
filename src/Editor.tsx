@@ -39,9 +39,6 @@ function Editor() {
         field.innerText = `Symbols\n${text.length}`;
       }
 
-      console.log("hui " + initalContent.current);
-      console.log("patka " + editorRef.current.innerHTML);
-
       if(initalContent.current !== editorRef.current.innerHTML){
         sessionStorage.setItem("fileStatus", "Unsaved");
         setSaved(false);
@@ -78,6 +75,7 @@ function Editor() {
       }else{
         text = document.getElementById("editor")?.innerText as string;
       }
+      sessionStorage.setItem("path", path);
       await updateProjectPath(oldPath, path);
       await saveProject(text, path); 
       setSaved(true);

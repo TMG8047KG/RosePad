@@ -56,7 +56,7 @@
     gap: 5px;
 }
 
-.button{
+.button {
     border: 0px;
     padding: 0px;
     margin: 0;
@@ -68,13 +68,19 @@
     height: 2rem;
     width: 2rem;
     box-shadow: rgb(32, 32, 32) 0px 1px 3px 0.1px;
+    transition: background-color 0.2s ease;
 }
 
-.button + .button{
+.button.active {
+    background: rgb(82, 55, 55);
+    color: rgb(236, 157, 157);
+}
+
+.button + .button {
     margin-left: 5px;
 }
 
-.button:hover{
+.button:hover {
     background: rgb(65, 44, 44);
     color: rgb(236, 157, 157);
 }
