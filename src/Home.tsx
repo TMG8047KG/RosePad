@@ -5,7 +5,6 @@ import Prompt from './components/prompt';
 import Project from './components/project';
 import SettingsButton from "./components/buttonSettings"
 
-
 import { create, readTextFile, BaseDirectory} from '@tauri-apps/plugin-fs';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -22,7 +21,6 @@ listen("backgroundColor", (event) => {
   const background = document.getElementById("con");
   if(background) background.style.background = payload as string;
 })
-
 
 async function createProject(dir:string, name:string) { 
   const filePath = `${dir}\\${name}.rpad`;
@@ -45,6 +43,20 @@ function App() {
       setProjects(fetchedProjects);
     };
     fetchProjects();
+
+    const unlisten = listen('file-open', async (event) => {
+      const args = event.payload as string[];
+      if (args.length > 1) {
+        const openedPath = args[1];
+        await handleFileOpen(openedPath);
+      }
+    });
+
+    openedFromFile();
+
+    return () => {
+      unlisten.then(f => f());
+    };
   }, []);
 
   const handleProjectRename = async (oldName: string, newName: string, newPath: string) => {
@@ -77,29 +89,33 @@ function App() {
     navigator(`/editor/${name}`);
   };
 
+  const handleFileOpen = async (filePath: string) => {
+    const exists = await projectExists(filePath);
+    if(filePath){
+      const splitPath = filePath.split(/[/\\]/g);
+      let name = splitPath[splitPath.length-1];
+      const project = name.split(".");
+      sessionStorage.setItem("path", filePath);
+      if(project[1] == "rpad"){
+        name = project[0] //file_name
+      }
+      sessionStorage.setItem("name", name); //file_name.extension
+      sessionStorage.setItem("projectName", name); 
+      if(!exists) await addProject(name, filePath);
+      await rpc_project(name, filePath);
+      navigator(`/editor/${name}`);
+    }
+  }
 
-  //TODO: Figure out this to work with single instance
   const openedFromFile = async () => {
     if(!path){
       path = await pathFromOpenedFile(); //full path (aka with /file_name.extension)
-      const exists = await projectExists(path);
-      if(path){
-        const splitPath = path.split(/[/\\]/g);
-        let name = splitPath[splitPath.length-1];
-        const project = name.split(".");
-        sessionStorage.setItem("path", path);
-        if(project[1] == "rpad"){
-          name = project[0] //file_name
-        }
-        sessionStorage.setItem("name", name); //file_name.extension
-        sessionStorage.setItem("projectName", name); 
-        if(!exists) await addProject(name, path);
-        await rpc_project(name, path);
-        navigator(`/editor/${name}`);
+      if(path) {
+        await handleFileOpen(path);
       }
     }
   }
-  openedFromFile();
+
   rpc_main_menu();
 
   return (
@@ -136,7 +152,6 @@ function App() {
         <div className={style.settings}>
           <SettingsButton/>
         </div>
-        
       </div>
     </main>
   )
