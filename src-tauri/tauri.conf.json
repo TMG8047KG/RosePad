@@ -104,7 +104,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFBMTEzRjYzOUMwOUExRgpSV1FmbXNBNTloT2hBVDA3RWhLL1FqWmY5NHlkVUNUVGw0NWcwUG9OZUM0ZUhOUzQrNitKQzB2dgo=",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkyOEEzOTZGMzdDMjk2RTAKUldUZ2xzSTNiem1La2hCOVJkOThvamlEZHBYeW8zYUpFUUxoNmxTTER4SmFGcC9tUC8xS0E5OVoK",
       "endpoints": [
         "https://github.com/TMG8047KG/RosePad/releases/latest/download/latest.json"
       ],

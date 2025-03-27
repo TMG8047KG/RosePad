@@ -72,7 +72,17 @@ export async function updateProjectPath(path: string|URL, newPath: string|URL) {
     const rawJson = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
     let json = JSON.parse(rawJson);
     let project = json.projects.find((projectPath: { path: string; }) => projectPath.path === path);
+    await remove(path);
     project.path = newPath;
+    let updatedJson = JSON.stringify(json, null, 2);
+    await writeTextFile(settingsFile, updatedJson, { baseDir: BaseDirectory.AppConfig });
+}
+
+export async function updateProjectName(path: string|URL, name: string) {
+    const rawJson = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
+    let json = JSON.parse(rawJson);
+    let project = json.projects.find((projectPath: { path: string; }) => projectPath.path === path);
+    project.name = name;
     let updatedJson = JSON.stringify(json, null, 2);
     await writeTextFile(settingsFile, updatedJson, { baseDir: BaseDirectory.AppConfig });
 }

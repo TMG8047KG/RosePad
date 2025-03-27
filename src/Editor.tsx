@@ -5,7 +5,7 @@ import style from './styles/Editor.module.css'
 
 import { useNavigate } from "react-router-dom"
 import { useEffect, useRef, useState } from "react"
-import { loadFile, saveProject, updateProjectPath } from "./scripts/projectHandler"
+import { loadFile, saveProject, updateProjectName, updateProjectPath } from "./scripts/projectHandler"
 import { save } from "@tauri-apps/plugin-dialog"
 
 function debounce(func: Function, delay: number) {
@@ -69,14 +69,21 @@ function Editor() {
     
     if(path){
       const extension = path.split(".");
+      const pathNoExtension = extension[0].split(/[\\\/]/g);
       let text = "";
+      let name = "";
       if(extension[1] == "rpad"){
         text = document.getElementById("editor")?.innerHTML as string;
+        name = pathNoExtension[pathNoExtension.length-1];
       }else{
         text = document.getElementById("editor")?.innerText as string;
+        name = `${pathNoExtension[pathNoExtension.length-1]}.${extension[1]}`;
       }
       sessionStorage.setItem("path", path);
+      sessionStorage.setItem("projectName", name);
+      window.dispatchEvent(new Event('storage'));
       await updateProjectPath(oldPath, path);
+      await updateProjectName(path, name);
       await saveProject(text, path); 
       setSaved(true);
     } 
@@ -126,6 +133,12 @@ function Editor() {
 
     //TODO: Paste as plain text is not being detected as a change. Needs fixin
     if (editor) {
+      const handleTabKey = (e: KeyboardEvent) => {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+        }
+      };
+
       editor.addEventListener("keyup", () => {
         handleContentChange();
         handleStyleMenuClose();
@@ -134,7 +147,7 @@ function Editor() {
         editor.addEventListener("mouseup", handleStylesMenu);
         handleStyleMenuClose();
       });
-
+      editor.addEventListener("keydown", handleTabKey);
       editor.addEventListener("stylechange", handleContentChange);
       window.addEventListener("paste", debounce(handleContentChange, 1));
       
@@ -149,6 +162,7 @@ function Editor() {
           editor.removeEventListener("mouseup", handleStylesMenu);
           handleStyleMenuClose();
         });
+        editor.removeEventListener("keydown", handleTabKey);
         editor.removeEventListener("stylechange", handleContentChange);
         window.removeEventListener("paste", debounce(handleContentChange, 1));
         window.removeEventListener("storage", handleSaving)
@@ -168,7 +182,7 @@ function Editor() {
           <div id="characters" className={style.textData}>Symbols<br></br>{characters}</div>
         </div>
         <div className={style.container}>
-          <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning spellCheck="false"></div>
+          <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning spellCheck="false" tabIndex={-1}></div>
         </div>
       </div>
     </main>

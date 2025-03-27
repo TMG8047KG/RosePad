@@ -5,6 +5,7 @@ import { Menu } from '@tauri-apps/api/menu';
 
 import { useLocation } from 'react-router-dom';
 import SettingsButton from "./buttonSettings"
+import { useEffect, useState } from 'react';
 
 interface NavBar{
     isSaved?: boolean;
@@ -27,6 +28,8 @@ async function clickHandler(event: React.MouseEvent) {
 }
 
 function NavBar({isSaved = false}) {
+    const [projectName, setProjectName] = useState(sessionStorage.getItem("projectName"));
+
     const handleClose = async () => {
         const currentWindow = await Window.getCurrent();
         currentWindow.close();
@@ -49,6 +52,18 @@ function NavBar({isSaved = false}) {
         currentWindow.minimize();
       };
       
+      
+
+      useEffect(() => {
+        const handleProjectNameChange = () => {
+            setProjectName(sessionStorage.getItem("projectName"));
+        }
+        window.addEventListener("storage", handleProjectNameChange)
+        return () => {
+            window.removeEventListener("storage", handleProjectNameChange);
+        }
+      }, [])
+
       const inEditor = useLocation().pathname.match("/editor/");
     
     return(
@@ -57,7 +72,7 @@ function NavBar({isSaved = false}) {
                 <img src="/images/rose.svg" className="logo" data-tauri-drag-region/>
                 <div className='title' data-tauri-drag-region >RosePad</div>
                 
-                {inEditor ? <div className='projectName' data-tauri-drag-region>{sessionStorage.getItem("projectName")}</div> : ""}
+                {inEditor ? <div className='projectName' data-tauri-drag-region>{projectName}</div> : ""}
                 {inEditor ? isSaved ? "" : <div className='projectDot' data-tauri-drag-region>•</div> : ""}
             </div>
             <div className='titleBarButtons' data-tauri-drag-region>
