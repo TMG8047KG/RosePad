@@ -6,6 +6,12 @@
 <br>
 A simple cross-platform text editor made for writing notes, letters, poems, and such with ease with a beautiful UI.
 
+<a href="https://apps.microsoft.com/detail/9NLLN9DJM147?mode=direct">
+	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/>
+</a>
+
+###
+
 > [!NOTE]
 > This is still in development and everything you see is a subject to change and it can change at any time.
 
