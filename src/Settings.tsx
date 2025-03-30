@@ -6,12 +6,15 @@ import { selectDir, settingsFile } from './scripts/projectHandler';
 import { useEffect, useState } from 'react';
 import NavSettings from './components/navSettings';
 import { getVersion } from '@tauri-apps/api/app';
+import { useAsyncError } from 'react-router-dom';
 
 
 function Settings() {
     const [dir, setDir] = useState("");
     const [version, setVersion] = useState<string>();
     const [autoSave, setAutoSaveActive] = useState(true);
+    const [autoSaveInterval, setAutoSaveInterval] = useState(2);
+    const [spellcheck, setSpellcheckActive] = useState(true);
 
     // const handleColorChange = (color: string) => {
     //     emit("backgroundColor", color)
@@ -21,6 +24,20 @@ function Settings() {
         const checked = event.target.checked;
         setAutoSaveActive(checked);
         localStorage.setItem("autoSave", checked.toString());
+    }
+
+    const handleAutoSaveIntervalChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
+        let value = parseInt(event.target.value);
+        if(value < 1) value = 1;
+        if(value > 60) value = 60;
+        setAutoSaveInterval(value);
+        localStorage.setItem("autoSaveInterval", value.toString());
+    }
+
+    const handleSpellcheck = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const checked = event.target.checked;
+        setSpellcheckActive(checked);
+        localStorage.setItem("spellcheck", checked.toString());
     }
 
     const tooltipAC = () => {
@@ -51,12 +68,23 @@ function Settings() {
             setAutoSaveActive(savedAutoSave === "true")
         }
         loadAutoSave();
+        const loadAutoSaveInterval = () => {
+            const value = localStorage.getItem("autoSaveInterval");
+            if(value) setAutoSaveInterval(parseInt(value));
+        }
+        loadAutoSaveInterval();
+        const loadSpellcheck = () => {
+            const savedSpellcheck = localStorage.getItem("spellcheck");
+            setSpellcheckActive(savedSpellcheck === "true")
+        }
+        loadSpellcheck();
     }, []);
 
     const handleDirChange = async () =>{
         const newDir = await selectDir()
         if(newDir) setDir(newDir as string);
     }
+
 
     return (
         <main>
@@ -75,6 +103,13 @@ function Settings() {
                         <p>Auto-Save</p>
                         <label className={style.switch}>
                             <input type="checkbox" checked={autoSave} onChange={handleAutoSaveChange}/>
+                            <span className={style.slider}></span>
+                        </label>
+                        <p>Auto-Save interval</p>
+                        <input className={style.inputNumber} type="number" min={1} max={60} value={autoSaveInterval} onChange={handleAutoSaveIntervalChange}/>
+                        <p>Spellcheck (Built-in)</p>
+                        <label className={style.switch}>
+                            <input type="checkbox" checked={spellcheck} onChange={handleSpellcheck}/>
                             <span className={style.slider}></span>
                         </label>
                     </div>

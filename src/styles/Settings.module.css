@@ -5,6 +5,7 @@
     padding: 5px;
     margin: 0;
     margin-left: 10px;
+    font-size: 1.20em;
 }
 
 .heads + div{
@@ -197,13 +198,41 @@ input:checked + .slider:before {
     align-items: center;
     padding: 5px;
     border-radius: 25px;
-    height: 30px;
+    row-gap: 5px;
 }
 
 .option p {
     color: rgb(255, 188, 188);
     align-self: center;
     padding: 5px;
-    font-size: 18px;
+    font-size: 1em;
+}
+
+.switch + .option p {
+    margin-top: 5px;
+}
+
+.inputNumber{
+    justify-self: end;
+    display: flex;
+    align-items: center;
+    background: rgb(51, 51, 51);
+    border-radius: 25px;
+    padding-left: 10px;
+    border: 0;
+    color: gray;
+    font-size: 16px;
+    font-weight: 700;
+    height: 30px;
+    width: 50px;
+    box-shadow: rgb(32, 32, 32) 0px 2px 5px 0.5px;
+}
+
+.inputNumber::-webkit-inner-spin-button{
+    -webkit-appearance: none;
+}
+
+.inputNumber:focus{
+    outline: none;
 }
 

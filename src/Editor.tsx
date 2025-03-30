@@ -21,14 +21,21 @@ function Editor() {
   const editorRef = useRef<HTMLDivElement>(null);
   const [characters, setCharacters] = useState(0);
   const [isSaved, setSaved] = useState(true);
+  const [hasSpellcheck, setSpellcheck] = useState(true);
   const initalContent = useRef<string>("");
+
+  const getTime = () => {
+    let time = localStorage.getItem("autoSaveInterval")
+    if(time) return parseInt(time)
+    return 2;
+  }
 
   const debouncedAutoSave = useRef(
     debounce(async () => {
       handleSaving()
       
       sessionStorage.setItem("fileStatus", "Saved");
-    }, 2000)
+    }, getTime() * 1000)
   ).current;
 
   const handleContentChange = () => {
@@ -61,6 +68,14 @@ function Editor() {
         {
           name: 'RosePad Files',
           extensions: ['rpad', 'txt'],
+        },
+        {
+          name: 'RosePad Project',
+          extensions: ['rpad']
+        },
+        {
+          name: 'Supported Files',
+          extensions: ['txt']
         }
       ],
       defaultPath: oldPath 
@@ -139,6 +154,11 @@ function Editor() {
         }
       };
 
+      const handleStorageChange = () => {
+        handleSaving(); 
+        localStorage.getItem("Spellcheck") === "true" ? setSpellcheck(true) : setSpellcheck(false);
+      }
+
       editor.addEventListener("keyup", () => {
         handleContentChange();
         handleStyleMenuClose();
@@ -151,7 +171,7 @@ function Editor() {
       editor.addEventListener("stylechange", handleContentChange);
       window.addEventListener("paste", debounce(handleContentChange, 1));
       
-      window.addEventListener("storage", handleSaving);
+      window.addEventListener("storage", handleStorageChange);
 
       return () => {
         editor.removeEventListener("keyup", () => {
@@ -165,7 +185,7 @@ function Editor() {
         editor.removeEventListener("keydown", handleTabKey);
         editor.removeEventListener("stylechange", handleContentChange);
         window.removeEventListener("paste", debounce(handleContentChange, 1));
-        window.removeEventListener("storage", handleSaving)
+        window.removeEventListener("storage", handleStorageChange)
       };
     }
   }, [editorRef]);
@@ -182,7 +202,7 @@ function Editor() {
           <div id="characters" className={style.textData}>Symbols<br></br>{characters}</div>
         </div>
         <div className={style.container}>
-          <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning spellCheck="false" tabIndex={-1}></div>
+          <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning spellCheck={hasSpellcheck} tabIndex={-1}></div>
         </div>
       </div>
     </main>
