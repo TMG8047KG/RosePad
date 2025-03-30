@@ -11,6 +11,9 @@ import { useEffect, useState } from 'react';
 import { addProject, getProjectsOrdered, pathFromOpenedFile, projectExists, selectDir, settings, settingsFile } from './scripts/projectHandler';
 import { rpc_main_menu, rpc_project } from './scripts/discord_rpc';
 import { listen } from '@tauri-apps/api/event';
+import { open } from '@tauri-apps/plugin-dialog';
+import { documentDir } from '@tauri-apps/api/path';
+
 
 let path = "";
 
@@ -107,6 +110,28 @@ function App() {
     }
   }
 
+  const importProject = async () => {
+    const path = await open({
+      multiple: false,
+      directory: false,
+      title: 'Select a project',
+      filters: [{
+        name: 'RosePad Files',
+        extensions: ['rpad', 'txt']
+      },
+      {
+        name: 'RosePad Project',
+        extensions: ['rpad']
+      },
+      {
+        name: 'Supported Files',
+        extensions: ['txt']
+      }],
+      defaultPath: await documentDir(),
+    });
+    if(path) handleFileOpen(path);
+  }
+
   const openedFromFile = async () => {
     if(!path){
       path = await pathFromOpenedFile(); //full path (aka with /file_name.extension)
@@ -126,7 +151,14 @@ function App() {
         <div className={style.infoBox}>
           <h1 className={style.title}>RosePad</h1>
           <p>A simple and beatiful way to write notes, letters, poems and such.</p>
-          <button className={style.button} onClick={ ()=> setIsModalOpen(true) }>Create Project</button>
+          <div className={style.buttons}>
+            <button className={style.button} onClick={ ()=> setIsModalOpen(true) }>Create Project</button>
+            <button className={style.import} onClick={ ()=> importProject() }>
+              <svg aria-hidden="true" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 12h14m-7 7V5"/>
+              </svg>
+            </button>
+          </div>
         </div>
         <div className={style.projects}>
           <div className={style.listField}>

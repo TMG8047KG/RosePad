@@ -5,6 +5,7 @@ import { rpc_project } from '../scripts/discord_rpc';
 import { useState } from 'react';
 import { Menu } from '@tauri-apps/api/menu';
 import { BaseDirectory, readTextFile, rename, writeTextFile } from '@tauri-apps/plugin-fs';
+import { confirm } from '@tauri-apps/plugin-dialog';
 import Modal from './modal';
 
 function Project({name, date, path, onDelete, onRename }: {name: string; date: string; path: string; onDelete: (name: string) => void; onRename: (name: string, newName: string, newPath: string) => void}) {
@@ -57,9 +58,17 @@ function Project({name, date, path, onDelete, onRename }: {name: string; date: s
         setIsModalOpen(false);
     }
 
-    const handleDeletion = () => {
-        deleteProject(name);
-        onDelete(name);
+    const handleDeletion = async () => {
+        const confirmation = await confirm(
+            `Are you sure you want to delete ${name}?`,
+            {
+                title: name, kind: 'warning'
+            }
+        );
+        if(confirmation){
+            deleteProject(name);
+            onDelete(name);
+        }  
     };
 
     return(
