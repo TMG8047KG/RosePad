@@ -6,8 +6,6 @@ import { selectDir, settingsFile } from './scripts/projectHandler';
 import { useEffect, useState } from 'react';
 import NavSettings from './components/navSettings';
 import { getVersion } from '@tauri-apps/api/app';
-import { useAsyncError } from 'react-router-dom';
-
 
 function Settings() {
     const [dir, setDir] = useState("");
