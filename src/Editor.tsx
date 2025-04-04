@@ -146,7 +146,6 @@ function Editor() {
     
     const editor = editorRef.current;
 
-    //TODO: Paste as plain text is not being detected as a change. Needs fixin
     if (editor) {
       const handleTabKey = (e: KeyboardEvent) => {
         if (e.key === 'Tab') {

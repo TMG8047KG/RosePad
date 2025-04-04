@@ -197,7 +197,7 @@ input:checked + .slider:before {
     align-content: center;
     align-items: center;
     padding: 5px;
-    border-radius: 25px;
+    border-radius: 20px;
     row-gap: 5px;
 }
 
@@ -236,3 +236,14 @@ input:checked + .slider:before {
     outline: none;
 }
 
+.report{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    padding: 10px;
+    color: gray;
+}
+
+.report:hover{
+    color: rgb(99, 99, 99);
+}
