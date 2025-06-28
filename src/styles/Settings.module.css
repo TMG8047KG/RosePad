@@ -94,6 +94,7 @@
     display: flex;
     position: relative;
     width: 30px;
+    height: 30px;
     color: rgb(255, 188, 188);
     transition: ease 0.3s;
     justify-self: center;
