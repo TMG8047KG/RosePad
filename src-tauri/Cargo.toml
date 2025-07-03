@@ -3,6 +3,7 @@ name = "rosepad"
 version = "0.1.1"
 description = "Simple and Beatiful Text Editor"
 authors = ["Alexsandar Goranov"]
+license = "GNU GPL-3"
 edition = "2021"
 repository = "https://github.com/TMG8047KG/RosePad"
 
@@ -26,6 +27,7 @@ tauri-plugin-fs = "2.2.0"
 tauri-plugin-dialog = "2.2.0"
 discord-ipc-rp = "0.1.1"
 lazy_static = "1.4"
+tauri-plugin-os = "2"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"

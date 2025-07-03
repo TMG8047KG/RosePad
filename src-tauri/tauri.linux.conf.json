@@ -24,7 +24,8 @@
         "focus": true,
         "backgroundColor": "#414141"
       }
-    ]
+    ],
+    "enableGTKAppId": true
   },
   "bundle": {
     "category": "Productivity",
@@ -51,17 +52,6 @@
     "publisher": "TMG8047KG",
     "license": "GNU GPL-3",
     "licenseFile": "../LICENSE",
-    "windows": {
-      "allowDowngrades": false,
-      "wix": {
-        "bannerPath": "../public/images/Banner.bmp",
-        "dialogImagePath": "../public/images/dialog.bmp"
-      },
-      "nsis": {
-        "installerIcon": "icons/icon.ico",
-        "installMode": "both"
-      }
-    },
     "createUpdaterArtifacts": true
   },
   "plugins": {
@@ -69,10 +59,7 @@
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZEQUM2RDlCNENFMjJFODcKUldTSEx1Sk1tMjJzL1c3K2VIK2JZdThYZ3c0OXhFRjBnU1BJZnFHY3luMXNvcHgzNGZMU2NlUUUK",
       "endpoints": [
         "https://github.com/TMG8047KG/RosePad/releases/latest/download/latest.json"
-      ],
-      "windows":{
-        "installMode": "passive"
-      }
+      ]
     }
   }
 }

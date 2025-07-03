@@ -132,6 +132,7 @@ function Settings() {
                     <h3 className={style.heads}>Version</h3>
                     <p>{ version }</p>
                 </div>
+                {}
                 <div className={style.report} onClick={() => window.open("https://github.com/TMG8047KG/RosePad/issues")}>
                     Report a bug!
                 </div>

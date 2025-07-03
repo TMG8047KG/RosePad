@@ -6,9 +6,11 @@
     "linux"
   ],
   "windows": [
-    "main"
+    "*"
   ],
   "permissions": [
-    "updater:default"
+    "updater:default",
+    "dialog:default",
+    "dialog:allow-open"
   ]
 }

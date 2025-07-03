@@ -21,8 +21,9 @@
 .titleBarButtons{
     display: inline-flex;
     align-items: center;
-    margin-right: 5px;
+    margin-right: 4px;
     height: 100%;
+    gap: 5px;
 }
 
 .titleBarButtons button{
@@ -33,6 +34,7 @@
     padding: 0;
     width: 24px;
     height: 24px;
+    margin: 5px 0;
     color: rgb(37, 37, 37);
 }
 
@@ -71,7 +73,6 @@
 }
 
 .settings{
-    margin-right: 5px;
     padding-right: 5px;
     border-right: solid rgba(37, 37, 37, 0.25) 2px;
 }
