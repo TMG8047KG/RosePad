@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import style from './project.module.css'
+import style from './styles/project.module.css'
 import { deleteProject, settingsFile } from '../scripts/projectHandler';
 import { rpc_project } from '../scripts/discord_rpc';
 import { useState } from 'react';
@@ -80,7 +80,7 @@ function Project({name, date, path, onDelete, onRename }: {name: string; date: s
                 <p className={style.p}><strong>Last Updated:</strong><br></br>{date}</p>
             </div>
             <div className={style.buttons}>
-                <button className={style.delete} onClick={handleOptionsMenu}>
+                <button className={style.options} onClick={handleOptionsMenu}>
                     <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" strokeLinecap="round" strokeWidth="4" d="M12 6h.01M12 12h.01M12 18h.01" />
                     </svg>

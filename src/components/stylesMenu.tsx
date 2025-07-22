@@ -1,5 +1,5 @@
 import React, { RefObject, useState, useEffect } from "react";
-import style from '../components/stylesMenu.module.css'
+import style from './styles/stylesMenu.module.css'
 
 interface styleMenuProps {
     editor: RefObject<HTMLDivElement>

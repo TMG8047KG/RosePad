@@ -7,7 +7,7 @@
     display: grid;
     grid-template-columns: 70px auto;
     height: calc(100% - 30px);
-    background: rgb(53, 53, 53);
+    background: var(--bg-primary);
 }
 
 .sidebar{
@@ -19,7 +19,7 @@
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* IE10+/Edge */
     user-select: none;
-    background: rgb(65, 65, 65);
+    background: var(--bg-secondary);
     width: 100%;
 }
 
@@ -27,20 +27,20 @@
     border: 0px;
     padding: 0px;
     margin: 10px 0px 0px 0px;
-    background: rgb(49, 49, 49);
+    background: var(--btn-tertiary-bg);
     border-radius: 10px;
-    color: rgb(255, 188, 188);
+    color: var(--fg-tertiary);
     font-size: 15px;
     font-weight: 700;
     height: 3rem;
     width: 3rem;
-    box-shadow: rgb(32, 32, 32) 0px 2px 5px 0.5px;
+    box-shadow: var(--accent-secondary) 0px 0px 5px;
     z-index: 10;
 }
 
 .button:hover{
-    background: rgb(65, 44, 44);
-    color: rgb(236, 157, 157);
+    background: var(--btn-tertiary-hover);
+    color: var(--btn-tertiary-text);
 }
 
 .textData{
@@ -48,17 +48,17 @@
     text-align: center;
     font-weight: 600;
     font-size: 14px;
-    color: rgb(105, 105, 105);
+    color: var(--fg-muted);
     margin: auto 0px 10px 0px;
 }
 
 .container{
-    background: rgb(53, 53, 53);
+    background: var(--bg-tertiary);
     overflow-y: scroll;
     overflow-x: hidden;
-    margin-right: 2px;
+    margin-right: 0px;
     scrollbar-width: 6px;
-    scrollbar-color: rgb(105, 105, 105);
+    scrollbar-color: var(--bg-secondary);
     position: relative;
     z-index: 10;
 }
@@ -69,7 +69,7 @@
 
 .container::-webkit-scrollbar-thumb{
     border-radius: 5px;
-    background: rgb(99, 99, 99);
+    background: var(--accent-primary);
 }
 
 .container::-webkit-scrollbar-track{
@@ -77,11 +77,12 @@
 }
 
 .editor{
-    padding: 10px 2px 10px 10px;
+    padding: 5px;
     resize: none;
     word-break: break-word;
     font-weight: 400;
     height: calc(100% - 30px);
+    color: var(--fg-secondary);
 }
 
 .editor::-webkit-scrollbar{
@@ -93,5 +94,5 @@
 }
 
 *::selection{
-    background: rgb(97, 97, 97);
+    background: rgb(from var(--accent-secondary) r g b / 10%);
 }

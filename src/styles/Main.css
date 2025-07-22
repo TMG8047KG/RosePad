@@ -1,10 +1,87 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
+:root {
+    --bg-primary: var(--dark-bg-primary);
+    --bg-secondary: var(--dark-bg-secondary);
+    --bg-tertiary: var(--dark-bg-tertiary);
+    --fg-primary: var(--dark-fg-primary);
+    --fg-secondary: var(--dark-fg-secondary);
+    --fg-tertiary: var(--dark-fg-tertiary);
+    --fg-muted: var(--dark-fg-muted);
+    --fg-inverse: var(--dark-fg-inverse);
+    --accent-primary: var(--dark-accent-primary);
+    --accent-secondary: var(--dark-accent-secondary);
+    --btn-primary-bg: var(--dark-btn-primary-bg);
+    --btn-primary-hover: var(--dark-btn-primary-hover);
+    --btn-primary-disabled: var(--dark-btn-primary-disabled);
+    --btn-primary-text: var(--dark-btn-primary-text);
+    --btn-secondary-bg: var(--dark-btn-secondary-bg);
+    --btn-secondary-hover: var(--dark-btn-secondary-hover);
+    --btn-secondary-disabled: var(--dark-btn-secondary-disabled);
+    --btn-secondary-text: var(--dark-btn-secondary-text);
+    --btn-tertiary-bg: var(--dark-btn-tertiary-bg);
+    --btn-tertiary-hover: var(--dark-btn-tertiary-hover);
+    --btn-tertiary-disabled: var(--dark-btn-tertiary-disabled);
+    --btn-tertiary-text: var(--dark-btn-tertiary-text);
+    --inset-bg: var(--dark-inset-bg);
+    --inset-border: var(--dark-inset-border);
+    --overlay-bg: var(--dark-overlay-bg);
+    --project-bg: var(--dark-project-bg);
+    --project-hover-bg: var(--dark-project-hover-bg);
+    --project-active-bg: var(--dark-project-active-bg);
+    --project-selected-bg: var(--dark-project-selected-bg);
+    --project-title: var(--dark-project-title);
+    --project-button: var(--dark-project-button);
+    --project-button-hover: var(--dark-project-button-hover);
+    --project-info-text: var(--dark-project-info-text);
+    --project-text: var(--dark-project-text);
+    --project-hover-text: var(--dark-project-hover-text);
+    --project-active-text: var(--dark-project-active-text);
+    --project-selected-text: var(--dark-project-selected-text);
+    --separator: var(--dark-separator);
+
+    --dark-bg-primary: #121014;
+    --dark-bg-secondary: #1A161C;
+    --dark-bg-tertiary: #241F2A;
+    --dark-fg-primary: #F0ECEF;
+    --dark-fg-secondary: #C7C3C7;
+    --dark-fg-tertiary: #9A969B;
+    --dark-fg-muted: #6E6A70;
+    --dark-fg-inverse: #0E0C10;
+    --dark-accent-primary: #D62246;
+    --dark-accent-secondary: #9B4DFF;
+    --dark-overlay-bg: rgba(0, 0, 0, 0.6);
+    --dark-separator: #302A36;
+    --dark-btn-primary-bg: #D62246;
+    --dark-btn-primary-hover: #FF4D6D;
+    --dark-btn-primary-disabled: #76232F;
+    --dark-btn-primary-text: #FFFFFF;
+    --dark-btn-secondary-bg: #753EDB;
+    --dark-btn-secondary-hover: #9B4DFF;
+    --dark-btn-secondary-disabled: #3E2C5C;
+    --dark-btn-secondary-text: #F5F0FA;
+    --dark-btn-tertiary-bg: #2C2830;
+    --dark-btn-tertiary-hover: #3C3744;
+    --dark-btn-tertiary-disabled: #1D1A21;
+    --dark-btn-tertiary-text: #D0CDD2;
+    --dark-project-bg: #2E2433;
+    --dark-project-title: #F0ECEF;
+    --dark-project-button: #9B4DFF;
+    --dark-project-button-hover: #B370FF;
+    --dark-project-info-text: #9A969B;
+    --dark-project-hover-bg: #3B2E43;
+    --dark-project-active-bg: #4C3B57;
+    --dark-project-selected-bg: #5A4468;
+    --dark-project-text: #FF4D6D;
+    --dark-project-hover-text: #FFFFFF;
+    --dark-project-active-text: #D9B3FF;
+    --dark-project-selected-text: #F0E5FF;
+}
+
+
 html body{
     margin: 0;
     padding: 0;
-    background: #414141;
-    color: white;
 
     font-family: "Roboto", serif;
     font-weight: 500;

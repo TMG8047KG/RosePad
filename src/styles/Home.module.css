@@ -3,6 +3,7 @@
     grid-template-columns: 40% 60%;
     text-align: center;
     height: calc(100% - 30px);
+    background: var(--bg-secondary);
 }
 
 .infoBox{
@@ -16,13 +17,14 @@
     padding: 10px;
     margin: 0;
     font-size: 3.8vmin;
-    color: rgb(201, 201, 201);
+    color: var(--fg-tertiary);
 }
 
 .title{
     margin: 0;
     padding: 0;
     font-size: 6.8vmin;
+    color: var(--fg-primary);
 }
 
 .projects{
@@ -30,10 +32,11 @@
     justify-content: center;
     align-items: center;
     margin: 5px 0px 20px 0px;
-    background: rgb(53, 53, 53);
+    background: var(--bg-primary);
     border-radius: 15px 0px 0px 15px;
-    box-shadow: rgb(32, 32, 32) 0px 1px 10px 1px;
-    color: gray;
+    box-shadow: var(--accent-primary) 0px 0px 10px 1px;
+    color: var(--fg-secondary);
+    z-index: 2;
 }
 
 .buttons{
@@ -43,30 +46,30 @@
 
 .button{
     border: 0px;
-    background: rgb(49, 49, 49);
+    background: var(--btn-primary-bg);
     padding: 10px 20px 10px 20px;
     margin: 5px;
     border-radius: 15px;
-    color: rgb(255, 188, 188);
+    color: var(--btn-primary-text);
     font-size: 13px;
     font-weight: 700;
     transition: ease 0.3s;
 }
 
 .button:hover{
-    background: rgb(65, 44, 44);
-    color: rgb(236, 157, 157);
+    background: var(--btn-primary-hover);
+    color: var(--btn-primary-text);
 }
 
 .import{
     display: flex;
     border: 0px;
     padding: 0;
-    background: rgba(49, 49, 49, 0.5);
+    background:  var(--btn-secondary-bg);
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    color: rgb(255, 188, 188);
+    color: var(--btn-secondary-text);
     height: 24px;
     width: 24px;
     transition: ease 0.3s;
@@ -78,14 +81,14 @@
 }
 
 .import:hover{
-    background: rgba(65, 44, 44, 0.5);
-    color: rgb(236, 157, 157);
+    background:  var(--btn-secondary-hover);
+    color: var(--btn-secondary-text);
 }
 
 .listField{
     display: grid;
     grid-template-rows: 2.6rem;
-    background: rgb(45, 45, 45);
+    background: var(--bg-tertiary);
     padding: 5px;
     width: 80%;
     border-radius: 15px;
@@ -102,14 +105,14 @@
     overflow-x: hidden;
     -ms-overflow-style: none;
     scrollbar-width: none;
-    border-radius: 10px;
+    border-radius: 12px;
     max-height: 8rem;
     transition: ease 0.3s;
 }
 
 .noProjectsMessage {
     text-align: center;
-    color: #888;
+    color: var(--fg-secondary);
     font-size: 1.2rem;
     margin-top: 1rem;
 }
@@ -121,7 +124,7 @@
 
     margin: -30px;
     width: 160px;
-    box-shadow: rgb(134, 0, 0) 0px 0px 100px 10px;
+    box-shadow: var(--accent-primary) 0px 0px 100px 10px;
     rotate: 30deg;
 }
 

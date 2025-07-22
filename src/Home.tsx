@@ -150,7 +150,7 @@ function App() {
       <div id='con' className={style.container}>
         <div className={style.infoBox}>
           <h1 className={style.title}>RosePad</h1>
-          <p>A simple and beatiful way to write notes, letters, poems and such.</p>
+          <p>A simple and beautiful way to write notes, letters, poems and such.</p>
           <div className={style.buttons}>
             <button className={style.button} onClick={ ()=> setIsModalOpen(true) }>Create Project</button>
             <button className={style.import} onClick={ ()=> importProject() }>

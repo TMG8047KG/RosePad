@@ -3225,7 +3225,7 @@ dependencies = [
 
 [[package]]
 name = "rosepad"
-version = "0.1.1"
+version = "0.1.3"
 dependencies = [
  "discord-ipc-rp",
  "lazy_static",

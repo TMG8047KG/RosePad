@@ -5,12 +5,14 @@
     height: 30px;
     justify-content: space-between;
     align-items: center;
-    box-shadow: black -90vw -5px 45px 0px;
+    background: var(--bg-secondary);
+    box-shadow: var(--accent-primary) -90vw -5px 45px 0px;
     -webkit-user-select: none; /* Safari */        
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* IE10+/Edge */
     user-select: none;
     z-index: 1;
+    color: var(--fg-primary)
 }
 
 .title{
@@ -26,7 +28,7 @@
     gap: 5px;
 }
 
-.titleBarButtons button{
+.titleBarButtons .button{
     display: flex;
     justify-content: center;
     background: none;
@@ -35,19 +37,19 @@
     width: 24px;
     height: 24px;
     margin: 5px 0;
-    color: rgb(37, 37, 37);
+    color: var(--btn-secondary-text);
 }
 
-.titleBarButtons button:hover{
-    background: rgba(37, 37, 37, 0.25);
-    color: rgb(140, 140, 140);
+.titleBarButtons .button:hover{
+    background: var(--btn-secondary-hover);
+    color: var(--btn-secondary-text);
     border-radius: 6px;
 }
 
 .titleBarButtons svg{
     align-self: center;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
 }
 
 .logo{
@@ -56,28 +58,43 @@
 }
 
 .logotitle{
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    margin-left: 10px;
-}
-
-.logotitle * + *{
+    justify-content: center;
     margin-left: 5px;
+    gap: 5px;
 }
 
 .projectName{
-    align-self: center;
-    text-align: center;
+    display: flex;
+    align-items: center;
     font-size: small;
-    color: gray;
+    color: var(--fg-secondary);
+}
+
+.projectName::before{
+    flex: 1;
+    content: "";
+    background: var(--separator);
+    padding: 10px 1px;
+    margin-right: 5px;
+    border-radius: 5px;
 }
 
 .settings{
-    padding-right: 5px;
-    border-right: solid rgba(37, 37, 37, 0.25) 2px;
+    display: flex;
+    align-items: center;
+}
+
+.settings::after{
+    flex: 1;
+    content: "";
+    background: var(--separator);
+    padding: 10px 1px;
+    border-radius: 5px;
 }
 
 .projectDot{
     font-size: 24px;
-    color: gray;
+    color: var(--accent-secondary);
 }

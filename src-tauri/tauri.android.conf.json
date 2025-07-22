@@ -13,19 +13,14 @@
       {
         "label": "main",
         "title": "RosePad",
-        "width": 1000,
-        "height": 600,
-        "minHeight": 300,
-        "minWidth": 500,
+        "fullscreen": true,
         "center": true,
         "decorations": false,
         "theme": "Dark",
         "focus": true,
-        "backgroundColor": "#414141",
-        "transparent": true
+        "backgroundColor": "#414141"
       }
-    ],
-    "enableGTKAppId": true
+    ]
   },
   "bundle": {
     "category": "Productivity",
@@ -53,13 +48,5 @@
     "license": "GNU GPL-3",
     "licenseFile": "../LICENSE",
     "createUpdaterArtifacts": true
-  },
-  "plugins": {
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZEQUM2RDlCNENFMjJFODcKUldTSEx1Sk1tMjJzL1c3K2VIK2JZdThYZ3c0OXhFRjBnU1BJZnFHY3luMXNvcHgzNGZMU2NlUUUK",
-      "endpoints": [
-        "https://github.com/TMG8047KG/RosePad/releases/latest/download/latest.json"
-      ]
-    }
   }
 }
