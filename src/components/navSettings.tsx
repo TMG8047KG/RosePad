@@ -60,9 +60,9 @@ function NavSettings() {
 
     return(
         <div className={style.titleBar} data-tauri-drag-region onContextMenu={ clickHandler }>
-            <div className='logotitle'>
-                <img src="/images/rose.svg" className="logo" data-tauri-drag-region/>
-                <div className='title' data-tauri-drag-region >Settings</div>
+            <div className={style.logotitle}>
+                <img src="/images/rose.svg" className={style.logo} data-tauri-drag-region/>
+                <div className={style.title} data-tauri-drag-region >Settings</div>
             </div>
             <div className={style.titleBarButtons} data-tauri-drag-region>
                 {!isHypr ?

@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
 .heads{
-    color: rgb(199, 109, 109);
+    color: var(--accent-primary);
     padding: 5px;
     margin: 0;
     margin-left: 10px;
@@ -14,16 +14,18 @@
 
 .container{
     padding: 5px;
+    height: calc(100vh - 40px);
+    background: var(--bg-tertiary);
 }
 
 .pathInput{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgb(51, 51, 51);
+    background: var(--bg-secondary);
     padding: 5px;
     border-radius: 25px;
-    color: gray;
+    color: var(--fg-secondary);
     height: 30px;
 }
 
@@ -37,10 +39,10 @@
 
 .pathInput button{
     border: 0px;
-    background: rgb(39, 39, 39);
+    background: var(--btn-tertiary-bg);
     padding: 7px 10px 7px 10px;
     border-radius: 25px;
-    color: rgb(255, 188, 188);
+    color: var(--accent-secondary);
     font-size: 15px;
     font-weight: 600;
     transition: ease 0.3s;
@@ -48,13 +50,13 @@
 }
 
 .pathInput button:hover{
-    background: rgb(65, 44, 44);
-    color: rgb(236, 157, 157);
+    background: var(--btn-tertiary-hover);
+    color: var(--accent-secondary);
 }
 
 .button{
     border: 0px;
-    background: rgb(49, 49, 49);
+    background: rgb(151, 98, 98);
     padding: 10px;
     border-radius: 20px;
     color: rgb(255, 188, 188);
@@ -78,7 +80,7 @@
 
 .version p{
     margin: 0;
-    color: gray;
+    color: var(--fg-tertiary);
     text-align: center;
 }
 
@@ -86,7 +88,7 @@
     display: flex;
     align-items: center;
     padding: 5px;
-    background: rgb(51, 51, 51);
+    background: var(--bg-secondary);
     border-radius: 25px;
 }
 
@@ -95,19 +97,19 @@
     position: relative;
     width: 30px;
     height: 30px;
-    color: rgb(255, 188, 188);
+    color: var(--fg-secondary);
     transition: ease 0.3s;
     justify-self: center;
 }
 
 .link:hover{
-    color: rgb(226, 141, 141);
+    color: var(--fg-tertiary);
 }
 
 .link .tooltip{
     visibility: hidden;
-    background-color: #555;
-    color: #fff;
+    background-color: var(--separator);
+    color: var(--fg-secondary);
     text-align: center;
     border-radius: 6px;
     padding: 5px;
@@ -128,7 +130,7 @@
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #555 transparent transparent transparent;
+    border-color: var(--separator) transparent transparent transparent;
 }
 
 .link:hover .tooltip {
@@ -157,7 +159,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgb(51, 51, 51);
+    background: var(--btn-tertiary-bg);
     border-radius: 34px;
     -webkit-transition: .4s;
     transition: .4s;
@@ -165,7 +167,7 @@
 }
 
 .slider:hover{
-    background: rgb(65, 44, 44);
+    background: var(--btn-tertiary-hover);
 }
 
 .slider:before {
@@ -175,14 +177,14 @@
     width: 24px;
     left: 4px;
     bottom: 3px;
-    background-color: rgb(255, 188, 188);
+    background-color: var(--accent-secondary);
     -webkit-transition: .4s;
     transition: .4s;
     border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: rgb(226, 141, 141);
+    background-color: var(--btn-secondary-bg);
 }
 
 input:checked + .slider:before {
@@ -194,7 +196,7 @@ input:checked + .slider:before {
 .option{
     display: grid;
     grid-template-columns: auto auto;
-    background: rgb(51, 51, 51);
+    background: var(--bg-secondary);
     align-content: center;
     align-items: center;
     padding: 5px;
@@ -203,7 +205,7 @@ input:checked + .slider:before {
 }
 
 .option p {
-    color: rgb(255, 188, 188);
+    color: var(--fg-secondary);
     align-self: center;
     padding: 5px;
     font-size: 1em;
@@ -217,11 +219,11 @@ input:checked + .slider:before {
     justify-self: end;
     display: flex;
     align-items: center;
-    background: rgb(51, 51, 51);
+    background: var(--btn-tertiary-bg);
     border-radius: 25px;
     padding-left: 10px;
     border: 0;
-    color: gray;
+    color: var(--fg-tertiary);
     font-size: 16px;
     font-weight: 700;
     height: 30px;
@@ -242,9 +244,10 @@ input:checked + .slider:before {
     bottom: 0;
     left: 0;
     padding: 10px;
-    color: gray;
+    color: var(--fg-secondary);
+    transition: ease 0.3s;
 }
 
 .report:hover{
-    color: rgb(99, 99, 99);
+    color: var(--fg-tertiary);
 }
