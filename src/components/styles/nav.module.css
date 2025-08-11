@@ -38,6 +38,7 @@
     height: 24px;
     margin: 5px 0;
     color: var(--btn-secondary-text);
+    transition: ease .3s;
 }
 
 .titleBarButtons .button:hover{

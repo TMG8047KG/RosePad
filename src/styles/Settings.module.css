@@ -39,10 +39,10 @@
 
 .pathInput button{
     border: 0px;
-    background: var(--btn-tertiary-bg);
+    background: var(--btn-secondary-bg);
     padding: 7px 10px 7px 10px;
     border-radius: 25px;
-    color: var(--accent-secondary);
+    color: var(--btn-tertiary-text);
     font-size: 15px;
     font-weight: 600;
     transition: ease 0.3s;
@@ -50,26 +50,8 @@
 }
 
 .pathInput button:hover{
-    background: var(--btn-tertiary-hover);
-    color: var(--accent-secondary);
-}
-
-.button{
-    border: 0px;
-    background: rgb(151, 98, 98);
-    padding: 10px;
-    border-radius: 20px;
-    color: rgb(255, 188, 188);
-    font-size: 15px;
-    font-weight: 700;
-    transition: ease 0.3s;
-    width: 100%;
-    margin: 0;
-}
-
-.button:hover{
-    background: rgb(65, 44, 44);
-    color: rgb(236, 157, 157);
+    background: rgb(from var(--accent-primary) r g b / 50%);
+    color: var(--btn-primary-text);
 }
 
 .version{
@@ -167,7 +149,7 @@
 }
 
 .slider:hover{
-    background: var(--btn-tertiary-hover);
+    background: var(--btn-secondary-bg);
 }
 
 .slider:before {
@@ -177,14 +159,14 @@
     width: 24px;
     left: 4px;
     bottom: 3px;
-    background-color: var(--accent-secondary);
+    background-color: var(--accent-primary);
     -webkit-transition: .4s;
     transition: .4s;
     border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: var(--btn-secondary-bg);
+    background-color: rgb(from var(--accent-primary) r g b / 50%);
 }
 
 input:checked + .slider:before {
