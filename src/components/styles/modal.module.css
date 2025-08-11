@@ -6,7 +6,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: var(--overlay-bg);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -19,25 +19,25 @@
 .modal {
   display: flex;
   flex-direction: column;
-  background-color: #414141;
+  background-color: var(--bg-secondary);
   padding: 10px;
   border-radius: 8px;
   width: 24rem;
   text-align: center;
+  gap: 10px;
 }
 
 .modal h2{
-  color:rgb(128, 128, 128);
+  color:var(--fg-secondary);
 }
 
 .input {
-  background: rgb(95, 95, 95);
-  color: #ffffff;
+  background: var(--bg-tertiary);
+  color: var(--fg-tertiary);
   font-weight: 600;
   font-size: 16px;
   padding: 10px 15px;
-  margin: 10px 0;
-  border: 1px solid #444444;
+  border: 2px solid var(--separator);
   border-radius: 20px;
 }
 
@@ -45,7 +45,7 @@
   font-weight: 600;
   font-size: 14px;
   opacity: 0.5;
-  color:#252525;
+  color:var(--fg-muted);
 }
 
 .input:focus {
@@ -59,19 +59,18 @@
 
 .button{
   border: 0px;
-  background: rgb(49, 49, 49);
+  background: var(--btn-tertiary-bg);
   padding: 10px 20px 10px 20px;
-  margin: 5px;
   border-radius: 15px;
-  color: rgb(255, 188, 188);
+  color: var(--btn-tertiary-text);
   font-size: 15px;
   font-weight: 700;
   transition: ease 0.3s;
 }
 
 .button:hover{
-  background: rgb(65, 44, 44);
-  color: rgb(236, 157, 157);
+  background: var(--btn-tertiary-hover);
+  color: var(--btn-secondary-text);
 }
 
 .button + .button{
@@ -80,6 +79,7 @@
 
 .error{  
   color: red;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
 }
   

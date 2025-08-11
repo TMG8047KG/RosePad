@@ -4,7 +4,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgb(77, 77, 77);
+    background: var(--bg-primary);
     padding: 5px;
     border-radius: 15px;
     z-index: 100;
@@ -14,7 +14,7 @@
     padding: 0;
     margin: 5px;
     display: flex;
-    background: rgb(99, 99, 99);
+    background: var(--separator);
     height: 2px;
     width: 100%;
     z-index: 10;
@@ -22,8 +22,8 @@
 
 .top{
     border: 0px;
-    padding: 0px 0px 2px 0px;
-    margin: 0px 1px 0px 0px;
+    padding: 0px 5px 0px 0px;
+    margin: 0px 0px 0px 0px;
     max-height: 2rem;
     display: flex;
     flex-direction: column;
@@ -38,7 +38,7 @@
 
 .top::-webkit-scrollbar-thumb{
     border-radius: 5px;
-    background: rgb(99, 99, 99);
+    background: var(--bg-tertiary);
 }
 
 .top::-webkit-scrollbar-track{
@@ -49,51 +49,53 @@
     border: 0px;
     padding: 0px;
     margin: 0px;
-    padding: 0px 0px 2px 0px;
     max-height: 2rem;
     display: flex;
-    justify-content: center;
+    width: 100%;
     gap: 5px;
 }
 
 .button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 0px;
     padding: 0px;
     margin: 0;
-    background: rgb(49, 49, 49);
+    background: var(--btn-tertiary-bg);
     border-radius: 10px;
-    color: rgb(255, 188, 188);
+    color: var(--btn-tertiary-text);
     font-size: 15px;
     font-weight: 700;
     height: 2rem;
     width: 2rem;
-    box-shadow: rgb(32, 32, 32) 0px 1px 3px 0.1px;
-    transition: background-color 0.2s ease;
 }
 
 .button.active {
-    background: rgb(82, 55, 55);
-    color: rgb(236, 157, 157);
-}
-
-.button + .button {
-    margin-left: 5px;
+    background: rgb(from var(--btn-primary-bg) r g b / 50%);
+    color: var(--btn-primary-text);
 }
 
 .button:hover {
-    background: rgb(65, 44, 44);
-    color: rgb(236, 157, 157);
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
 }
+
+.alignments, .styles{
+    display: flex;
+    gap: 5px;
+}
+
+
 
 .color{
     border: none;
-    background: rgb(49, 49, 49);
-    color: rgb(255, 188, 188);
+    background: var(--btn-tertiary-bg);
+    color: var(--btn-tertiary-text);
     border-radius: 10px;
     padding: 5px;
     height: 2rem;
     width: 2rem;
-    box-shadow: rgb(32, 32, 32) 0px 1px 5px 0.1px;
 }
 
 .color::-webkit-color-swatch {
@@ -105,58 +107,4 @@
     border: none;
     border-radius: 10px;
     padding: 0;
-}
-
-.headers{
-    border: 0px;
-    padding: 0px 2px;
-    background: rgb(49, 49, 49);
-    border-radius: 10px;
-    color: rgb(255, 188, 188);
-    font-size: 15px;
-    font-weight: 700;
-    height: 2rem;
-    width: 2.8rem;
-    box-shadow: rgb(32, 32, 32) 0px 1px 5px 0.1px;
-}
-
-.headers option{
-    border: 0px;
-    padding: 0px 8px;
-    background: rgb(49, 49, 49);
-    color: rgb(255, 188, 188);
-    font-size: 15px;
-    font-weight: 700;
-    box-shadow: rgb(32, 32, 32) 0px 1px 5px 0.1px;
-}
-
-.headers:focus{
-    outline: none;
-}
-
-.fontSizes{
-    border: 0px;
-    padding: 0px 2px;
-    background: rgb(49, 49, 49);
-    border-radius: 10px;
-    color: rgb(255, 188, 188);
-    font-size: 15px;
-    font-weight: 700;
-    height: 2rem;
-    width: 3.6rem;
-    box-shadow: rgb(32, 32, 32) 0px 1px 5px 0.1px;
-}
-
-.fontSizes option{
-    border: 0px;
-    padding: 0px 8px;
-    background: rgb(49, 49, 49);
-    color: rgb(255, 188, 188);
-    font-size: 15px;
-    font-weight: 700;
-    box-shadow: rgb(32, 32, 32) 0px 1px 5px 0.1px;
-}
-
-.fontSizes:focus{
-    outline: none;
 }

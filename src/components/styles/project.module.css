@@ -1,7 +1,7 @@
 
 
 .project + .project{
-    border-top: solid var(--separator) 1px;
+    border-top: solid var(--separator-strong) 1px;
 }
 
 .project{
@@ -11,7 +11,6 @@
     border-radius: 0;
     padding: 5px;
     margin: 0;
-    justify-content: space-between;
     align-items: center;
     height: 2rem;
     transition: ease 0.3s;
@@ -21,6 +20,7 @@
     display: flex;
     align-items: center;
     justify-content: end;
+    margin-right: 5px;
 }
 
 .project:hover{
@@ -60,18 +60,19 @@
 }
 
 .name + .data {
-    border-left: solid var(--separator) 2px;
+    border-left: solid var(--separator-strong) 2px;
 }
 
 .options{
     color: transparent;
     background: transparent;
     border: 0;
-    padding: 0;
-    width: 1.5rem;
-    height: 1.5rem;
+    padding: 1px;
+    width: 1.6rem;
+    height: 1.6rem;
     transition: ease 0.3s;
     justify-items: center;
+    border-radius: 100%;
 }
 
 .project:hover .options{

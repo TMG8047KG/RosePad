@@ -75,7 +75,7 @@
 .projectName::before{
     flex: 1;
     content: "";
-    background: var(--separator);
+    background: var(--separator-strong);
     padding: 10px 1px;
     margin-right: 5px;
     border-radius: 5px;
@@ -89,9 +89,10 @@
 .settings::after{
     flex: 1;
     content: "";
-    background: var(--separator);
+    background: var(--separator-strong);
     padding: 10px 1px;
     border-radius: 5px;
+    margin-left: 5px;
 }
 
 .projectDot{

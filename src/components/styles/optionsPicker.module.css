@@ -1,0 +1,87 @@
+.root { 
+    position: relative;
+}
+
+.disabled { 
+    opacity: .6; pointer-events: none; 
+}
+
+.button {
+  display: flex; 
+  align-items: center;
+  height: 2rem;
+  gap: 5px;
+  width: 100%;
+  padding: 0 5px 0 10px; 
+  background: var(--btn-tertiary-bg); 
+  color: var(--fg-primary);
+  border: none; 
+  border-radius: 10px; 
+  font-size: 12px; 
+  font-weight: 800; 
+  cursor: pointer;
+}
+
+.btn { 
+    transition: box-shadow 0.3s ease, transform .3s ease; 
+}
+
+.btn:focus {
+    outline: none; 
+}
+
+.chev { 
+    width: 16px;
+    height: 16px;
+    transition: transform .3s ease; 
+}
+
+.rot { 
+    transform: rotate(180deg); 
+}
+
+.list {
+    position: absolute; 
+    top: calc(100% + 3px); 
+    left: 0; 
+    right: 0; 
+    max-height: 164px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    background: var(--bg-secondary); 
+    color: var(--fg-primary);
+    border-radius: 10px;  
+    box-shadow: 0 8px 20px rgba(0,0,0,.35); 
+    z-index: 9999;
+    transform-origin: top;
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+    transition: opacity .3s ease, transform .3s ease, visibility 0s linear .3s;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.listOpen {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity .3s ease, transform .3s ease, visibility 0s;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.opt { 
+    padding: 8px; 
+    cursor: pointer; 
+    font-weight: 600; 
+    font-size: 14px; 
+}
+
+.opt + .opt{
+    border-top: 1px solid var(--separator);
+}
+
+.opt:hover, .active { 
+    background: var(--bg-tertiary); 
+}

@@ -1,5 +1,6 @@
 import React, { RefObject, useState, useEffect } from "react";
 import style from './styles/stylesMenu.module.css'
+import OptionsPicker from './optionsPicker'
 
 interface styleMenuProps {
     editor: RefObject<HTMLDivElement>
@@ -12,6 +13,8 @@ const StyleMenu: React.FC<styleMenuProps> = ({ editor }) => {
         underline: false,
         strikeThrough: false
     });
+    const [headingValue, setHeadingValue] = useState<string>('p');
+    const [fontSizeValue, setFontSizeValue] = useState<string>('3');
 
     const handleFormat = (command: string) => {
         if (editor.current) {
@@ -136,24 +139,8 @@ const StyleMenu: React.FC<styleMenuProps> = ({ editor }) => {
           </div>
           <div className={style.divider}></div>
           <div className={style.bottom}>
-            <select className={style.headers} onChange={(e) => applyHeading(e.target.value)} defaultValue="p">
-              <option value="" disabled>Headers</option>
-              <option value="h1">H1</option>
-              <option value="h2">H2</option>
-              <option value="h3">H3</option>
-              <option value="h4">H4</option>
-              <option value="p">P</option>
-            </select>
-            <select className={style.fontSizes} onChange={(e) => handleFontSize(e.target.value)} defaultValue="3">
-              <option value="" disabled>Size</option>
-              <option value="1">8pt</option>
-              <option value="2">10pt</option>
-              <option value="3">12pt</option>
-              <option value="4">14pt</option>
-              <option value="5">18pt</option>
-              <option value="6">24pt</option>
-              <option value="7">36pt</option>
-            </select>
+            <OptionsPicker className={style.headers} value={headingValue} options={[{value:'p',label:'P'},{value:'h1',label:'H1'},{value:'h2',label:'H2'},{value:'h3',label:'H3'},{value:'h4',label:'H4'}]} onChange={(v)=>{setHeadingValue(v);applyHeading(v);}} width="2.8rem" />
+            <OptionsPicker className={style.fontSizes} value={fontSizeValue} options={[{value:'1',label:'8pt'},{value:'2',label:'10pt'},{value:'3',label:'12pt'},{value:'4',label:'14pt'},{value:'5',label:'18pt'},{value:'6',label:'24pt'},{value:'7',label:'36pt'}]} onChange={(v)=>{setFontSizeValue(v);handleFontSize(v);}} width="3.6rem" />
             <input className={style.color} type="color" onChange={(e) => handleColorChange(e.target.value)} title="Change Text Color"/>
           </div>
         </div>
