@@ -23,10 +23,6 @@
     ]
   },
   "bundle": {
-    "android": {
-      "versionCode": 1000000,
-      "minSdkVersion": 24
-    },
     "category": "Productivity",
     "active": true,
     "targets": "all",
@@ -51,6 +47,10 @@
     "publisher": "TMG8047KG",
     "license": "GNU GPL-3",
     "licenseFile": "../LICENSE",
-    "createUpdaterArtifacts": false
+    "createUpdaterArtifacts": false,
+    "iOS": {
+      "bundleVersion": "1.0.0",
+      "minimumSystemVersion": "14.0"
+    }
   }
 }

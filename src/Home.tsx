@@ -14,7 +14,6 @@ import { listen } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/plugin-dialog';
 import { documentDir } from '@tauri-apps/api/path';
 
-
 let path = "";
 
 settings();

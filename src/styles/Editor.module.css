@@ -94,5 +94,5 @@
 }
 
 *::selection{
-    background: rgb(from var(--accent-secondary) r g b / 10%);
+    background: rgb(from var(--accent-primary) r g b / 35%);
 }

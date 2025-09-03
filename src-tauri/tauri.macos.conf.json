@@ -13,19 +13,27 @@
       {
         "label": "main",
         "title": "RosePad",
-        "fullscreen": true,
+        "width": 1000,
+        "height": 600,
+        "minHeight": 300,
+        "minWidth": 500,
         "center": true,
         "decorations": false,
         "theme": "Dark",
         "focus": true,
-        "backgroundColor": "#414141"
+        "backgroundColor": "#414141",
+        "transparent": true
       }
-    ]
+    ],
+    "enableGTKAppId": true
   },
   "bundle": {
-    "android": {
-      "versionCode": 1000000,
-      "minSdkVersion": 24
+    "macOS": {
+        "bundleName": "RosePad",
+        "bundleVersion": "1.0.0",
+        "signingIdentity": "-",
+        "providerShortName": "TMG",
+        "minimumSystemVersion": "10.13"
     },
     "category": "Productivity",
     "active": true,
@@ -42,7 +50,9 @@
       {
         "ext": [".rpad"],
         "description": "RosePad Project File",
-        "name": "Rpad"
+        "name": "Rpad",
+        "rank": "Owner",
+        "role": "Editor"
       },
       {
         "ext": [".txt"]
@@ -51,6 +61,14 @@
     "publisher": "TMG8047KG",
     "license": "GNU GPL-3",
     "licenseFile": "../LICENSE",
-    "createUpdaterArtifacts": false
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZEQUM2RDlCNENFMjJFODcKUldTSEx1Sk1tMjJzL1c3K2VIK2JZdThYZ3c0OXhFRjBnU1BJZnFHY3luMXNvcHgzNGZMU2NlUUUK",
+      "endpoints": [
+        "https://github.com/TMG8047KG/RosePad/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

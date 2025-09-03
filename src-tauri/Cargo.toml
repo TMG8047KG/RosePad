@@ -30,5 +30,5 @@ lazy_static = "1.4"
 tauri-plugin-os = "2"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-single-instance = "2"
+tauri-plugin-single-instance = "2.3.4"
 tauri-plugin-updater = "2"
