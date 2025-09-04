@@ -6,6 +6,7 @@ import { selectDir, settingsFile } from './scripts/projectHandler';
 import { useEffect, useState } from 'react';
 import NavSettings from './components/navSettings';
 import { getVersion } from '@tauri-apps/api/app';
+import { type } from '@tauri-apps/plugin-os';
 
 function Settings() {
     const [dir, setDir] = useState("");
@@ -13,10 +14,6 @@ function Settings() {
     const [autoSave, setAutoSaveActive] = useState(localStorage.getItem("autoSave")==="true");
     const [autoSaveInterval, setAutoSaveInterval] = useState(2);
     const [spellcheck, setSpellcheckActive] = useState(localStorage.getItem("spellcheck")==="true");
-
-    // const handleColorChange = (color: string) => {
-    //     emit("backgroundColor", color)
-    // };
 
     const handleAutoSaveChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         const checked = event.target.checked;
@@ -86,15 +83,15 @@ function Settings() {
 
     return (
         <main>
-            <NavSettings/>
+            {type() !== "android" || "ios" ? <NavSettings/> : ""}
             <div className={style.container}>
-                <div>
+                {type() !== "android" || "ios" ? <div>
                     <h3 className={style.heads}>Project Directory</h3>
                     <div className={style.pathInput}>
                         <p>{dir}</p>
                         <button className={style.button} onClick={ () => handleDirChange() }>Select</button>
                     </div>
-                </div>
+                </div> : ""}
                 <div>
                     <h3 className={style.heads}>Editor Preferences</h3>
                     <div className={style.option}>

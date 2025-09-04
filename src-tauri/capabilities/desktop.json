@@ -10,6 +10,7 @@
   ],
   "permissions": [
     "updater:default",
+    "updater:allow-download-and-install",
     "dialog:default",
     "dialog:allow-open"
   ]

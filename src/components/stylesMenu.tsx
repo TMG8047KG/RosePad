@@ -3,7 +3,7 @@ import style from './styles/stylesMenu.module.css'
 import OptionsPicker from './optionsPicker'
 
 interface styleMenuProps {
-    editor: RefObject<HTMLDivElement>
+  editor: RefObject<HTMLDivElement | null>
 }
 
 const StyleMenu: React.FC<styleMenuProps> = ({ editor }) => {

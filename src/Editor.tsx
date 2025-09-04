@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom"
 import { useEffect, useRef, useState } from "react"
 import { loadFile, saveProject, updateProjectName, updateProjectPath } from "./scripts/projectHandler"
 import { save } from "@tauri-apps/plugin-dialog"
+import { type } from "@tauri-apps/plugin-os"
 
 function debounce(func: Function, delay: number) {
   let timeoutId: number | undefined;
@@ -131,7 +132,7 @@ function Editor() {
     };
   }
 
-  async function loadProject(editorRef: React.RefObject<HTMLDivElement>) {
+  async function loadProject(editorRef: React.RefObject<HTMLDivElement | null>) {
     const path = sessionStorage.getItem("path");
     console.log(path);
     if (!path || !editorRef.current) return;
@@ -191,7 +192,7 @@ function Editor() {
   
   return (
     <main>
-      <NavBar isSaved={isSaved}/>
+      {type() !== "android" || "ios" ? <NavBar isSaved={isSaved}/> : ""}
       <StyleMenu editor={editorRef}/>
       <div className={style.main}>
         <div className={style.sidebar}>

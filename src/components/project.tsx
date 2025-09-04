@@ -7,6 +7,7 @@ import { Menu } from '@tauri-apps/api/menu';
 import { BaseDirectory, readTextFile, rename, writeTextFile } from '@tauri-apps/plugin-fs';
 import { confirm } from '@tauri-apps/plugin-dialog';
 import Modal from './modal';
+import { type } from '@tauri-apps/plugin-os';
 
 function Project({name, date, path, onDelete, onRename }: {name: string; date: string; path: string; onDelete: (name: string) => void; onRename: (name: string, newName: string, newPath: string) => void}) {
     const navigator = useNavigate();
@@ -36,7 +37,7 @@ function Project({name, date, path, onDelete, onRename }: {name: string; date: s
 
     const handleRename = async (newName: string) => {
         console.log(newName);
-        const raw = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig })
+        const raw = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
         const data = JSON.parse(raw)
         
         let project = data.projects.find((projectPath: { path: string; }) => projectPath.path === path)
@@ -54,7 +55,7 @@ function Project({name, date, path, onDelete, onRename }: {name: string; date: s
         project.name = newName;
         onRename(name, newName, newPath);
         let updatedData = JSON.stringify(data, null, 2);
-        await writeTextFile(settingsFile, updatedData, { baseDir: BaseDirectory.AppConfig });
+        await writeTextFile(settingsFile, updatedData, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
         setIsModalOpen(false);
     }
 

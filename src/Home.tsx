@@ -13,6 +13,7 @@ import { rpc_main_menu, rpc_project } from './scripts/discord_rpc';
 import { listen } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/plugin-dialog';
 import { documentDir } from '@tauri-apps/api/path';
+import { type } from '@tauri-apps/plugin-os';
 
 let path = "";
 
@@ -76,11 +77,11 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCreateProject = async (name: string) => {
-    const raw = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig })
+    const raw = await readTextFile(settingsFile, type() !== "android" ? { baseDir: BaseDirectory.AppLocalData} : { baseDir: BaseDirectory.AppConfig })
     const data = JSON.parse(raw)
     let dir = data.projectPath;
     console.log(dir);
-    if(dir == "null" || !dir){
+    if((type() !== "android" || "ios") && dir == "null" || !dir){
       dir = await selectDir()
       localStorage.setItem("autoSave", "true");
       localStorage.setItem("spellcheck", "false");
@@ -147,7 +148,7 @@ function App() {
   return (
     <main>
       <div className={style.shadow}/>
-      <NavBar/>
+      {type.name === "linux" || "windows" || "macos" ? <NavBar/> : ""}
       <div id='con' className={style.container}>
         <div className={style.infoBox}>
           <h1 className={style.title}>RosePad</h1>
