@@ -82,6 +82,8 @@ function App() {
     console.log(dir);
     if(dir == "null" || !dir){
       dir = await selectDir()
+      localStorage.setItem("autoSave", "true");
+      localStorage.setItem("spellcheck", "false");
     }
     if(data.projects.some((projectName: { name: string; }) => projectName.name === name)){
       return alert("A project with this name already exists!");  

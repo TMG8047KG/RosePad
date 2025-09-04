@@ -10,9 +10,9 @@ import { getVersion } from '@tauri-apps/api/app';
 function Settings() {
     const [dir, setDir] = useState("");
     const [version, setVersion] = useState<string>();
-    const [autoSave, setAutoSaveActive] = useState(true);
+    const [autoSave, setAutoSaveActive] = useState(localStorage.getItem("autoSave")==="true");
     const [autoSaveInterval, setAutoSaveInterval] = useState(2);
-    const [spellcheck, setSpellcheckActive] = useState(true);
+    const [spellcheck, setSpellcheckActive] = useState(localStorage.getItem("spellcheck")==="true");
 
     // const handleColorChange = (color: string) => {
     //     emit("backgroundColor", color)
