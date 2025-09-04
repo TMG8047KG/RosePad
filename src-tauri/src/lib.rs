@@ -37,7 +37,7 @@ fn is_hyprland() -> bool {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let _ = discord_rpc::connect_rpc();
-    let mut builder = tauri::Builder::default().plugin(tauri_plugin_sql::Builder::new().build());
+    let mut builder = tauri::Builder::default();
     #[cfg(any(target_os = "ios", target_os = "android"))]
     {
         builder = builder
