@@ -1,6 +1,9 @@
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
 use tauri::{window::Color, Manager};
 
+#[cfg(any(target_os = "ios", target_os = "android"))]
+use tauri::Emitter;
+
 #[tauri::command]
 pub async fn settings(app: tauri::AppHandle) {
     #[cfg(any(target_os = "ios", target_os = "android"))]

@@ -1,9 +1,14 @@
 {
   "$schema": "../gen/schemas/mobile-schema.json",
   "identifier": "mobile-capability",
-  "windows": ["main"],
-  "platforms": ["android"],
+  "windows": ["*"],
+  "platforms": [
+    "android", 
+    "iOS"
+  ],
   "permissions": [
-    
+    "core:default",
+    "os:default",
+    "os:allow-os-type"
   ]
 }

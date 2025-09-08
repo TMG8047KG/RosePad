@@ -1,0 +1,489 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 63;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		32EED2A8E7036E3CDD6348CB /* assets in Resources */ = {isa = PBXBuildFile; fileRef = ABC73072266E37568D14202E /* assets */; };
+		4AEEF5B2D623E5F775CBD8CF /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D93B8EC8DE1D29B0745A3089 /* WebKit.framework */; };
+		57BA3DE8603024D2C43B3617 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D70793C6AF57B411C53130B0 /* Security.framework */; };
+		57F6CC188A2EAD573521F37B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E25F5D6202E4C6E4F9FFD90 /* Assets.xcassets */; };
+		62E42C583C9AC4118FAE00E3 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F14C890A9CBCDD0DB584FEC /* Metal.framework */; };
+		6D3274F5232BBC805AD23E6B /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84174C82BD78C1A14724EB93 /* CoreGraphics.framework */; };
+		80E568030D3418FA9B93649C /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = EC3D59B1C8EEF11DF1EB3E3B /* main.mm */; };
+		8158DBBC2EFB98F51271D65B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ECD29B140F3D118DAB21F8B1 /* LaunchScreen.storyboard */; };
+		88DA9F360110100EB209989C /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEF359782119E4704FDC9457 /* MetalKit.framework */; };
+		CAB30C7C993BED77C7181B8D /* libapp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B0C156AA71DD6BCEF3D55A8 /* libapp.a */; };
+		EB03FDE85B780D4EB71CDD84 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F2DBFA463D9DA6C89085F8D9 /* QuartzCore.framework */; };
+		FF718FC144FB99CB8549DA62 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B494D5DFD93E300E5E54CD01 /* UIKit.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		3993BC623E874DE0F12C748A /* main.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.rs; sourceTree = "<group>"; };
+		4C8BF888EEA6549C1015066E /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bindings.h; sourceTree = "<group>"; };
+		587D03981FDD8B1E861E5D59 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5B0C156AA71DD6BCEF3D55A8 /* libapp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libapp.a; sourceTree = "<group>"; };
+		6C4B6317EC2D9B95A44ACCAA /* lib.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = lib.rs; sourceTree = "<group>"; };
+		7F14C890A9CBCDD0DB584FEC /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		84174C82BD78C1A14724EB93 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		8E25F5D6202E4C6E4F9FFD90 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		955005463D93DDB048050879 /* settings.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = settings.rs; sourceTree = "<group>"; };
+		ABC73072266E37568D14202E /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = SOURCE_ROOT; };
+		B494D5DFD93E300E5E54CD01 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		B5264381E72873325FBFC803 /* discord_rpc.rs */ = {isa = PBXFileReference; lastKnownFileType = text; path = discord_rpc.rs; sourceTree = "<group>"; };
+		D3B6A8C61A8DD7F68E27E2EA /* rosepad_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = rosepad_iOS.entitlements; sourceTree = "<group>"; };
+		D70793C6AF57B411C53130B0 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		D93B8EC8DE1D29B0745A3089 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		DEF359782119E4704FDC9457 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		EC3D59B1C8EEF11DF1EB3E3B /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
+		ECD29B140F3D118DAB21F8B1 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		F0B6E5405B45FDA65230B510 /* RosePad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RosePad.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F2DBFA463D9DA6C89085F8D9 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4BE406CB1E720F79672B2A78 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CAB30C7C993BED77C7181B8D /* libapp.a in Frameworks */,
+				6D3274F5232BBC805AD23E6B /* CoreGraphics.framework in Frameworks */,
+				62E42C583C9AC4118FAE00E3 /* Metal.framework in Frameworks */,
+				88DA9F360110100EB209989C /* MetalKit.framework in Frameworks */,
+				EB03FDE85B780D4EB71CDD84 /* QuartzCore.framework in Frameworks */,
+				57BA3DE8603024D2C43B3617 /* Security.framework in Frameworks */,
+				FF718FC144FB99CB8549DA62 /* UIKit.framework in Frameworks */,
+				4AEEF5B2D623E5F775CBD8CF /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1E1693DC6D1AE82ACD6E277A /* Externals */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Externals;
+			sourceTree = "<group>";
+		};
+		4348CD4C25AA3FE9CDB4281C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				84174C82BD78C1A14724EB93 /* CoreGraphics.framework */,
+				5B0C156AA71DD6BCEF3D55A8 /* libapp.a */,
+				7F14C890A9CBCDD0DB584FEC /* Metal.framework */,
+				DEF359782119E4704FDC9457 /* MetalKit.framework */,
+				F2DBFA463D9DA6C89085F8D9 /* QuartzCore.framework */,
+				D70793C6AF57B411C53130B0 /* Security.framework */,
+				B494D5DFD93E300E5E54CD01 /* UIKit.framework */,
+				D93B8EC8DE1D29B0745A3089 /* WebKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		484111409AE0C290F9F0B4E6 /* bindings */ = {
+			isa = PBXGroup;
+			children = (
+				4C8BF888EEA6549C1015066E /* bindings.h */,
+			);
+			path = bindings;
+			sourceTree = "<group>";
+		};
+		545A4BF8A2DA4F84572293C1 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				B5264381E72873325FBFC803 /* discord_rpc.rs */,
+				6C4B6317EC2D9B95A44ACCAA /* lib.rs */,
+				3993BC623E874DE0F12C748A /* main.rs */,
+				955005463D93DDB048050879 /* settings.rs */,
+			);
+			name = src;
+			path = ../../src;
+			sourceTree = "<group>";
+		};
+		6CA47AC317325BFBEA4E5EF1 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				E67ADA505B76938698512DBA /* rosepad */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		8E7356DE2D22B4F501575305 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F0B6E5405B45FDA65230B510 /* RosePad.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AAFEF7175821ECF4344D8BB8 = {
+			isa = PBXGroup;
+			children = (
+				ABC73072266E37568D14202E /* assets */,
+				8E25F5D6202E4C6E4F9FFD90 /* Assets.xcassets */,
+				ECD29B140F3D118DAB21F8B1 /* LaunchScreen.storyboard */,
+				1E1693DC6D1AE82ACD6E277A /* Externals */,
+				DEEECA5AD033FE5F2C5C4041 /* rosepad_iOS */,
+				6CA47AC317325BFBEA4E5EF1 /* Sources */,
+				545A4BF8A2DA4F84572293C1 /* src */,
+				4348CD4C25AA3FE9CDB4281C /* Frameworks */,
+				8E7356DE2D22B4F501575305 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DEEECA5AD033FE5F2C5C4041 /* rosepad_iOS */ = {
+			isa = PBXGroup;
+			children = (
+				587D03981FDD8B1E861E5D59 /* Info.plist */,
+				D3B6A8C61A8DD7F68E27E2EA /* rosepad_iOS.entitlements */,
+			);
+			path = rosepad_iOS;
+			sourceTree = "<group>";
+		};
+		E67ADA505B76938698512DBA /* rosepad */ = {
+			isa = PBXGroup;
+			children = (
+				EC3D59B1C8EEF11DF1EB3E3B /* main.mm */,
+				484111409AE0C290F9F0B4E6 /* bindings */,
+			);
+			path = rosepad;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D63356FCD1D06A7BA765CF9E /* rosepad_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C8460466278A6E43C2BEEADC /* Build configuration list for PBXNativeTarget "rosepad_iOS" */;
+			buildPhases = (
+				53E6A1D203F7FFAD48D8D0F5 /* Build Rust Code */,
+				F3C5EE2B53D7A0AE8B28F225 /* Sources */,
+				688FB1183CE3B6995DCA3CE5 /* Resources */,
+				4BE406CB1E720F79672B2A78 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = rosepad_iOS;
+			packageProductDependencies = (
+			);
+			productName = rosepad_iOS;
+			productReference = F0B6E5405B45FDA65230B510 /* RosePad.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DE1FB0AAD3C6390D4BB59647 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = 5768ACB3BD570929C11313A5 /* Build configuration list for PBXProject "rosepad" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = AAFEF7175821ECF4344D8BB8;
+			minimizedProjectReferenceProxies = 1;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D63356FCD1D06A7BA765CF9E /* rosepad_iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		688FB1183CE3B6995DCA3CE5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57F6CC188A2EAD573521F37B /* Assets.xcassets in Resources */,
+				8158DBBC2EFB98F51271D65B /* LaunchScreen.storyboard in Resources */,
+				32EED2A8E7036E3CDD6348CB /* assets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		53E6A1D203F7FFAD48D8D0F5 /* Build Rust Code */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Rust Code";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/Externals/x86_64/${CONFIGURATION}/libapp.a",
+				"$(SRCROOT)/Externals/arm64/${CONFIGURATION}/libapp.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "pnpm tauri ios xcode-script -v --platform ${PLATFORM_DISPLAY_NAME:?} --sdk-root ${SDKROOT:?} --framework-search-paths \"${FRAMEWORK_SEARCH_PATHS:?}\" --header-search-paths \"${HEADER_SEARCH_PATHS:?}\" --gcc-preprocessor-definitions \"${GCC_PREPROCESSOR_DEFINITIONS:-}\" --configuration ${CONFIGURATION:?} ${FORCE_COLOR} ${ARCHS:?}";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F3C5EE2B53D7A0AE8B28F225 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				80E568030D3418FA9B93649C /* main.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		915381F6E97FAB420A3093B4 /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+					x86_64,
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = rosepad_iOS/rosepad_iOS.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = C8S6U5YSZT;
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = rosepad_iOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.roseworld.rosepad;
+				PRODUCT_NAME = "RosePad";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64  x86_64";
+			};
+			name = debug;
+		};
+		91A2DFC9D863D0910A18C950 /* debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = debug;
+		};
+		93B5A4377CA8C3D87CFA20E6 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = release;
+		};
+		B1C1EFB7B7BA17B6B0C376B8 /* release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ARCHS = (
+					arm64,
+					x86_64,
+				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = rosepad_iOS/rosepad_iOS.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = C8S6U5YSZT;
+				ENABLE_BITCODE = NO;
+				"EXCLUDED_ARCHS[sdk=iphoneos*]" = x86_64;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\".\"",
+				);
+				INFOPLIST_FILE = rosepad_iOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=arm64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/arm64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				"LIBRARY_SEARCH_PATHS[arch=x86_64]" = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Externals/x86_64/$(CONFIGURATION)",
+					"$(SDKROOT)/usr/lib/swift",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)",
+					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/$(PLATFORM_NAME)",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.roseworld.rosepad;
+				PRODUCT_NAME = "RosePad";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64  x86_64";
+			};
+			name = release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5768ACB3BD570929C11313A5 /* Build configuration list for PBXProject "rosepad" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				91A2DFC9D863D0910A18C950 /* debug */,
+				93B5A4377CA8C3D87CFA20E6 /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+		C8460466278A6E43C2BEEADC /* Build configuration list for PBXNativeTarget "rosepad_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				915381F6E97FAB420A3093B4 /* debug */,
+				B1C1EFB7B7BA17B6B0C376B8 /* release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DE1FB0AAD3C6390D4BB59647 /* Project object */;
+}

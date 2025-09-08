@@ -3,7 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { BaseDirectory, documentDir } from "@tauri-apps/api/path";
 import { open } from '@tauri-apps/plugin-dialog';
 import { exists, mkdir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
-import { type } from "@tauri-apps/plugin-os";
+import { type as osType } from "@tauri-apps/plugin-os";
 
 export const settingsFile = "settings.json"
 
@@ -23,18 +23,18 @@ export async function pathFromOpenedFile() {
 }
 
 export async function settings() {
-    if(!await exists("", type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })){
-        await mkdir('', type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
+    if(!await exists("", osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })){
+        await mkdir('', osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
     }
 
-    const hasFile = await exists(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+    const hasFile = await exists(settingsFile, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
     if(!hasFile){
         let data = {
             projectPath: "null",
             projects: []
         }
         let json = JSON.stringify(data, null, 2);
-        await writeTextFile(settingsFile, json, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
+        await writeTextFile(settingsFile, json, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
     }
 }
   
@@ -57,7 +57,7 @@ export async function selectDir(){
 }
 
 export async function addProject(name:string, path:string|URL) {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+    const rawJson = await readTextFile(settingsFile, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
     let settings = JSON.parse(rawJson);
     let now = new Date();
     settings.projects.push({ 
@@ -66,30 +66,30 @@ export async function addProject(name:string, path:string|URL) {
         path: `${path}`
     })
     let json = JSON.stringify(settings, null, 2);
-    await writeTextFile(settingsFile, json, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
+    await writeTextFile(settingsFile, json, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
 }
 
 export async function updateProjectPath(path: string|URL, newPath: string|URL) {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+    const rawJson = await readTextFile(settingsFile, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
     let json = JSON.parse(rawJson);
     let project = json.projects.find((projectPath: { path: string; }) => projectPath.path === path);
     await remove(path);
     project.path = newPath;
     let updatedJson = JSON.stringify(json, null, 2);
-    await writeTextFile(settingsFile, updatedJson, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+    await writeTextFile(settingsFile, updatedJson, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
 }
 
 export async function updateProjectName(path: string|URL, name: string) {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+    const rawJson = await readTextFile(settingsFile, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
     let json = JSON.parse(rawJson);
     let project = json.projects.find((projectPath: { path: string; }) => projectPath.path === path);
     project.name = name;
     let updatedJson = JSON.stringify(json, null, 2);
-    await writeTextFile(settingsFile, updatedJson, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+    await writeTextFile(settingsFile, updatedJson, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
 }
 
 export async function getProjectsOrdered() {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+    const rawJson = await readTextFile(settingsFile, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
     let json = JSON.parse(rawJson);
     let projects = json.projects;
     projects.sort((a: { last_updated: string | number | Date; }, b: { last_updated: string | number | Date; }) => {
@@ -102,12 +102,12 @@ export async function getProjectsOrdered() {
 }
 
 export async function saveProject(text: string, path: string) {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+    const rawJson = await readTextFile(settingsFile, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
     let json = JSON.parse(rawJson);
     let project = json.projects.find((projectPath: { path: string; }) => projectPath.path === path);
     project.last_updated = new Date().toLocaleString();
     let updatedJson = JSON.stringify(json, null, 2);
-    await writeTextFile(settingsFile, updatedJson, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+    await writeTextFile(settingsFile, updatedJson, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
     await writeTextFile(project.path, text);
 }
 
@@ -117,18 +117,18 @@ export async function loadFile(path: string | URL) {
 }
 
 export async function deleteProject(name: string) {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+    const rawJson = await readTextFile(settingsFile, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
     let json = JSON.parse(rawJson);
     let project = json.projects.find((projectName: { name: string; }) => projectName.name === name);
     await remove(project.path)
     const index = json.projects.findIndex((projectPath: { path: string; }) => project.path === projectPath.path);
     json.projects.splice(index, 1);
     const updatedJson = JSON.stringify(json, null, 2);
-    await writeTextFile(settingsFile, updatedJson, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
+    await writeTextFile(settingsFile, updatedJson, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
 }
 
 export async function projectExists(path: string | URL) {
-    const raw = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
+    const raw = await readTextFile(settingsFile, osType() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
     const data = JSON.parse(raw)
     const projects = data.projects;
     return projects.some((project: { path: string | URL; }) => project.path === path)
