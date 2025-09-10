@@ -1,9 +1,14 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
+  "$schema": "../gen/schemas/capabilities.json",
   "identifier": "default",
   "description": "Capability for the main window",
   "windows": [
     "*"
+  ],
+  "platforms":[
+    "windows", 
+    "linux",
+    "macOS"
   ],
   "permissions": [
     "core:default",
@@ -27,7 +32,6 @@
     "core:app:allow-version",
     "core:window:allow-get-all-windows",
     "os:default",
-    "os:allow-os-type",
     {
       "identifier": "fs:read-all",
       "allow": [{ "path": "**" }]

@@ -4,8 +4,8 @@ use std::env;
 use tauri::{Emitter, Manager};
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
 use tauri_plugin_updater::UpdaterExt;
-#[cfg(not(any(target_os = "ios", target_os = "android")))]
-mod discord_rpc;
+// #[cfg(not(any(target_os = "ios", target_os = "android")))]
+// mod discord_rpc;
 
 mod settings;
 
@@ -87,26 +87,27 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("Error while running rosepad desktop app")
     }
-
-    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
-    async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
-        if let Some(update) = app.updater()?.check().await? {
-            let mut downloaded = 0;
-            update
-                .download_and_install(
-                    |chunk_length, content_length| {
-                        downloaded += chunk_length;
-                        println!("downloaded {downloaded} from {content_length:?}");
-                    },
-                    || {
-                        println!("download finished");
-                    },
-                )
-                .await?;
-
-            println!("update installed");
-            app.restart();
-        }
-        Ok(())
-    }
 }
+
+#[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
+async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
+    if let Some(update) = app.updater()?.check().await? {
+        let mut downloaded = 0;
+        update
+            .download_and_install(
+                |chunk_length, content_length| {
+                    downloaded += chunk_length;
+                    println!("downloaded {downloaded} from {content_length:?}");
+                },
+                || {
+                    println!("download finished");
+                },
+            )
+            .await?;
+
+        println!("update installed");
+        app.restart();
+    }
+    Ok(())
+}
+

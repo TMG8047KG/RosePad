@@ -272,6 +272,8 @@
 					"\".\"",
 				);
 				INFOPLIST_FILE = rosepad_iOS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = RosePad;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -293,6 +295,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.roseworld.rosepad;
 				PRODUCT_NAME = "RosePad";
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "arm64  x86_64";
 			};
@@ -436,6 +442,8 @@
 					"\".\"",
 				);
 				INFOPLIST_FILE = rosepad_iOS/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = RosePad;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -457,6 +465,10 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.roseworld.rosepad;
 				PRODUCT_NAME = "RosePad";
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALID_ARCHS = "arm64  x86_64";
 			};

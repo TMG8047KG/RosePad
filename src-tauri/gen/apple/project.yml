@@ -51,7 +51,7 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        CFBundleShortVersionString: 1.0.0
+        CFBundleShortVersionString: 0.1.4
         CFBundleVersion: "1.0.0"
     entitlements:
       path: rosepad_iOS/rosepad_iOS.entitlements

@@ -1,13 +1,4 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "RosePad",
-  "identifier": "com.roseworld.rosepad",
-  "build": {
-    "beforeDevCommand": "pnpm dev",
-    "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "pnpm build",
-    "frontendDist": "../dist"
-  },
   "app": {
     "windows": [
       {
@@ -25,6 +16,7 @@
         "transparent": true
       }
     ],
+    "macOSPrivateApi": true,
     "enableGTKAppId": true
   },
   "bundle": {

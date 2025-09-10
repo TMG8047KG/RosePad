@@ -1,5 +1,5 @@
 import './styles/Main.css'
-import style from './styles/Home.module.css'
+import style from './styles/Home.module.css';
 import NavBar from './components/nav';
 import Prompt from './components/prompt';
 import Project from './components/project';
@@ -17,14 +17,9 @@ import { type as osType } from '@tauri-apps/plugin-os';
 
 let path = "";
 
+console.log(osType());
+
 settings();
-
-useEffect(() => {
-  (async () => {
-    console.log('os:', await osType()); // should log "ios"
-  })();
-}, []);
-
 
 listen("backgroundColor", (event) => {
   const payload = event.payload;
