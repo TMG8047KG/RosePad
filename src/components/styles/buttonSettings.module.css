@@ -6,11 +6,12 @@
     padding: 0;
     width: 24px;
     height: 24px;
+    border-radius: 6px;
+    transition: ease .3;
 }
 
 .settings:hover{
-    background: rgb(from var(--btn-primary-bg) r g b / 75%);
-    border-radius: 6px;
+    background: rgb(from var(--btn-primary-hover) r g b / 75%);
     color: var(--btn-primary-text);
 }
 

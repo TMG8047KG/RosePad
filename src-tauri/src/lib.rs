@@ -21,12 +21,6 @@ async fn get_args() -> Vec<String> {
     arg_list
 }
 
-#[cfg(any(target_os = "ios", target_os = "android"))]
-#[tauri::command]
-async fn get_args() -> Vec<String> {
-    Vec::new()
-}
-
 #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
 #[tauri::command]
 fn is_hyprland() -> bool {
@@ -37,18 +31,14 @@ fn is_hyprland() -> bool {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let _ = discord_rpc::connect_rpc();
-    let mut builder = tauri::Builder::default();
-    #[cfg(any(target_os = "ios", target_os = "android"))]
-    {
-        builder = builder
-            .plugin(tauri_plugin_os::init())
-            .plugin(tauri_plugin_fs::init())
-    }
+    let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_cache::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init());
 
-    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
-    {
+    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]{
         builder = builder
-            .plugin(tauri_plugin_os::init())
             .plugin(tauri_plugin_updater::Builder::new().build())
             .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
                 let window = app.get_window("main").unwrap();
@@ -61,56 +51,59 @@ pub fn run() {
                 }
                 println!("it's running!");
                 window.emit("file-open", arg_list).unwrap();
-            }))
-            .plugin(tauri_plugin_dialog::init())
-            .plugin(tauri_plugin_fs::init())
+            }));
     }
 
     #[cfg(any(target_os = "ios", target_os = "android"))]
     {
-        builder.invoke_handler(tauri::generate_handler![get_args, settings::settings])
-        .run(tauri::generate_context!())
-        .expect("Error while running rosepad mobile app")
+        builder = builder
+            .invoke_handler(tauri::generate_handler![
+                settings::settings
+            ])
     }
 
     #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     {
-        builder.invoke_handler(tauri::generate_handler![
-            get_args,
-            is_hyprland,
-            discord_rpc::update_activity,
-            discord_rpc::clear_activity,
-            settings::settings
-        ])
-        .setup(|app| {
-            let handle = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                update(handle).await.unwrap();
-            });
-            Ok(())
-        })
+        builder = builder
+            .invoke_handler(tauri::generate_handler![
+                get_args,
+                is_hyprland,
+                discord_rpc::update_activity,
+                discord_rpc::clear_activity,
+                settings::settings
+            ])
+            .setup(|app| {
+                let handle = app.handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    update(handle).await.unwrap();
+                });
+                Ok(())
+            })
+    }
+    builder
         .run(tauri::generate_context!())
-        .expect("Error while running rosepad desktop app")
-    }
-
-    async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
-        if let Some(update) = app.updater()?.check().await? {
-            let mut downloaded = 0;
-            update
-                .download_and_install(
-                    |chunk_length, content_length| {
-                        downloaded += chunk_length;
-                        println!("downloaded {downloaded} from {content_length:?}");
-                    },
-                    || {
-                        println!("download finished");
-                    },
-                )
-                .await?;
-
-            println!("update installed");
-            app.restart();
-        }
-        Ok(())
-    }
+        .expect("RosePad is kauput while trying to run!");
 }
+
+#[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
+async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
+    if let Some(update) = app.updater()?.check().await? {
+        let mut downloaded = 0;
+        update
+            .download_and_install(
+                |chunk_length, content_length| {
+                    downloaded += chunk_length;
+                    println!("downloaded {downloaded} from {content_length:?}");
+                },
+                || {
+                    println!("download finished");
+                },
+            )
+            .await?;
+
+        println!("update installed");
+        app.restart();
+    }
+    Ok(())
+}
+

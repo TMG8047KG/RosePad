@@ -5,15 +5,17 @@ import style from './styles/Settings.module.css'
 import { selectDir, settingsFile } from './scripts/projectHandler';
 import { useEffect, useState } from 'react';
 import NavSettings from './components/navSettings';
-import { getVersion } from '@tauri-apps/api/app';
+import { getVersion, setTheme } from '@tauri-apps/api/app';
 import { type } from '@tauri-apps/plugin-os';
+import { getTheme, setThemeCache } from './scripts/cache';
+import { themes } from './scripts/themeManager';
 
 function Settings() {
     const [dir, setDir] = useState("");
     const [version, setVersion] = useState<string>();
     const [autoSave, setAutoSaveActive] = useState(localStorage.getItem("autoSave")==="true");
     const [autoSaveInterval, setAutoSaveInterval] = useState(2);
-    const [spellcheck, setSpellcheckActive] = useState(localStorage.getItem("spellcheck")==="true");
+    const [theme, setThemeButton] = useState<themes>(null);
 
     const handleAutoSaveChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         const checked = event.target.checked;
@@ -21,18 +23,13 @@ function Settings() {
         localStorage.setItem("autoSave", checked.toString());
     }
 
+
     const handleAutoSaveIntervalChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         let value = parseInt(event.target.value);
         if(value < 1) value = 1;
         if(value > 60) value = 60;
         setAutoSaveInterval(value);
         localStorage.setItem("autoSaveInterval", value.toString());
-    }
-
-    const handleSpellcheck = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const checked = event.target.checked;
-        setSpellcheckActive(checked);
-        localStorage.setItem("spellcheck", checked.toString());
     }
 
     const tooltipAC = () => {
@@ -46,6 +43,11 @@ function Settings() {
         if(tooltip) tooltip.innerHTML = "Copy tmg8047kg";
     }
 
+    const changeTheme = async (theme: themes) => {
+        await setTheme(theme);
+        await setThemeCache(theme);
+        setThemeButton(theme);
+    }
 
     useEffect(() => {
         const loadDir = async () =>{
@@ -68,11 +70,10 @@ function Settings() {
             if(value) setAutoSaveInterval(parseInt(value));
         }
         loadAutoSaveInterval();
-        const loadSpellcheck = () => {
-            const savedSpellcheck = localStorage.getItem("spellcheck");
-            setSpellcheckActive(savedSpellcheck === "true")
+        const loadThemeState = async () => {
+            setThemeButton(await getTheme());
         }
-        loadSpellcheck();
+        loadThemeState();
     }, []);
 
     const handleDirChange = async () =>{
@@ -101,12 +102,21 @@ function Settings() {
                             <span className={style.slider}></span>
                         </label>
                         <p>Auto-Save interval</p>
-                        <input className={style.inputNumber} type="number" min={1} max={60} value={autoSaveInterval} onChange={handleAutoSaveIntervalChange}/>
-                        <p>Spellcheck (Built-in)</p>
-                        <label className={style.switch}>
-                            <input type="checkbox" checked={spellcheck} onChange={handleSpellcheck}/>
-                            <span className={style.slider}></span>
-                        </label>
+                        <input className={style.inputNumber} type="number" min={1} max={60} value={autoSaveInterval} onChange={handleAutoSaveIntervalChange} placeholder='s' />
+                    </div>
+                </div>
+                 <div>
+                    <h3 className={style.heads}>Theme</h3>
+                    <div className={style.multiOption}>
+                        <button className={theme === "light" ? style.activeMultiBtn : style.inactiveMultiBtn} onClick={() => changeTheme("light")}>
+                            Light
+                        </button>
+                        <button className={theme === "dark" ? style.activeMultiBtn : style.inactiveMultiBtn} onClick={() => changeTheme("dark")}>
+                            Dark
+                        </button>
+                        <button className={theme === null ? style.activeMultiBtn : style.inactiveMultiBtn} onClick={() => changeTheme(null)}>
+                            Auto
+                        </button>
                     </div>
                 </div>
                 <div className={style.socials}>

@@ -18,6 +18,8 @@
 .title{
     align-self: center;
     text-align: center;
+    font-weight: 600;
+    font-size: 16px;
 }
 
 .titleBarButtons{
@@ -25,26 +27,26 @@
     align-items: center;
     margin-right: 4px;
     height: 100%;
-    gap: 5px;
+    gap: 3px;
 }
 
 .titleBarButtons .button{
     display: flex;
     justify-content: center;
+    align-items: center;
     background: none;
     border: none;
+    border-radius: 6px;
     padding: 0;
     width: 24px;
     height: 24px;
-    margin: 5px 0;
     color: var(--btn-secondary-text);
     transition: ease .3s;
 }
 
 .titleBarButtons .button:hover{
-    background: var(--btn-secondary-hover);
-    color: var(--btn-secondary-text);
-    border-radius: 6px;
+    background: var(--btn-primary-hover);
+    color: var(--btn-primary-text);
 }
 
 .titleBarButtons svg{

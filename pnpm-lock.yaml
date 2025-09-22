@@ -38,6 +38,12 @@ importers:
       react-router-dom:
         specifier: ^7.8.2
         version: 7.8.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      tauri-plugin-cache-api:
+        specifier: ^0.1.5
+        version: 0.1.5
+      tauri-plugin-drpc:
+        specifier: ^1.0.3
+        version: 1.0.3(typescript@5.9.2)
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -715,6 +721,14 @@ packages:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
 
+  tauri-plugin-cache-api@0.1.5:
+    resolution: {integrity: sha512-wNhvhanmB47d18hy7Xom3uY/LRzSM/E7z8SFELPffpVHvNcBLJyWqAqqNkj1WjT+4dr8J45YQmqJMCcKUi0Jyg==}
+
+  tauri-plugin-drpc@1.0.3:
+    resolution: {integrity: sha512-vl5dXhjKbl7+Nf9veW12usdmIUtZXwEf91SzxQPZlbRRJ/sjizbbQlnkUTtx6baJuGzz0KXXgP9xUhF39BdiXQ==}
+    peerDependencies:
+      typescript: ^5.0.0
+
   tinyglobby@0.2.14:
     resolution: {integrity: sha512-tX5e7OM1HnYr2+a2C/4V0htOcSQcoSTH9KgJnVvNm5zm/cyEWKJ7j7YutsH9CxMdtOkkLFy2AHrMci9IM8IPZQ==}
     engines: {node: '>=12.0.0'}
@@ -1339,6 +1353,14 @@ snapshots:
   set-cookie-parser@2.7.1: {}
 
   source-map-js@1.2.1: {}
+
+  tauri-plugin-cache-api@0.1.5:
+    dependencies:
+      '@tauri-apps/api': 2.8.0
+
+  tauri-plugin-drpc@1.0.3(typescript@5.9.2):
+    dependencies:
+      typescript: 5.9.2
 
   tinyglobby@0.2.14:
     dependencies:

@@ -19,7 +19,6 @@
         "minWidth": 500,
         "center": true,
         "decorations": false,
-        "theme": "Dark",
         "focus": true,
         "backgroundColor": "#414141"
       }

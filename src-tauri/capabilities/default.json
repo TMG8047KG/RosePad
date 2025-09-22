@@ -27,6 +27,7 @@
     "core:app:allow-version",
     "core:window:allow-get-all-windows",
     "os:default",
+    "cache:default",
     {
       "identifier": "fs:read-all",
       "allow": [{ "path": "**" }]

@@ -14,16 +14,14 @@ import { listen } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/plugin-dialog';
 import { documentDir } from '@tauri-apps/api/path';
 import { type } from '@tauri-apps/plugin-os';
+import { applyTheme, setup } from './scripts/cache';
 
 let path = "";
 
-settings();
+setup();
+applyTheme();
 
-listen("backgroundColor", (event) => {
-  const payload = event.payload;
-  const background = document.getElementById("con");
-  if(background) background.style.background = payload as string;
-})
+settings();
 
 async function createProject(dir:string, name:string) { 
   const filePath = `${dir}\\${name}.rpad`;
@@ -77,11 +75,11 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCreateProject = async (name: string) => {
-    const raw = await readTextFile(settingsFile, type() !== "android" ? { baseDir: BaseDirectory.AppLocalData} : { baseDir: BaseDirectory.AppConfig })
+    const raw = await readTextFile(settingsFile, !["android","ios"].includes(type()) ? { baseDir: BaseDirectory.AppLocalData} : { baseDir: BaseDirectory.AppConfig })
     const data = JSON.parse(raw)
     let dir = data.projectPath;
     console.log(dir);
-    if((type() !== "android" || "ios") && dir == "null" || !dir){
+    if(!["android","ios"].includes(type()) && dir == "null" || !dir){
       dir = await selectDir()
       localStorage.setItem("autoSave", "true");
       localStorage.setItem("spellcheck", "false");
@@ -148,7 +146,7 @@ function App() {
   return (
     <main>
       <div className={style.shadow}/>
-      {type.name === "linux" || "windows" || "macos" ? <NavBar/> : ""}
+      {!["android","ios"].includes(type()) ? <NavBar/> : ""}
       <div id='con' className={style.container}>
         <div className={style.infoBox}>
           <h1 className={style.title}>RosePad</h1>

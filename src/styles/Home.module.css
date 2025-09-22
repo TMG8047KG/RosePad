@@ -65,7 +65,7 @@
     display: flex;
     border: 0px;
     padding: 0;
-    background:  var(--btn-secondary-bg);
+    background:  rgb(from  var(--btn-primary-bg) r g b / 50%);
     align-items: center;
     justify-content: center;
     border-radius: 50%;
@@ -81,8 +81,8 @@
 }
 
 .import:hover{
-    background:  var(--btn-secondary-hover);
-    color: var(--btn-secondary-text);
+    background: rgb(from  var(--btn-primary-hover) r g b / 50%);
+    color: var(--btn-primary-text);
 }
 
 .listField{
@@ -195,7 +195,7 @@
         font-size: 24px;
     }
     .import{
-        height: 48px;
-        width: 48px;
+        height: 36px;
+        width: 36px;
     }
 }

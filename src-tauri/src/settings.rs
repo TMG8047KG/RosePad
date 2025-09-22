@@ -8,7 +8,7 @@ pub async fn settings(app: tauri::AppHandle) {
         let _ = app.emit("navigate", "/settings");
     }
 
-    #[cfg(not(any(target_os = "ios", target_os = "android")))]
+    #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
     {
         tauri::WebviewWindowBuilder::new(
             &app,

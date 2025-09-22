@@ -1,11 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 
+*:focus{
+    outline: none;
+}
+
+*{
+    font-family: "Roboto", sans-serif;
+}
+
 .heads{
     color: var(--accent-primary);
     padding: 5px;
     margin: 0;
     margin-left: 10px;
-    font-size: 1.20em;
+    font-size: 18px;
 }
 
 .heads + div{
@@ -38,20 +46,20 @@
 }
 
 .pathInput button{
-    border: 0px;
+    border: none;
     background: var(--btn-secondary-bg);
-    padding: 7px 10px 7px 10px;
-    border-radius: 25px;
+    padding: 5px 15px 5px 15px;
+    border-radius: 0px;
     color: var(--btn-tertiary-text);
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
     transition: ease 0.3s;
-    width: auto;
+    height: inherit;
+    border-radius: 23px;
 }
 
 .pathInput button:hover{
-    background: rgb(from var(--accent-primary) r g b / 50%);
-    color: var(--btn-primary-text);
+    background: rgb(from var(--accent-primary) r g b / 25%);
 }
 
 .version{
@@ -63,7 +71,8 @@
 .version p{
     margin: 0;
     color: var(--fg-tertiary);
-    text-align: center;
+    line-height: 21.6px;
+    vertical-align: bottom;
 }
 
 .links{
@@ -141,15 +150,15 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--btn-tertiary-bg);
-    border-radius: 34px;
-    -webkit-transition: .4s;
-    transition: .4s;
-    box-shadow: rgb(32, 32, 32) 0px 2px 5px 0.5px;
+    background: var(--btn-secondary-bg);
+    border-radius: 23px;
+    -webkit-transition: .3s;
+    transition: .3s;
+    box-shadow: var(--btn-primary-bg) 0px 0px 5px 0.5px;
 }
 
 .slider:hover{
-    background: var(--btn-secondary-bg);
+    background: rgb(from var(--accent-primary) r g b / 25%);
 }
 
 .slider:before {
@@ -160,13 +169,14 @@
     left: 4px;
     bottom: 3px;
     background-color: var(--accent-primary);
-    -webkit-transition: .4s;
-    transition: .4s;
-    border-radius: 50%;
+    -webkit-transition: .3s;
+    transition: .3s;
+    border-radius: 23px;
 }
 
 input:checked + .slider {
     background-color: rgb(from var(--accent-primary) r g b / 50%);
+    box-shadow: var(--accent-secondary) 0px 0px 5px 0.5px;
 }
 
 input:checked + .slider:before {
@@ -183,18 +193,52 @@ input:checked + .slider:before {
     align-items: center;
     padding: 5px;
     border-radius: 20px;
-    row-gap: 5px;
+    row-gap: 8px;
+}
+
+.multiOption{
+    display: grid;
+    grid-template-columns: auto auto auto;
+    background: var(--bg-secondary);
+    align-content: center;
+    align-items: center;
+    padding: 5px;
+    border-radius: 25px;
+    height: 30px;
+    gap: 5px;
+}
+
+.activeMultiBtn{
+    background-color: var(--accent-primary);
+    border: none;
+    border-radius: 23px;
+    color: var(--btn-tertiary-text);
+    font-size: 14px;
+    font-weight: 600;
+    height: inherit;
+}
+
+.inactiveMultiBtn{
+    background: var(--btn-secondary-bg);
+    border: none;
+    border-radius: 23px;
+    color: var(--btn-tertiary-text);
+    font-size: 14px;
+    font-weight: 600;
+    transition: ease .3s;
+    height: inherit;
+}
+
+.inactiveMultiBtn:hover{
+    background-color: rgb(from var(--accent-primary) r g b / 25%);
 }
 
 .option p {
+    display: table-cell;
     color: var(--fg-secondary);
     align-self: center;
     padding: 5px;
     font-size: 1em;
-}
-
-.switch + .option p {
-    margin-top: 5px;
 }
 
 .inputNumber{
@@ -202,7 +246,7 @@ input:checked + .slider:before {
     display: flex;
     align-items: center;
     background: var(--btn-tertiary-bg);
-    border-radius: 25px;
+    border-radius: 23px;
     padding-left: 10px;
     border: 0;
     color: var(--fg-tertiary);
@@ -210,7 +254,7 @@ input:checked + .slider:before {
     font-weight: 700;
     height: 30px;
     width: 50px;
-    box-shadow: rgb(32, 32, 32) 0px 2px 5px 0.5px;
+    box-shadow: var(--btn-primary-bg) 0px 0px 5px 0.5px;
 }
 
 .inputNumber::-webkit-inner-spin-button{

@@ -192,7 +192,7 @@ function Editor() {
   
   return (
     <main>
-      {type() !== "android" || "ios" ? <NavBar isSaved={isSaved}/> : ""}
+      {!["android","ios"].includes(type()) ? <NavBar isSaved={isSaved}/> : ""}
       <StyleMenu editor={editorRef}/>
       <div className={style.main}>
         <div className={style.sidebar}>
