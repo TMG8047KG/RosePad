@@ -1,13 +1,4 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "RosePad",
-  "identifier": "com.roseworld.rosepad",
-  "build": {
-    "beforeDevCommand": "pnpm dev",
-    "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "pnpm build",
-    "frontendDist": "../dist"
-  },
   "app": {
     "windows": [
       {
@@ -19,39 +10,14 @@
         "minWidth": 500,
         "center": true,
         "decorations": false,
-        "theme": "Dark",
         "focus": true,
-        "backgroundColor": "#414141",
-        "transparent": true
+        "visible": false
       }
     ],
     "enableGTKAppId": true
   },
   "bundle": {
-    "category": "Productivity",
-    "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ],
-    "shortDescription": "Simple and Beautiful Text Editor",
-    "fileAssociations": [
-      {
-        "ext": [".rpad"],
-        "description": "RosePad Project File",
-        "name": "Rpad"
-      },
-      {
-        "ext": [".txt"]
-      }
-    ],
-    "publisher": "TMG8047KG",
-    "license": "GNU GPL-3",
-    "licenseFile": "../LICENSE",
+    "targets": ["deb", "rpm", "appimage"],
     "createUpdaterArtifacts": true
   },
   "plugins": {

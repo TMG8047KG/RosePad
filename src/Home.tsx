@@ -15,6 +15,7 @@ import { open } from '@tauri-apps/plugin-dialog';
 import { documentDir } from '@tauri-apps/api/path';
 import { type } from '@tauri-apps/plugin-os';
 import { applyTheme, setup } from './scripts/cache';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 let path = "";
 
@@ -44,6 +45,12 @@ function App() {
       setProjects(fetchedProjects);
     };
     fetchProjects();
+
+    const showWindow = async () => {
+      const rWin = getCurrentWindow();
+      rWin.show().then(() => rWin.setFocus?.());    
+    }
+    showWindow();
 
     const unlisten = listen('file-open', async (event) => {
       const args = event.payload as string[];

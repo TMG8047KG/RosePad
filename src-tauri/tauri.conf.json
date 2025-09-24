@@ -8,24 +8,8 @@
     "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
-  "app": {
-    "windows": [
-      {
-        "label": "main",
-        "title": "RosePad",
-        "width": 1000,
-        "height": 600,
-        "minHeight": 300,
-        "minWidth": 500,
-        "center": true,
-        "decorations": false,
-        "focus": true,
-        "backgroundColor": "#414141"
-      }
-    ]
-  },
   "bundle": {
-    "category": "Productivity",
+    "category": "Utility",
     "active": true,
     "targets": "all",
     "icon": [
@@ -37,44 +21,21 @@
     ],
     "shortDescription": "Simple and Beautiful Text Editor",
     "fileAssociations": [
-      {
+        {
         "ext": [".rpad"],
-        "description": "RosePad Project File",
-        "name": "Rpad"
+        "name": "Rpad",
+        "rank": "Owner",
+        "role": "Editor"
       },
       {
-        "ext": [".txt"]
+        "ext": [".txt"],
+        "rank": "Alternate",
+        "role": "Editor"
       }
     ],
     "publisher": "TMG8047KG",
+    "copyright": "© 2025 Alexandar Goranov(TMG8047KG)",
     "license": "GNU GPL-3",
-    "licenseFile": "../LICENSE",
-    "windows": {
-      "allowDowngrades": false,
-      "wix": {
-        "bannerPath": "../public/images/Banner.bmp",
-        "dialogImagePath": "../public/images/dialog.bmp"
-      },
-      "nsis": {
-        "installerIcon": "icons/icon.ico",
-        "installMode": "both"
-      },
-      "webviewInstallMode": {
-        "silent": true,
-        "type": "offlineInstaller"
-      }
-    },
-    "createUpdaterArtifacts": true
-  },
-  "plugins": {
-    "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRBOENCQUJGNTY3MzZERkQKUldUOWJYTld2N3FNU25qZVV5WVRkNm5xN3pYb0NlTCs0dU81dE5JMEYyQk9zQytKdDdneWU3STEK",
-      "endpoints": [
-        "https://github.com/TMG8047KG/RosePad/releases/latest/download/latest.json"
-      ],
-      "windows":{
-        "installMode": "passive"
-      }
-    }
+    "licenseFile": "../LICENSE"
   }
 }

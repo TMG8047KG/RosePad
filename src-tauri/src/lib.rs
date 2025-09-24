@@ -82,7 +82,7 @@ pub fn run() {
     }
     builder
         .run(tauri::generate_context!())
-        .expect("RosePad is kauput while trying to run!");
+        .expect("RosePad is kaput while trying to run!");
 }
 
 #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
