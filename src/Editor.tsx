@@ -22,7 +22,6 @@ function Editor() {
   const editorRef = useRef<HTMLDivElement>(null);
   const [characters, setCharacters] = useState(0);
   const [isSaved, setSaved] = useState(true);
-  const [hasSpellcheck, setSpellcheck] = useState(true);
   const initalContent = useRef<string>("");
 
   const getTime = () => {
@@ -156,7 +155,6 @@ function Editor() {
 
       const handleStorageChange = () => {
         handleSaving(); 
-        localStorage.getItem("Spellcheck") === "true" ? setSpellcheck(true) : setSpellcheck(false);
       }
 
       editor.addEventListener("keyup", () => {
@@ -202,7 +200,7 @@ function Editor() {
           <div id="characters" className={style.textData}>Symbols<br></br>{characters}</div>
         </div>
         <div className={style.container}>
-          <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning spellCheck={hasSpellcheck} tabIndex={-1}></div>
+          <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning spellCheck={false} tabIndex={-1}></div>
         </div>
       </div>
     </main>
