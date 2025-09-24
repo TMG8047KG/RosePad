@@ -7,6 +7,7 @@
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/TMG8047KG/RosePad/main.yml?style=flat-square)
 ![AUR Version](https://img.shields.io/aur/version/rosepad?label=AUR&style=flat-square)
 ![GitHub Tag](https://img.shields.io/github/v/tag/TMG8047KG/RosePad?style=flat-square&label=Tag)
+![GitHub Repo stars](https://img.shields.io/github/stars/TMG8047KG/RosePad?style=flat-square&color=gold)
 <br>
 A simple cross-platform text editor made for writing notes, letters, poems, and such with ease, with a beautiful UI.<br>
 Developed using Tauri v2 in combination with Vite, React, and Typescript.
