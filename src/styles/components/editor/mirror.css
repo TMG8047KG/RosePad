@@ -1,0 +1,44 @@
+.ProseMirror{
+    font-weight: 400;
+    font-size: 16px;
+    height: 100%;   
+    padding: 5px;
+    white-space: pre-wrap;
+}
+
+.ProseMirror ul { 
+    list-style: disc; 
+    padding-left: 1.25rem; 
+    margin-left: 0;
+}
+
+.ProseMirror ol {
+    padding-left: 1.25rem; 
+    margin-left: 0;
+}
+
+.ProseMirror code{
+    background: rgb(from var(--bg-primary) r g b / 50%);
+    border: solid black 1px;
+    border-radius: 5px;
+    padding: 0px 3px;
+    font-size: 14px;
+}
+
+.ProseMirror pre {
+    overflow-y: hidden;
+    overflow-x: scroll;
+    padding: 3px;
+    margin: 5px;
+    border: solid var(--bg-primary) 2px;
+    border-radius: 10px;
+    background: var(--bg-primary);
+}
+
+.ProseMirror pre::-webkit-scrollbar {
+    display: none;
+}
+
+.ProseMirror pre code {
+    background: none;
+}

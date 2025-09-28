@@ -77,10 +77,7 @@
 }
 
 .editor{
-    padding: 5px;
     resize: none;
-    word-break: break-word;
-    font-weight: 400;
     height: calc(100% - 30px);
     color: var(--fg-secondary);
 }
@@ -94,5 +91,5 @@
 }
 
 *::selection{
-    background: rgb(from var(--accent-primary) r g b / 35%);
+    background: rgb(from var(--accent-primary) r g b / 30%);
 }

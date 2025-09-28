@@ -8,13 +8,13 @@ import SettingsButton from "./components/buttonSettings"
 import { create, readTextFile, BaseDirectory} from '@tauri-apps/plugin-fs';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { addProject, getProjectsOrdered, pathFromOpenedFile, projectExists, selectDir, settings, settingsFile } from './scripts/projectHandler';
-import { rpc_main_menu, rpc_project } from './scripts/discord_rpc';
+import { addProject, getProjectsOrdered, pathFromOpenedFile, projectExists, selectDir, settings, settingsFile } from './core/projectHandler';
+import { rpc_main_menu, rpc_project } from './core/discord_rpc';
 import { listen } from '@tauri-apps/api/event';
 import { open } from '@tauri-apps/plugin-dialog';
 import { documentDir } from '@tauri-apps/api/path';
 import { type } from '@tauri-apps/plugin-os';
-import { applyTheme, setup } from './scripts/cache';
+import { applyTheme, setup } from './core/cache';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 let path = "";

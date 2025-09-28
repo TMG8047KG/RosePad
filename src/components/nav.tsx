@@ -1,5 +1,5 @@
 import { Window } from '@tauri-apps/api/window';
-import style from './styles/nav.module.css';
+import style from '../styles/components/home/nav.module.css';
 import { invoke } from '@tauri-apps/api/core';
 import { Menu } from '@tauri-apps/api/menu';
 import { useLocation } from 'react-router-dom';

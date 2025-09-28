@@ -5,9 +5,10 @@ import style from './styles/Editor.module.css'
 
 import { useNavigate } from "react-router-dom"
 import { useEffect, useRef, useState } from "react"
-import { loadFile, saveProject, updateProjectName, updateProjectPath } from "./scripts/projectHandler"
+import { loadFile, saveProject, updateProjectName, updateProjectPath } from "./core/projectHandler"
 import { save } from "@tauri-apps/plugin-dialog"
 import { type } from "@tauri-apps/plugin-os"
+import EditorPanel from "./core/editor/rPanel"
 
 function debounce(func: Function, delay: number) {
   let timeoutId: number | undefined;
@@ -200,7 +201,7 @@ function Editor() {
           <div id="characters" className={style.textData}>Symbols<br></br>{characters}</div>
         </div>
         <div className={style.container}>
-          <div id="editor" className={style.editor} contentEditable ref={editorRef} suppressContentEditableWarning spellCheck={false} tabIndex={-1}></div>
+          <EditorPanel/>
         </div>
       </div>
     </main>

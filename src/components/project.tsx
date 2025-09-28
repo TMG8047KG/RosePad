@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import style from './styles/project.module.css'
-import { deleteProject, settingsFile } from '../scripts/projectHandler';
-import { rpc_project } from '../scripts/discord_rpc';
+import style from '../styles/components/home/project.module.css'
+import { deleteProject, settingsFile } from '../core/projectHandler';
+import { rpc_project } from '../core/discord_rpc';
 import { useState } from 'react';
 import { Menu } from '@tauri-apps/api/menu';
 import { BaseDirectory, readTextFile, rename, writeTextFile } from '@tauri-apps/plugin-fs';

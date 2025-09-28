@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import style from './styles/prompt.module.css'; 
+import style from '../styles/components/home/prompt.module.css'; 
 import '../styles/Main.css' // Add styles for the modal
 interface ProjectNameModalProps {
   isOpen: boolean;

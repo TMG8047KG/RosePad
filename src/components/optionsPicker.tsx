@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import style from './styles/optionsPicker.module.css';
+import style from '../styles/components/editor/optionsPicker.module.css';
 
 type Option = { value: string; label: string };
 

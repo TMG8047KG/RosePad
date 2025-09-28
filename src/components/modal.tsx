@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import style from './styles/modal.module.css'; 
+import style from '../styles/components/home/modal.module.css'; 
 import '../styles/Main.css' // Add styles for the modal
 
 interface ProjectNameModalProps {

@@ -2,13 +2,13 @@ import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import './styles/Main.css'
 import style from './styles/Settings.module.css'
 // import { emit } from '@tauri-apps/api/event';
-import { selectDir, settingsFile } from './scripts/projectHandler';
+import { selectDir, settingsFile } from './core/projectHandler';
 import { useEffect, useState } from 'react';
 import NavSettings from './components/navSettings';
 import { getVersion, setTheme } from '@tauri-apps/api/app';
 import { type } from '@tauri-apps/plugin-os';
-import { getTheme, setThemeCache } from './scripts/cache';
-import { themes } from './scripts/themeManager';
+import { getTheme, setThemeCache } from './core/cache';
+import { themes } from './core/themeManager';
 
 function Settings() {
     const [dir, setDir] = useState("");
