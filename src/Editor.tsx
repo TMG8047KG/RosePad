@@ -1,5 +1,4 @@
 import NavBar from "./components/nav"
-import StyleMenu from "./components/stylesMenu"
 import './styles/Main.css'
 import style from './styles/Editor.module.css'
 
@@ -9,190 +8,139 @@ import { loadFile, saveProject, updateProjectName, updateProjectPath } from "./c
 import { save } from "@tauri-apps/plugin-dialog"
 import { type } from "@tauri-apps/plugin-os"
 import EditorPanel from "./core/editor/rPanel"
+import StyleMenu from "./components/stylesMenu"
 
-function debounce(func: Function, delay: number) {
-  let timeoutId: number | undefined;
-  return function(...args: any[]) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  };
+import { getView, onDocChange } from "./core/editor/editorBridge"
+import { DOMSerializer, DOMParser as PMDOMParser } from "prosemirror-model"
+import { rSchema } from "./core/editor/rSchema"
+
+function debounce<T extends (...args: any[]) => any>(fn: T, delay: number) {
+  let t: number | undefined
+  return ((...args: any[]) => {
+    if (t) clearTimeout(t)
+    t = window.setTimeout(() => fn(...args), delay)
+  }) as T
 }
 
-function Editor() {  
+function escapeHtml(s: string) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+}
+
+export default function Editor() {
   const navigator = useNavigate()
-  const editorRef = useRef<HTMLDivElement>(null);
-  const [characters, setCharacters] = useState(0);
-  const [isSaved, setSaved] = useState(true);
-  const initalContent = useRef<string>("");
+  const [characters, setCharacters] = useState(0)
+  const [isSaved, setSaved] = useState(true)
 
-  const getTime = () => {
-    let time = localStorage.getItem("autoSaveInterval")
-    if(time) return parseInt(time)
-    return 2;
+  const getIntervalMs = () => {
+    const raw = localStorage.getItem("autoSaveInterval")
+    const n = raw ? parseInt(raw, 10) : 2
+    return Math.max(1, n) * 1000
   }
 
-  const debouncedAutoSave = useRef(
-    debounce(async () => {
-      handleSaving()
-      
-      sessionStorage.setItem("fileStatus", "Saved");
-    }, getTime() * 1000)
-  ).current;
-
-  const handleContentChange = () => {
-    if (editorRef.current) {
-      const text = editorRef.current.innerText.replace(/\n/g, "");
-      const field = document.getElementById("characters");
-      if (field) {
-        field.innerText = `Symbols\n${text.length}`;
-      }
-
-      if(initalContent.current !== editorRef.current.innerHTML){
-        sessionStorage.setItem("fileStatus", "Unsaved");
-        setSaved(false);
-        if(localStorage.getItem("autoSave") === "true") debouncedAutoSave();
-      }
-    }
-  };
-
-  async function handleSaving() {
-    let text = document.getElementById("editor")?.innerHTML as string;
-    const path = sessionStorage.getItem("path") as string;
-    await saveProject(text, path);
-    setSaved(true);
-  }
-  
-  async function handleSavingAs() {
-    const oldPath = sessionStorage.getItem("path") as string;
-    const path = await save({
-      filters: [
-        {
-          name: 'RosePad Files',
-          extensions: ['rpad', 'txt'],
-        },
-        {
-          name: 'RosePad Project',
-          extensions: ['rpad']
-        },
-        {
-          name: 'Supported Files',
-          extensions: ['txt']
-        }
-      ],
-      defaultPath: oldPath 
-    });
-    console.log(path);
-    
-    if(path){
-      const extension = path.split(".");
-      const pathNoExtension = extension[0].split(/[\\\/]/g);
-      let text = "";
-      let name = "";
-      if(extension[1] == "rpad"){
-        text = document.getElementById("editor")?.innerHTML as string;
-        name = pathNoExtension[pathNoExtension.length-1];
-      }else{
-        text = document.getElementById("editor")?.innerText as string;
-        name = `${pathNoExtension[pathNoExtension.length-1]}.${extension[1]}`;
-      }
-      sessionStorage.setItem("path", path);
-      sessionStorage.setItem("projectName", name);
-      window.dispatchEvent(new Event('storage'));
-      await updateProjectPath(oldPath, path);
-      await updateProjectName(path, name);
-      await saveProject(text, path); 
-      setSaved(true);
-    } 
+  const serializeHTML = () => {
+    const v = getView()
+    if (!v) return ""
+    const frag = DOMSerializer.fromSchema(v.state.schema).serializeFragment(v.state.doc.content)
+    const div = document.createElement("div")
+    div.appendChild(frag)
+    return div.innerHTML
   }
 
-  const handleStylesMenu = () => {
-    const selection = document.getSelection();
-    const range = selection?.getRangeAt(0);
-    
-    const menu = document.getElementById("styles");
-    if(!menu) return;
-    if(range && range.toString().length > 0){
-      menu.style.display = "flex";
-
-      const rect = range.getBoundingClientRect();
-      const box = menu.getBoundingClientRect();
-      const vertical = window.innerHeight - rect.bottom < box.height ? rect.bottom-box.height : rect.bottom;
-      menu.style.top = `${vertical}px`;
-      const horizontal = window.innerWidth - rect.left < box.width ? rect.right-box.width : rect.left;
-      menu.style.left = `${horizontal}px`;
-    }else{
-      menu.style.display = "none";
-    }
+  const saveNow = async () => {
+    const v = getView()
+    if (!v) return
+    const path = sessionStorage.getItem("path") || ""
+    const isTxt = /\.txt$/i.test(path)
+    const payload = isTxt ? v.state.doc.textContent : serializeHTML()
+    await saveProject(payload, path)
+    setSaved(true)
+    sessionStorage.setItem("fileStatus", "Saved")
   }
 
-  const handleStyleMenuClose = () => {
-    const menu = document.getElementById("styles");
-    if(menu) {
-      menu.style.display = "none";
-    };
-  }
-
-  async function loadProject(editorRef: React.RefObject<HTMLDivElement | null>) {
-    const path = sessionStorage.getItem("path");
-    console.log(path);
-    if (!path || !editorRef.current) return;
-    editorRef.current.innerHTML = await loadFile(path)
-    initalContent.current = editorRef.current.innerHTML;
-    const text = editorRef.current.innerText.replace(/\n/g, "");
-    setCharacters(text.length);
-  }
-  
+  const debouncedAutoSaveRef = useRef<() => void>(() => {})
   useEffect(() => {
-    loadProject(editorRef);
-    
-    const editor = editorRef.current;
+    debouncedAutoSaveRef.current = debounce(saveNow, getIntervalMs())
+  }, [])
 
-    if (editor) {
-      const handleTabKey = (e: KeyboardEvent) => {
-        if (e.key === 'Tab') {
-          e.preventDefault();
-        }
-      };
+  useEffect(() => {
+    const off = onDocChange(() => {
+      const v = getView()
+      if (!v) return
+      setSaved(false)
+      setCharacters(v.state.doc.textContent.replace(/\n/g, "").length)
+      debouncedAutoSaveRef.current()
+    })
+    return off
+  }, [])
 
-      const handleStorageChange = () => {
-        handleSaving(); 
-      }
+  const handleSaving = async () => {
+    await saveNow()
+  }
 
-      editor.addEventListener("keyup", () => {
-        handleContentChange();
-        handleStyleMenuClose();
-      });
-      editor.addEventListener("selectstart", () => {
-        editor.addEventListener("mouseup", handleStylesMenu);
-        handleStyleMenuClose();
-      });
-      editor.addEventListener("keydown", handleTabKey);
-      editor.addEventListener("stylechange", handleContentChange);
-      window.addEventListener("paste", debounce(handleContentChange, 1));
-      
-      window.addEventListener("storage", handleStorageChange);
+  const handleSavingAs = async () => {
+    const oldPath = sessionStorage.getItem("path") || ""
+    const suggested = oldPath || sessionStorage.getItem("projectName") || "Untitled.rpad"
+    const path = await save({
+      defaultPath: suggested,
+      filters: [
+        { name: "RosePad Files", extensions: ["rpad", "txt"] },
+        { name: "RosePad Project", extensions: ["rpad"] },
+        { name: "Supported Files", extensions: ["txt"] }
+      ]
+    })
+    if (!path) return
 
-      return () => {
-        editor.removeEventListener("keyup", () => {
-          handleContentChange();
-          handleStyleMenuClose();
-        });
-        editor.removeEventListener("selectstart", () => {
-          editor.removeEventListener("mouseup", handleStylesMenu);
-          handleStyleMenuClose();
-        });
-        editor.removeEventListener("keydown", handleTabKey);
-        editor.removeEventListener("stylechange", handleContentChange);
-        window.removeEventListener("paste", debounce(handleContentChange, 1));
-        window.removeEventListener("storage", handleStorageChange)
-      };
+    const v = getView()
+    if (!v) return
+
+    const nameFromPath = (p: string) => {
+      const parts = p.split(/[\\/]/)
+      return parts[parts.length - 1]
     }
-  }, [editorRef]);
+
+    const isRpad = /\.rpad$/i.test(path)
+    const payload = isRpad ? serializeHTML() : v.state.doc.textContent
+
+    sessionStorage.setItem("path", path)
+    sessionStorage.setItem("projectName", nameFromPath(path))
+    window.dispatchEvent(new Event("storage"))
+
+    if (oldPath) await updateProjectPath(oldPath, path)
+    await updateProjectName(path, nameFromPath(path))
+    await saveProject(payload, path)
+
+    setSaved(true)
+  }
+
+  const loadProject = async () => {
+    const path = sessionStorage.getItem("path")
+    if (!path) return
+    const text = await loadFile(path)
+    const v = getView()
+    if (!v) return
+
+    const looksHtml = /\.rpad$/i.test(path) || /<\/?[a-z][\s\S]*>/i.test(text.trim())
+    const html = looksHtml ? text : `<p>${escapeHtml(text)}</p>`
+
+    const dom = new window.DOMParser().parseFromString(html, "text/html")
+    const pmDoc = PMDOMParser.fromSchema(rSchema).parse(dom.body)
+
+    const tr = v.state.tr.replaceWith(0, v.state.doc.content.size, pmDoc.content).setMeta("addToHistory", false)
+    v.dispatch(tr)
+
+    setCharacters(v.state.doc.textContent.replace(/\n/g, "").length)
+    setSaved(true)
+  }
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => loadProject())
+    return () => cancelAnimationFrame(id)
+  }, [])
+
   
   return (
     <main>
       {!["android","ios"].includes(type()) ? <NavBar isSaved={isSaved}/> : ""}
-      <StyleMenu editor={editorRef}/>
       <div className={style.main}>
         <div className={style.sidebar}>
           <button className={style.button} onClick={ () => navigator('/')}>Back</button>
@@ -202,10 +150,9 @@ function Editor() {
         </div>
         <div className={style.container}>
           <EditorPanel/>
+          <StyleMenu/>
         </div>
       </div>
     </main>
   )
 }
-
-export default Editor;

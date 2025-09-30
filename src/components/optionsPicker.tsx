@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import style from '../styles/components/editor/optionsPicker.module.css';
 
-type Option = { value: string; label: string };
+type Option = { value: 0|1|2|3|4|5|6; label: string };
 
 type Props = {
-  value: string;
+  value: 0|1|2|3|4|5|6;
   options: Option[];
-  onChange: (v: string) => void;
+  onChange: (v: 0|1|2|3|4|5|6) => void;
   className?: string;
   disabled?: boolean;
   width?: number | string;
@@ -14,7 +14,7 @@ type Props = {
 
 export default function OptionsPicker({ value, options, onChange, className, disabled, width }: Props) {
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState<string>(value);
+  const [active, setActive] = useState<number>(value);
   const btnRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 

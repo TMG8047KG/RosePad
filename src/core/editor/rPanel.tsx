@@ -7,6 +7,8 @@ import { rSchema } from "./rSchema";
 import { rRules } from "./rRules";
 import style from '../../styles/Editor.module.css'
 import '../../styles/components/editor/mirror.css'
+import { rEvent } from "./rEvent";
+import { setView } from "./editorBridge";
 
 export default function EditorPanel(){
     const editorRef = useRef<HTMLDivElement>(null);
@@ -19,12 +21,15 @@ export default function EditorPanel(){
             plugins: [
                 rRules(),
                 keyBinding(),
+                rEvent(),
                 history({ depth: 100, newGroupDelay: 500 }),
             ]}
         )
         const view = new EditorView(editorRef.current, { state });
+        setView(view);
 
         return () => {
+            setView(null);
             view.destroy();
         };
     }, []);
