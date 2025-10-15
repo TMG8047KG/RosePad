@@ -12,7 +12,7 @@ type Props = {
   width?: number | string;
 };
 
-export default function OptionsPicker({ value, options, onChange, className, disabled, width }: Props) {
+export default function headingPicker({ value, options, onChange, className, disabled, width }: Props) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<number>(value);
   const btnRef = useRef<HTMLButtonElement>(null);

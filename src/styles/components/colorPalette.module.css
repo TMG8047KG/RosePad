@@ -1,0 +1,140 @@
+.root {
+  position: relative;
+  display: inline-block;
+}
+
+.trigger {
+  border: none;
+  background: var(--btn-tertiary-bg);
+  color: var(--btn-tertiary-text);
+  border-radius: 10px;
+  height: 2rem;
+  width: 2rem;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.swatch {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 1px var(--separator);
+}
+
+.panel {
+  position: fixed;
+  min-width: 220px;
+  max-width: 260px;
+  background: var(--bg-secondary);
+  color: var(--fg-primary);
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.35);
+  padding: 10px;
+  z-index: 9999;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+
+.cell {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--separator);
+  cursor: pointer;
+}
+
+.customBtn {
+  height: 28px;
+  border-radius: 6px;
+  border: 1px dashed var(--separator);
+  background: var(--bg-tertiary);
+  color: var(--fg-primary);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.customRow {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.hexInput {
+  flex: 1;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  padding: 0 8px;
+  background: var(--bg-tertiary);
+  color: var(--fg-primary);
+  font-weight: 600;
+}
+
+.applyBtn, .cancelBtn {
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--separator);
+  background: var(--btn-tertiary-bg);
+  color: var(--btn-tertiary-text);
+  padding: 0 8px;
+  font-weight: 700;
+}
+.preview {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px var(--separator);
+}
+
+/* Inline custom picker */
+.picker {
+  margin-top: 8px;
+}
+.sv {
+  position: relative;
+  width: 100%;
+  height: 130px;
+  border-radius: 8px;
+  background: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0)),
+              linear-gradient(to right, #fff, rgba(255,255,255,0));
+  margin-bottom: 8px;
+  box-shadow: inset 0 0 0 1px var(--separator);
+}
+.svHandle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.6);
+  transform: translate(-50%, -50%);
+}
+.hue {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+  box-shadow: inset 0 0 0 1px var(--separator);
+  margin-bottom: 8px;
+}
+.hueHandle {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.6);
+  transform: translate(-50%, -50%);
+}
+.pickerRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

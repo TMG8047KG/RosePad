@@ -28,6 +28,8 @@
     "core:window:allow-get-all-windows",
     "os:default",
     "cache:default",
+    "sql:default",
+    "sql:allow-execute",
     {
       "identifier": "fs:read-all",
       "allow": [{ "path": "**" }]

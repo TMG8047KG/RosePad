@@ -25,7 +25,12 @@ export default function EditorPanel(){
                 history({ depth: 100, newGroupDelay: 500 }),
             ]}
         )
-        const view = new EditorView(editorRef.current, { state });
+        const view = new EditorView(editorRef.current, { 
+            state,
+            attributes: {
+                spellcheck: "false",
+            }
+        });
         setView(view);
 
         return () => {

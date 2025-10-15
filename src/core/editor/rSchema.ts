@@ -7,31 +7,41 @@ export const rSchema = new Schema({
         paragraph: {
             content: "inline*",
             group: "block",
-            parseDOM: [{ tag: "p" }],
-            toDOM() { 
-                return ["p", 0]; 
+            attrs: { align: { default: "left" } },
+            parseDOM: [{ 
+                tag: "p",
+                getAttrs: dom => {
+                    const style = (dom as HTMLElement).style?.textAlign || null;
+                    return { align: style || null };
+                }
+            }],
+            toDOM(node) {
+                const attrs: Record<string, any> = {};
+                if (node.attrs.align) attrs.style = `text-align:${node.attrs.align}`;
+                return ["p", attrs, 0]; 
             }
         },
         heading: {
-            attrs: { level: { default: 1 } },
+            attrs: { level: { default: 1 }, align: { default: "left" } },
             content: "inline*",
             group: "block",
             defining: true,
-            parseDOM: [
-                { tag: "h1", attrs: { level: 1 } },
-                { tag: "h2", attrs: { level: 2 } },
-                { tag: "h3", attrs: { level: 3 } },
-                { tag: "h4", attrs: { level: 4 } },
-                { tag: "h5", attrs: { level: 5 } },
-                { tag: "h6", attrs: { level: 6 } }
-            ],
+            parseDOM: [1,2,3,4,5,6].map(l => ({
+                tag: `h${l}`,
+                getAttrs: dom => {
+                const ta = (dom as HTMLElement).style?.textAlign || null;
+                return { level: l, align: ta || null };
+                }
+            })),
             toDOM(node) {
-                const level = (node.attrs as { level: number }).level;
-                return ["h" + level, 0];
+                const level = node.attrs.level as number;
+                const attrs: Record<string, string> = {};
+                if (node.attrs.align) attrs.style = `text-align:${node.attrs.align}`;
+                return [`h${level}`, attrs, 0];
             }
         },
         list_item: {
-            content: "block+",
+            content: "paragraph block*",
             defining: true,
             parseDOM: [{ tag: "li"}],
             toDOM(){
@@ -53,11 +63,11 @@ export const rSchema = new Schema({
             parseDOM: [{
                 tag: "ol",
                 getAttrs: (dom) => {
-                const el = dom as HTMLOListElement;
-                const startAttr = el.getAttribute("start");
-                const start = startAttr ? Math.max(1, Number(startAttr) || 1) : 1;
-                const type = el.getAttribute("type");
-                return { start, type: type || null };
+                    const el = dom as HTMLOListElement;
+                    const startAttr = el.getAttribute("start");
+                    const start = startAttr ? Math.max(1, Number(startAttr) || 1) : 1;
+                    const type = el.getAttribute("type");
+                    return { start, type: type || null };
                 }
             }],
             toDOM(node) {

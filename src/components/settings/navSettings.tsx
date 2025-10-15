@@ -1,5 +1,5 @@
 import { Window } from '@tauri-apps/api/window';
-import style from "../styles/components/settings/navSettings.module.css";
+import style from "../../styles/components/settings/navSettings.module.css";
 import { invoke } from '@tauri-apps/api/core';
 import { Menu } from '@tauri-apps/api/menu';
 import { useEffect, useState } from 'react';

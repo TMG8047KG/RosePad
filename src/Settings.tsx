@@ -1,28 +1,26 @@
-import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 import './styles/Main.css'
 import style from './styles/Settings.module.css'
-// import { emit } from '@tauri-apps/api/event';
-import { selectDir, settingsFile } from './core/projectHandler';
+import { selectDir } from './core/projectHandler';
 import { useEffect, useState } from 'react';
-import NavSettings from './components/navSettings';
+import NavSettings from './components/settings/navSettings';
 import { getVersion, setTheme } from '@tauri-apps/api/app';
 import { type } from '@tauri-apps/plugin-os';
 import { getTheme, setThemeCache } from './core/cache';
 import { themes } from './core/themeManager';
+import { useWorkspace } from './core/workspaceContext';
 
 function Settings() {
-    const [dir, setDir] = useState("");
     const [version, setVersion] = useState<string>();
     const [autoSave, setAutoSaveActive] = useState(localStorage.getItem("autoSave")==="true");
     const [autoSaveInterval, setAutoSaveInterval] = useState(2);
     const [theme, setThemeButton] = useState<themes>(null);
+    const { setRoot, reindex, rootPath } = useWorkspace();
 
     const handleAutoSaveChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         const checked = event.target.checked;
         setAutoSaveActive(checked);
         localStorage.setItem("autoSave", checked.toString());
     }
-
 
     const handleAutoSaveIntervalChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         let value = parseInt(event.target.value);
@@ -50,12 +48,6 @@ function Settings() {
     }
 
     useEffect(() => {
-        const loadDir = async () =>{
-            const rawJson = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
-            let settings = JSON.parse(rawJson);
-            setDir(settings.projectPath)
-        }
-        loadDir();
         const handleVersion = async () => {
             setVersion(`${await getVersion()}`);
         };
@@ -78,9 +70,10 @@ function Settings() {
 
     const handleDirChange = async () =>{
         const newDir = await selectDir()
-        if(newDir) setDir(newDir as string);
+        if(newDir) {
+            await setRoot(newDir)
+         }
     }
-
 
     return (
         <main>
@@ -88,8 +81,8 @@ function Settings() {
             <div className={style.container}>
                 {type() !== "android" || "ios" ? <div>
                     <h3 className={style.heads}>Project Directory</h3>
-                    <div className={style.pathInput}>
-                        <p>{dir}</p>
+                    <div className={style.pathInput} title={rootPath as string}>
+                        <p>{rootPath}</p>
                         <button className={style.button} onClick={ () => handleDirChange() }>Select</button>
                     </div>
                 </div> : ""}

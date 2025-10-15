@@ -1,4 +1,4 @@
-import style from '../styles/components/settings/buttonSettings.module.css'
+import style from '../../styles/components/settings/buttonSettings.module.css'
 import { invoke } from '@tauri-apps/api/core';
 
 function settingsButton(){

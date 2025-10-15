@@ -1,199 +1,207 @@
 import './styles/Main.css'
 import style from './styles/Home.module.css'
-import NavBar from './components/nav';
-import Prompt from './components/prompt';
-import Project from './components/project';
-import SettingsButton from "./components/buttonSettings"
+import NavBar from './components/nav'
+import SettingsButton from "./components/settings/buttonSettings"
+import MultiModal from './components/home/modal'
+import { ProjectList } from './components/home/projectList/list'
 
-import { create, readTextFile, BaseDirectory} from '@tauri-apps/plugin-fs';
-import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { addProject, getProjectsOrdered, pathFromOpenedFile, projectExists, selectDir, settings, settingsFile } from './core/projectHandler';
-import { rpc_main_menu, rpc_project } from './core/discord_rpc';
-import { listen } from '@tauri-apps/api/event';
-import { open } from '@tauri-apps/plugin-dialog';
-import { documentDir } from '@tauri-apps/api/path';
-import { type } from '@tauri-apps/plugin-os';
-import { applyTheme, setup } from './core/cache';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { create, readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs'
+import { open } from '@tauri-apps/plugin-dialog'
+import { getCurrentWindow } from '@tauri-apps/api/window'
+import { listen } from '@tauri-apps/api/event'
+import { join } from '@tauri-apps/api/path'
+import { type } from '@tauri-apps/plugin-os'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-let path = "";
+import { rpc_main_menu, rpc_project } from './core/discord_rpc'
+import { applyTheme, setup } from './core/cache'
+import { addProject, pathFromOpenedFile, projectExists, selectDir, settings, settingsFile } from './core/projectHandler'
+import { addVirtualFolder, setVirtualFolderColor, setPhysicalFolderColor, createPhysicalFolder } from './core/db'
 
-setup();
-applyTheme();
+import { useWorkspace } from './core/workspaceContext'
+import { invoke } from '@tauri-apps/api/core'
 
-settings();
+let openedPathCache: string | null = null
 
-async function createProject(dir:string, name:string) { 
-  const filePath = `${dir}\\${name}.rpad`;
-  const file = await create(filePath);
-  await file.close();
-  await rpc_project(name, filePath);
-  sessionStorage.setItem("name", `${name}`); //file_name
-  sessionStorage.setItem("projectName", name);
-  sessionStorage.setItem("path", filePath) //with extension
-  addProject(name, filePath);
+setup()
+applyTheme()
+settings()
+
+async function createRpadFile(dir: string, name: string) {
+  // Create via backend to ensure unique filename and initial manifest title
+  const filePath = await invoke<string>('create_rpad_project', { destDir: dir, name })
+  return filePath
 }
 
-function App() {
-  const navigator = useNavigate();
-  const [projects, setProjects] = useState<any[]>([]);
+function HomeShell() {
+  const navigator = useNavigate()
+  const [isChooseOpen, setIsChooseOpen] = useState(false)
+  const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false)
+  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false)
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      const fetchedProjects = await getProjectsOrdered();
-      setProjects(fetchedProjects);
-    };
-    fetchProjects();
+  const { rootPath, setRoot, reindex } = useWorkspace();
 
-    const showWindow = async () => {
-      const rWin = getCurrentWindow();
-      rWin.show().then(() => rWin.setFocus?.());    
-    }
-    showWindow();
+  const ensureWorkspace = async () => {
+    if (rootPath) return rootPath
+    const dir = await selectDir()
+    if (!dir) throw new Error('No workspace selected')
+    await setRoot(dir)
+    return dir
+  }
 
-    const unlisten = listen('file-open', async (event) => {
-      const args = event.payload as string[];
-      if (args.length > 1) {
-        const openedPath = args[1];
-        await handleFileOpen(openedPath);
-      }
-    });
-
-    openedFromFile();
-
-    return () => {
-      unlisten.then(f => f());
-    };
-  }, []);
-
-  const handleProjectRename = async (oldName: string, newName: string, newPath: string) => {
-    setProjects(prevProjects => 
-      prevProjects.map(project => project.name === oldName ? {...project, name: newName, path: newPath} : project)
-    );
-  };
-
-  const handleProjectDeletion = async (projectName: string) => {
-    setProjects((prevProjects) =>
-      prevProjects.filter((project) => project.name !== projectName)
-    );
-  };
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleCreateProject = async (name: string) => {
-    const raw = await readTextFile(settingsFile, !["android","ios"].includes(type()) ? { baseDir: BaseDirectory.AppLocalData} : { baseDir: BaseDirectory.AppConfig })
-    const data = JSON.parse(raw)
-    let dir = data.projectPath;
-    console.log(dir);
-    if(!["android","ios"].includes(type()) && dir == "null" || !dir){
-      dir = await selectDir()
-      localStorage.setItem("autoSave", "true");
-      localStorage.setItem("spellcheck", "false");
-    }
-    if(data.projects.some((projectName: { name: string; }) => projectName.name === name)){
-      return alert("A project with this name already exists!");  
-    }
-    await createProject(dir, name);
-    setIsModalOpen(false);
-    navigator(`/editor/${name}`);
-  };
+  const importIntoWorkspace = async (filePath: string) => {
+    const root = await ensureWorkspace()
+    const dest = await invoke<string>('import_project', { root, src: filePath })
+    return dest
+  }
 
   const handleFileOpen = async (filePath: string) => {
-    const exists = await projectExists(filePath);
-    if(filePath){
-      const splitPath = filePath.split(/[/\\]/g);
-      let name = splitPath[splitPath.length-1];
-      const project = name.split(".");
-      sessionStorage.setItem("path", filePath);
-      if(project[1] == "rpad"){
-        name = project[0] //file_name
-      }
-      sessionStorage.setItem("name", name); //file_name.extension
-      sessionStorage.setItem("projectName", name); 
-      if(!exists) await addProject(name, filePath);
-      await rpc_project(name, filePath);
-      navigator(`/editor/${name}`);
+    if (!filePath) return
+    // copy into workspace if needed
+    const insidePath = await importIntoWorkspace(filePath)
+
+    // name derivation
+    let name = insidePath.split(/[/\\]/g).pop() || insidePath
+    const dot = name.lastIndexOf('.')
+    if (dot > 0) name = name.slice(0, dot)
+
+    sessionStorage.setItem('path', insidePath)
+    sessionStorage.setItem('name', name)
+    sessionStorage.setItem('projectName', name)
+
+    if (!(await projectExists(insidePath))) {
+      await addProject(name, insidePath) // recents list
     }
+
+    await reindex()             // <— now it appears in the project list
+    await rpc_project(name, insidePath)
+    navigator(`/editor/${name}`)
   }
 
   const importProject = async () => {
-    const path = await open({
+    const p = await open({
       multiple: false,
       directory: false,
-      title: 'Select a project',
-      filters: [{
-        name: 'RosePad Files',
-        extensions: ['rpad', 'txt']
-      },
-      {
-        name: 'RosePad Project',
-        extensions: ['rpad']
-      },
-      {
-        name: 'Supported Files',
-        extensions: ['txt']
-      }],
-      defaultPath: await documentDir(),
-    });
-    if(path) handleFileOpen(path);
+      title: 'Select a project to import',
+      filters: [
+        { name: 'RosePad Files', extensions: ['rpad','txt','pdf','doc','docx'] },
+        { name: 'RosePad Project', extensions: ['rpad'] },
+        { name: 'Supported Files', extensions: ['txt','pdf','doc','docx'] }
+      ]
+    })
+    if (p) await handleFileOpen(p as string)
+  }
+
+  useEffect(() => {
+    const showWindow = async () => {
+      const rWin = getCurrentWindow()
+      rWin.show().then(() => rWin.setFocus?.())
+    }
+    showWindow()
+
+    const unlisten = listen<string[]>('file-open', async (event) => {
+      const args = event.payload || []
+      if (args.length > 1) {
+        const openedPath = args[1]
+        await handleFileOpen(openedPath)
+      }
+    })
+
+    openedFromFile()
+    rpc_main_menu()
+
+    return () => { unlisten.then(f => f()) }
+  }, [])
+
+  const handleCreateProject = async (name: string, dest?: string) => {
+    // Ensure we have a workspace root to work with
+    const root = await ensureWorkspace()
+    // If user picked a physical folder, use it; otherwise use workspace root
+    const dir = (dest && !dest.startsWith('vf:')) ? dest : root
+
+    const filePath = await createRpadFile(dir, name)
+    await rpc_project(name, filePath)
+    sessionStorage.setItem("name", name)
+    sessionStorage.setItem("projectName", name)
+    sessionStorage.setItem("path", filePath)
+    await addProject(name, filePath)
+
+    // First reindex so the new project is in the DB
+    await reindex()
+    // If a virtual folder was selected, assign the newly created project to it
+    if (dest && dest.startsWith('vf:')) {
+      const vfId = dest.slice(3)
+      // Assign by path; relies on reindex to have populated the DB entry
+      const { assignProjectPathToVirtual } = await import('./core/db')
+      await assignProjectPathToVirtual(filePath, vfId)
+      // Reindex again so the assignment appears immediately in the UI
+      await reindex()
+    }
+    setIsCreateProjectOpen(false)
+    navigator(`/editor/${name}`)
   }
 
   const openedFromFile = async () => {
-    if(!path){
-      path = await pathFromOpenedFile(); //full path (aka with /file_name.extension)
-      if(path) {
-        await handleFileOpen(path);
-      }
+    if (!openedPathCache) {
+      openedPathCache = await pathFromOpenedFile()
+      if (openedPathCache) await handleFileOpen(openedPathCache)
     }
   }
 
-  rpc_main_menu();
-
   return (
-    <main>
-      <div className={style.shadow}/>
-      {!["android","ios"].includes(type()) ? <NavBar/> : ""}
-      <div id='con' className={style.container}>
-        <div className={style.infoBox}>
-          <h1 className={style.title}>RosePad</h1>
-          <p>A simple and beautiful way to write notes, letters, poems and such.</p>
+    <div className={style.container}>
+      <div className={style.infoBox}>
+        <h1 className={style.title}>RosePad</h1>
+        <p>A simple and beautiful way to write notes, letters, poems and such.</p>
+        <div className={style.buttons}>
           <div className={style.buttons}>
-            <button className={style.button} onClick={ ()=> setIsModalOpen(true) }>Create Project</button>
-            <button className={style.import} onClick={ ()=> importProject() }>
+            <button className={style.button} onClick={() => setIsChooseOpen(true)}>Create</button>
+            <button className={style.import} onClick={() => importProject()}>
               <svg aria-hidden="true" width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 12h14m-7 7V5"/>
               </svg>
-            </button>
-          </div>
-        </div>
-        <div className={style.projects}>
-          <div className={style.listField}>
-            <h2>Projects</h2>
-            <div className={style.list}>
-              {projects.length > 0 ? (
-                projects.map((project) => (
-                  <Project
-                    key={project.name}
-                    name={project.name}
-                    date={project.last_updated}
-                    path={project.path}
-                    onDelete={handleProjectDeletion}
-                    onRename={handleProjectRename}/>
-                ))
-              ) : (
-                <p className={style.noProjectsMessage}>There aren't any projects!</p>
-              )}
+              </button>
             </div>
-          </div>
-        </div>
-        <Prompt isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleCreateProject}/>
-        <div className={style.settings}>
-          <SettingsButton/>
         </div>
       </div>
+      <div className={style.projects}>
+        <ProjectList/>
+      </div>
+      <MultiModal type='custom' isOpen={isChooseOpen} onClose={() => setIsChooseOpen(false)} title='Create'>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+          <button className={style.button} onClick={() => { setIsChooseOpen(false); setIsCreateProjectOpen(true) }}>Project</button>
+          <button className={style.button} onClick={() => { setIsChooseOpen(false); setIsCreateFolderOpen(true) }}>Folder</button>
+        </div>
+      </MultiModal>
+      <MultiModal type='createProject' isOpen={isCreateProjectOpen} onClose={() => setIsCreateProjectOpen(false)} onSubmit={(n, d) => handleCreateProject(n, d)}/>
+      <MultiModal type='createFolder' isOpen={isCreateFolderOpen} onClose={() => setIsCreateFolderOpen(false)} onSubmit={async (name, folderType, color) => {
+        const root = await ensureWorkspace()
+        if (folderType === 'physical') {
+          const p = await createPhysicalFolder(root, name)
+          if (color) await setPhysicalFolderColor(p, color)
+        } else {
+          const id = await addVirtualFolder(name, root)
+          if (color) await setVirtualFolderColor(id, color)
+        }
+        await reindex()
+        setIsCreateFolderOpen(false)
+      }}/>
+      <div className={style.settings}>
+        <SettingsButton/>
+      </div>
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <main>
+      <div className={style.shadow}/>
+        {!["android","ios"].includes(type()) ? <NavBar/> : ""}
+        <HomeShell/>
     </main>
   )
 }
 
-export default App;
+export default App

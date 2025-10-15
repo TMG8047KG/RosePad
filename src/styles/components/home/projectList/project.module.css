@@ -7,12 +7,12 @@
 .project{
     background: var(--project-bg);
     display: grid;
-    grid-template-columns: 50% 40% 10%;
+    grid-template-columns: 50% 10% 30% 10%;
     border-radius: 0;
     padding: 5px;
     margin: 0;
     align-items: center;
-    height: 2rem;
+    max-height: 32px;
     transition: ease 0.3s;
 }
 
@@ -42,6 +42,7 @@
     color: var(--project-text);
     white-space: nowrap;
     text-align: start;
+    font-size: 12pt;
 }
 
 .p{
@@ -82,7 +83,17 @@
 
 .project:hover .options:hover{
     color: var(--project-hover-text);
-    background: var(--project-active-bg);
+    background: rgb(from var(--project-active-bg) r g b / 20%);
+}
+
+.select{
+    background: var(--bg-tertiary);
+    color: var(--fg-tertiary);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 6px 10px;
+    border: 2px solid var(--separator);
+    border-radius: 12px;
 }
 
 @media only screen and (max-height: 400px), only screen and (max-width: 650px)  {

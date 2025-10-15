@@ -1,0 +1,71 @@
+name: Publish to AUR
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish-aur:
+    if: github.event.release.prerelease == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version and source URL
+        id: meta
+        shell: bash
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          TAG="${TAG#v}"
+          echo "pkgever=$TAG" >> $GITHUB_OUTPUT
+          echo "src_url=https://github.com/${{ github.repository }}/archive/refs/tags/v${TAG}.tar.gz" >> $GITHUB_OUTPUT
+
+      - name: Compute source sha256
+        id: sums
+        shell: bash
+        run: |
+          curl -L "${{ steps.meta.outputs.src_url }}" -o src.tar.gz
+          echo "sha256=$(sha256sum src.tar.gz | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+
+      - name: Setup SSH for AUR
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa aur.archlinux.org >> ~/.ssh/known_hosts
+
+      - name: Clone AUR package repository
+        shell: bash
+        run: |
+          git clone "ssh://aur@aur.archlinux.org/${{ secrets.AUR_PACKAGE }}.git" aur
+
+      - name: Update PKGBUILD (pkgver, source, sha256)
+        shell: bash
+        working-directory: aur
+        run: |
+          git config user.name "${{ secrets.AUR_USERNAME }}"
+          git config user.email "${{ secrets.AUR_EMAIL }}"
+          sed -i "s/^pkgver=.*/pkgver=${{ steps.meta.outputs.pkgever }}/" PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=1/" PKGBUILD
+          # Expect PKGBUILD to use a source tarball from GitHub releases
+          # If your PKGBUILD uses a different naming scheme, adjust the sed line below.
+          sed -i "s#^source=.*#source=(\"${{ secrets.AUR_SOURCE_PREFIX || 'rosepad' }}-${{ steps.meta.outputs.pkgever }}.tar.gz::${{ steps.meta.outputs.src_url }}\")#" PKGBUILD
+          sed -i "s/^sha256sums=.*/sha256sums=('${{ steps.sums.outputs.sha256 }}')/" PKGBUILD
+          git add PKGBUILD
+
+      - name: Generate .SRCINFO
+        shell: bash
+        working-directory: aur
+        run: |
+          docker run --rm -v "$PWD":/pkg archlinux:base-devel bash -lc "cd /pkg && makepkg --printsrcinfo > .SRCINFO"
+          git add .SRCINFO
+
+      - name: Commit and push to AUR
+        shell: bash
+        working-directory: aur
+        run: |
+          git commit -m "Update to ${{ steps.meta.outputs.pkgever }}"
+          git push origin HEAD
+

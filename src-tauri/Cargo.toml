@@ -1,6 +1,6 @@
 [package]
 name = "rosepad"
-version = "0.1.4"
+version = "1.0.0"
 description = "Simple and Beatiful Text Editor"
 authors = ["Alexandar Goranov"]
 license = "GNU GPL-3"
@@ -23,10 +23,16 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = ["unstable", "image-png"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tauri-plugin-fs = "2.2.0"
+tauri-plugin-fs = {version = "2.2.0", features = ["watch"] }
 tauri-plugin-dialog = "2.2.0"
 tauri-plugin-os = "2"
 tauri-plugin-cache = "0.1.5"
+walkdir = "2"
+zip = { version = "0.6", default-features = false, features = ["deflate"] }
+anyhow = "1"
+notify = "6"
+blake3 = "1"
+tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2.3.4"

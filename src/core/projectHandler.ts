@@ -1,135 +1,105 @@
-import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
-import { BaseDirectory, documentDir } from "@tauri-apps/api/path";
-import { open } from '@tauri-apps/plugin-dialog';
-import { exists, mkdir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
-import { type } from "@tauri-apps/plugin-os";
+import { open } from '@tauri-apps/plugin-dialog'
+import { readTextFile, writeTextFile, exists, BaseDirectory, mkdir } from '@tauri-apps/plugin-fs'
+import { type as osType } from '@tauri-apps/plugin-os'
+import { db } from './db'
+import { invoke } from '@tauri-apps/api/core'
+import { join } from '@tauri-apps/api/path'
 
-export const settingsFile = "settings.json"
+export const settingsFile = 'settings.json'
 
-export async function pathFromOpenedFile() {
-    let path = await invoke('get_args')
-    if(Array.isArray(path) && path.length >= 1){
-        return path[1] as string;
-    }
-    listen("file-open", (event) => {
-        path = event.payload as string;
-        console.log(path);
-        if(Array.isArray(path) && path.length >= 1){
-            return path[1] as string;
-        }
-    })
-    return path as string;
+type SettingsShape = {
+  projectPath: string | null
+  recent?: { name: string; path: string; ts: number }[]
+}
+
+async function baseDir() {
+  const t = await osType()
+  return ['android','ios'].includes(t) ? BaseDirectory.AppLocalData : BaseDirectory.AppConfig
+}
+
+async function ensureSettings(): Promise<SettingsShape> {
+  const b = await baseDir()
+  const ok = await exists(settingsFile, { baseDir: b })
+  if (!ok) {
+    const def: SettingsShape = { projectPath: null, recent: [] }
+    await writeTextFile(settingsFile, JSON.stringify(def, null, 2), { baseDir: b })
+    return def
+  }
+  const raw = await readTextFile(settingsFile, { baseDir: b })
+  try {
+    const parsed = JSON.parse(raw) as SettingsShape
+    if (!Object.prototype.hasOwnProperty.call(parsed, 'projectPath')) parsed.projectPath = null
+    if (!Object.prototype.hasOwnProperty.call(parsed, 'recent')) parsed.recent = []
+    return parsed
+  } catch {
+    const def: SettingsShape = { projectPath: null, recent: [] }
+    await writeTextFile(settingsFile, JSON.stringify(def, null, 2), { baseDir: b })
+    return def
+  }
+}
+
+async function saveSettings(s: SettingsShape) {
+  const b = await baseDir()
+  await writeTextFile(settingsFile, JSON.stringify(s, null, 2), { baseDir: b })
 }
 
 export async function settings() {
-    if(!await exists("", type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })){
-        await mkdir('', type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
+  await ensureSettings()
+}
+
+async function ensureWorkspaceFolder(baseDir: string): Promise<string> {
+  const candidates = ['RosePad Workspace', '.rosepad', 'RosePadWorkspace']
+  // If the selected folder already looks like a workspace folder, use it as-is
+  const parts = baseDir.split(/\\|\//).filter(Boolean)
+  const last = parts.length ? parts[parts.length - 1] : ''
+  if (candidates.some(c => c.toLowerCase() === last.toLowerCase())) {
+    return baseDir
+  }
+  // Otherwise, prefer an existing candidate within the selected folder; if none, create one
+  for (const name of candidates) {
+    const p = await join(baseDir, name)
+    if (!(await exists(p))) {
+      await mkdir(p, { recursive: true })
+      return p
     }
-
-    const hasFile = await exists(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
-    if(!hasFile){
-        let data = {
-            projectPath: "null",
-            projects: []
-        }
-        let json = JSON.stringify(data, null, 2);
-        await writeTextFile(settingsFile, json, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
-    }
-}
-  
-export async function selectDir(){
-    const dir = await open({
-        multiple: false,
-        directory: true,
-        canCreateDirectories: true,
-        title: 'Select a project folder',
-        defaultPath: await documentDir(),
-    });
-    if(dir){
-        const rawJson = await readTextFile(settingsFile, { baseDir: BaseDirectory.AppConfig });
-        let settings = JSON.parse(rawJson);
-        settings.projectPath = dir;
-        let json = JSON.stringify(settings, null, 2);
-        await writeTextFile(settingsFile, json, { baseDir: BaseDirectory.AppConfig })
-        return dir
-    }
+  }
+  return await join(baseDir, candidates[0])
 }
 
-export async function addProject(name:string, path:string|URL) {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
-    let settings = JSON.parse(rawJson);
-    let now = new Date();
-    settings.projects.push({ 
-        name: `${name}`,
-        last_updated: `${now.toLocaleString()}`,
-        path: `${path}`
-    })
-    let json = JSON.stringify(settings, null, 2);
-    await writeTextFile(settingsFile, json, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
+export async function selectDir(): Promise<string | null> {
+  const base = await open({ directory: true, multiple: false, title: 'Select a directory for the RosePad workspace' })
+  if (!base || Array.isArray(base)) return null
+  const workspace = await ensureWorkspaceFolder(base)
+  const s = await ensureSettings()
+  s.projectPath = workspace
+  await saveSettings(s)
+  return workspace
 }
 
-export async function updateProjectPath(path: string|URL, newPath: string|URL) {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
-    let json = JSON.parse(rawJson);
-    let project = json.projects.find((projectPath: { path: string; }) => projectPath.path === path);
-    await remove(path);
-    project.path = newPath;
-    let updatedJson = JSON.stringify(json, null, 2);
-    await writeTextFile(settingsFile, updatedJson, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+export async function projectExists(filePath: string): Promise<boolean> {
+  try {
+    const d = await db()
+    const rows = await d.select('SELECT 1 AS x FROM projects WHERE path = ? LIMIT 1', [filePath])
+    return Array.isArray(rows) && rows.length > 0
+  } catch {
+    return false
+  }
 }
 
-export async function updateProjectName(path: string|URL, name: string) {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
-    let json = JSON.parse(rawJson);
-    let project = json.projects.find((projectPath: { path: string; }) => projectPath.path === path);
-    project.name = name;
-    let updatedJson = JSON.stringify(json, null, 2);
-    await writeTextFile(settingsFile, updatedJson, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
+export async function addProject(name: string, filePath: string) {
+  const s = await ensureSettings()
+  const recent = s.recent || []
+  const withoutDup = recent.filter(r => r.path !== filePath)
+  withoutDup.unshift({ name, path: filePath, ts: Date.now() })
+  s.recent = withoutDup.slice(0, 20)
+  await saveSettings(s)
 }
 
-export async function getProjectsOrdered() {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
-    let json = JSON.parse(rawJson);
-    let projects = json.projects;
-    projects.sort((a: { last_updated: string | number | Date; }, b: { last_updated: string | number | Date; }) => {
-        const dateA = new Date(a.last_updated).getTime();
-        const dateB = new Date(b.last_updated).getTime();
-        return dateA - dateB;
-    });
-    projects.reverse()
-    return projects
+export async function pathFromOpenedFile(): Promise<string | null> {
+  try {
+    const paths = await invoke<string[]>('take_pending_open_paths')
+    if (Array.isArray(paths) && paths.length > 0) return paths[0]
+  } catch {}
+  return null
 }
 
-export async function saveProject(text: string, path: string) {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
-    let json = JSON.parse(rawJson);
-    let project = json.projects.find((projectPath: { path: string; }) => projectPath.path === path);
-    project.last_updated = new Date().toLocaleString();
-    let updatedJson = JSON.stringify(json, null, 2);
-    await writeTextFile(settingsFile, updatedJson, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
-    await writeTextFile(project.path, text);
-}
-
-export async function loadFile(path: string | URL) {
-    const text = await readTextFile(path);
-    return text;
-}
-
-export async function deleteProject(name: string) {
-    const rawJson = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData });
-    let json = JSON.parse(rawJson);
-    let project = json.projects.find((projectName: { name: string; }) => projectName.name === name);
-    await remove(project.path)
-    const index = json.projects.findIndex((projectPath: { path: string; }) => project.path === projectPath.path);
-    json.projects.splice(index, 1);
-    const updatedJson = JSON.stringify(json, null, 2);
-    await writeTextFile(settingsFile, updatedJson, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
-}
-
-export async function projectExists(path: string | URL) {
-    const raw = await readTextFile(settingsFile, type() !== "android" || "ios" ? { baseDir: BaseDirectory.AppConfig } : { baseDir: BaseDirectory.AppLocalData })
-    const data = JSON.parse(raw)
-    const projects = data.projects;
-    return projects.some((project: { path: string | URL; }) => project.path === path)
-}

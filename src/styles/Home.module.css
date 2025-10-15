@@ -85,31 +85,6 @@
     color: var(--btn-primary-text);
 }
 
-.listField{
-    display: grid;
-    grid-template-rows: 2.6rem;
-    background: var(--bg-tertiary);
-    padding: 5px;
-    width: 80%;
-    border-radius: 15px;
-    transition: ease 0.3s;
-}
-
-.listField h2{
-    margin: 0;
-    padding: 5px 0px 5px 0px;
-}
-
-.list{
-    overflow-y: auto;
-    overflow-x: hidden;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    border-radius: 12px;
-    max-height: 8rem;
-    transition: ease 0.3s;
-}
-
 .noProjectsMessage {
     text-align: center;
     color: var(--fg-secondary);
@@ -133,69 +108,4 @@
     bottom: 0;
     left: 0;
     margin: 5px;
-}
-
-@media only screen and (min-height: 300px) {
-    .listField{
-        max-height: 15rem;
-    }
-    .list{
-        max-height: 8rem;
-    }
-}
-
-@media only screen and (min-width: 500px) {
-    .button{
-        font-size: 15px;
-    }
-    .import{
-        height: 30px;
-        width: 30px;
-    }
-}
-
-@media only screen and (min-height: 400px) {
-    .listField{
-        max-height: 16rem;
-    }
-    .list{
-        max-height: 13.4rem;
-    }
-}
-
-@media only screen and (min-height: 500px) {
-    .listField{
-        max-height: 24rem;
-    }
-    .list{
-        max-height: 21.4rem;
-    }
-}
-
-@media only screen and (min-height: 800px) {
-    .listField{
-        max-height: 34.8rem;
-    }
-    .list{
-        max-height: 32.2rem;
-    }
-}
-
-@media only screen and (min-height: 1000px) {
-    .listField{
-        max-height: 42.8rem;
-    }
-    .list{
-        max-height: 40.2rem;
-    }
-}
-
-@media only screen and (min-width: 1100px)  {
-    .button{
-        font-size: 24px;
-    }
-    .import{
-        height: 36px;
-        width: 36px;
-    }
 }

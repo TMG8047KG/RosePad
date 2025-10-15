@@ -3,7 +3,7 @@ import style from '../styles/components/home/nav.module.css';
 import { invoke } from '@tauri-apps/api/core';
 import { Menu } from '@tauri-apps/api/menu';
 import { useLocation } from 'react-router-dom';
-import SettingsButton from "./buttonSettings"
+import SettingsButton from "./settings/buttonSettings"
 import { useLayoutEffect, useState } from 'react';
 
 interface NavBar{

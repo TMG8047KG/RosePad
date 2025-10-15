@@ -1,5 +1,5 @@
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
-use tauri::{window::Color, Manager};
+use tauri::Manager;
 
 #[tauri::command]
 pub async fn settings(app: tauri::AppHandle) {
@@ -10,6 +10,13 @@ pub async fn settings(app: tauri::AppHandle) {
 
     #[cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))]
     {
+        if let Some(win) = app.get_webview_window("settings") {
+            let _ = win.unminimize();
+            let _ = win.show();
+            let _ = win.set_focus();
+            return;
+        }
+
         tauri::WebviewWindowBuilder::new(
             &app,
             "settings",
@@ -20,7 +27,6 @@ pub async fn settings(app: tauri::AppHandle) {
         .title("RosePad Settings")
         .inner_size(400.0, 600.0)
         .min_inner_size(400.0, 500.0)
-        .background_color(Color(65, 65, 65, 255))
         .center()
         .focused(true)
         .decorations(false)

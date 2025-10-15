@@ -4,12 +4,13 @@ import style from './styles/Editor.module.css'
 
 import { useNavigate } from "react-router-dom"
 import { useEffect, useRef, useState } from "react"
-import { loadFile, saveProject, updateProjectName, updateProjectPath } from "./core/projectHandler"
 import { save } from "@tauri-apps/plugin-dialog"
+import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs"
 import { type } from "@tauri-apps/plugin-os"
+import { invoke } from "@tauri-apps/api/core"
+
 import EditorPanel from "./core/editor/rPanel"
 import StyleMenu from "./components/stylesMenu"
-
 import { getView, onDocChange } from "./core/editor/editorBridge"
 import { DOMSerializer, DOMParser as PMDOMParser } from "prosemirror-model"
 import { rSchema } from "./core/editor/rSchema"
@@ -24,6 +25,27 @@ function debounce<T extends (...args: any[]) => any>(fn: T, delay: number) {
 
 function escapeHtml(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+}
+
+function extOf(p: string) {
+  const m = /\.([^.]+)$/i.exec(p)
+  return m ? m[1].toLowerCase() : ""
+}
+
+async function loadCurrentFile(path: string): Promise<string> {
+  const ext = extOf(path)
+  if (ext === "rpad") {
+    try {
+      const html = await invoke<string>("read_rpad_data", { path })
+      return html || "<p></p>"
+    } catch {
+      return "<p></p>"
+    }
+  }
+  if (ext === "txt") {
+    try { return await readTextFile(path) } catch { return "" }
+  }
+  try { return await readTextFile(path) } catch { return "" }
 }
 
 export default function Editor() {
@@ -50,9 +72,22 @@ export default function Editor() {
     const v = getView()
     if (!v) return
     const path = sessionStorage.getItem("path") || ""
-    const isTxt = /\.txt$/i.test(path)
-    const payload = isTxt ? v.state.doc.textContent : serializeHTML()
-    await saveProject(payload, path)
+    if (!path) return
+
+    const ext = extOf(path)
+    if (ext === "txt") {
+      const payload = v.state.doc.textContent
+      await writeTextFile(path, payload)
+    } else if (ext === "rpad") {
+      const html = serializeHTML()
+      const title = sessionStorage.getItem("projectName") || "Untitled"
+      await invoke("write_rpad_html", { path, html, title })
+    } else {
+      // fallback: write plain text
+      const payload = v.state.doc.textContent
+      await writeTextFile(path, payload)
+    }
+
     setSaved(true)
     sessionStorage.setItem("fileStatus", "Saved")
   }
@@ -80,7 +115,7 @@ export default function Editor() {
   const handleSavingAs = async () => {
     const oldPath = sessionStorage.getItem("path") || ""
     const suggested = oldPath || sessionStorage.getItem("projectName") || "Untitled.rpad"
-    const path = await save({
+    const newPath = await save({
       defaultPath: suggested,
       filters: [
         { name: "RosePad Files", extensions: ["rpad", "txt"] },
@@ -88,7 +123,7 @@ export default function Editor() {
         { name: "Supported Files", extensions: ["txt"] }
       ]
     })
-    if (!path) return
+    if (!newPath) return
 
     const v = getView()
     if (!v) return
@@ -98,16 +133,19 @@ export default function Editor() {
       return parts[parts.length - 1]
     }
 
-    const isRpad = /\.rpad$/i.test(path)
+    const isRpad = /\.rpad$/i.test(newPath)
     const payload = isRpad ? serializeHTML() : v.state.doc.textContent
 
-    sessionStorage.setItem("path", path)
-    sessionStorage.setItem("projectName", nameFromPath(path))
+    sessionStorage.setItem("path", newPath)
+    sessionStorage.setItem("projectName", nameFromPath(newPath))
     window.dispatchEvent(new Event("storage"))
 
-    if (oldPath) await updateProjectPath(oldPath, path)
-    await updateProjectName(path, nameFromPath(path))
-    await saveProject(payload, path)
+    if (isRpad) {
+      const title = sessionStorage.getItem("projectName") || "Untitled"
+      await invoke("write_rpad_html", { path: newPath, html: payload, title })
+    } else {
+      await writeTextFile(newPath, payload)
+    }
 
     setSaved(true)
   }
@@ -115,12 +153,12 @@ export default function Editor() {
   const loadProject = async () => {
     const path = sessionStorage.getItem("path")
     if (!path) return
-    const text = await loadFile(path)
+    const content = await loadCurrentFile(path)
     const v = getView()
     if (!v) return
 
-    const looksHtml = /\.rpad$/i.test(path) || /<\/?[a-z][\s\S]*>/i.test(text.trim())
-    const html = looksHtml ? text : `<p>${escapeHtml(text)}</p>`
+    const looksHtml = /\.rpad$/i.test(path) || /<\/?[a-z][\s\S]*>/i.test(content.trim())
+    const html = looksHtml ? content : `<p>${escapeHtml(content)}</p>`
 
     const dom = new window.DOMParser().parseFromString(html, "text/html")
     const pmDoc = PMDOMParser.fromSchema(rSchema).parse(dom.body)
@@ -137,16 +175,15 @@ export default function Editor() {
     return () => cancelAnimationFrame(id)
   }, [])
 
-  
   return (
     <main>
       {!["android","ios"].includes(type()) ? <NavBar isSaved={isSaved}/> : ""}
       <div className={style.main}>
         <div className={style.sidebar}>
-          <button className={style.button} onClick={ () => navigator('/')}>Back</button>
-          <button className={style.button} onClick={ () => handleSaving() }>Save</button>
-          <button className={style.button} onClick={ () => handleSavingAs() }>Save as</button>
-          <div id="characters" className={style.textData}>Symbols<br></br>{characters}</div>
+          <button className={style.button} onClick={() => navigator('/')}>Back</button>
+          <button className={style.button} onClick={() => handleSaving()}>Save</button>
+          <button className={style.button} onClick={() => handleSavingAs()}>Save as</button>
+          <div id="characters" className={style.textData}>Symbols<br/>{characters}</div>
         </div>
         <div className={style.container}>
           <EditorPanel/>

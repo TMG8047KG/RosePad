@@ -1,9 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import style from '../styles/components/editor/stylesMenu.module.css'
-import OptionsPicker from './optionsPicker'
+import { setTextColor } from '../core/editor/command/TextColor'
 import { getView } from "../core/editor/editorBridge";
 import { setBlockType, toggleMark } from "prosemirror-commands";
-import { liftListItem, wrapInList } from "prosemirror-schema-list";
+import { setHighlightColor } from "../core/editor/command/Highlight";
+import HeadingPicker from "./headingPicker";
+import FontSizePicker from "./fontSizePicker";
+import { setFontSize as applyFontSize } from "../core/editor/command/FontSize";
+import { Align, getSelectionAlign, toggleTextAlign } from "../core/editor/command/Align";
+import { toggleBulletList, toggleOrderedList } from "../core/editor/command/Lists";
+import ColorPalette from "./colorPalette";
+
 
 type ActiveState = {
   bold: boolean;
@@ -15,6 +22,10 @@ type ActiveState = {
   inBullet: boolean;
   inOrdered: boolean;
   inCodeBlock: boolean;
+  textColor: string;
+  highlight: string;
+  fontSize: number;
+  align?: "left" | "center" | "right" | "justify" | "none" | "mixed";
 };
 
 const StyleMenu = () => {
@@ -29,6 +40,10 @@ const StyleMenu = () => {
     inBullet: false,
     inOrdered: false,
     inCodeBlock: false,
+    textColor: "#ffffff",
+    highlight: "#ffff00",
+    fontSize: 12,
+    align: "none"
   });
 
   useEffect(() => {
@@ -109,30 +124,48 @@ const StyleMenu = () => {
     }
   };
 
-  const toggleBulletList = () => {
+  const setColor = (color: string) => {
     const view = getView();
     if (!view) return;
-    const n = view.state.schema.nodes;
-    if (!n.bullet_list || !n.list_item) return;
-    const { state } = view;
-    if (active.inBullet) {
-      run(liftListItem(n.list_item)); // lift out
-    } else {
-      run(wrapInList(n.bullet_list));
-    }
+    if (active.inCodeBlock) return;
+    setTextColor(color)(view.state, view.dispatch, view);
+    view.focus();  
   };
 
-  const toggleOrderedList = () => {
+  const setHighlight = (color: string) => {
     const view = getView();
     if (!view) return;
-    const n = view.state.schema.nodes;
-    if (!n.ordered_list || !n.list_item) return;
-    const { state } = view;
-    if (active.inOrdered) {
-      run(liftListItem(n.list_item));
-    } else {
-      run(wrapInList(n.ordered_list));
-    }
+    if (active.inCodeBlock) return;
+    setHighlightColor(color)(view.state, view.dispatch, view);
+    view.focus();  
+  };
+
+  const setFontSize = (size: number) => {
+    const view = getView();
+    if (!view) return;
+    if (active.inCodeBlock) return;
+    applyFontSize(size)(view.state, view.dispatch, view);
+    view.focus();
+    setActive(a => ({ ...a, fontSize: size }));
+  };
+
+  const applyAlign = (value: Align) => {
+    const view = getView();
+    if (!view) return;
+    run(toggleTextAlign(value));
+    setActive(a => ({ ...a, align: getSelectionAlign(view.state) }));
+  };
+
+  const toggleBullet = () => {
+    const view = getView();
+    if (!view) return;
+    if (toggleBulletList(view)) view.focus();
+  };
+
+  const toggleOrdered = () => {
+    const view = getView();
+    if (!view) return;
+    if (toggleOrderedList(view)) view.focus();
   };
 
   return(
@@ -149,8 +182,7 @@ const StyleMenu = () => {
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m8.874 19 6.143-14M6 19h6.33m-.66-14H18"/>
               </svg>
             </button>
-            <button 
-              className={`${style.button} ${active.underline ? style.active : ''}`} onClick={toggleUnderline}>
+            <button className={`${style.button} ${active.underline ? style.active : ''}`} onClick={toggleUnderline}>
               <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M6 19h12M8 5v9a4 4 0 0 0 8 0V5M6 5h4m4 0h4"/>
               </svg>
@@ -161,23 +193,41 @@ const StyleMenu = () => {
               </svg>
             </button>
           </div>
+          <div className={style.styles}>
+            <button className={`${style.button} ${active.code ? style.active : ""}`} onClick={toggleCode} >
+              <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m8 8-4 4 4 4m8 0 4-4-4-4m-2-3-4 14"/>
+              </svg>
+            </button>
+            <button className={`${style.button} ${active.italic ? style.active : ''}`} onClick={toggleBullet}>
+              <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" strokeLinecap="round" strokeWidth="2" d="M9 8h10M9 12h10M9 16h10M4.99 8H5m-.02 4h.01m0 4H5"/>
+              </svg>
+            </button>
+            <button className={`${style.button} ${active.underline ? style.active : ''}`} onClick={toggleOrdered}>
+              <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6h8m-8 6h8m-8 6h8M4 16a2 2 0 1 1 3.321 1.5L4 20h5M4 5l2-1v6m-2 0h4"/>
+              </svg>
+            </button>
+             <ColorPalette className={style.color} value={active.highlight} onChange={(c)=>{ setHighlight(c); setActive(a => ({ ...a, highlight: c })); }} />
+          </div>
           <div className={style.alignments}>
-            <button className={style.button} title="Align Left">
+            <button className={`${style.button} ${active.align === "left" ? style.active : ""}`} onClick={() => applyAlign("left")} title="Align Left">
               <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5h16M4 9h8M4 13h16M4 17h8"/>
               </svg>
             </button>
-            <button className={style.button} title="Align Center">
+            <button className={`${style.button} ${active.align === "center" ? style.active : ""}`} onClick={() => applyAlign("center")} title="Align Center">
               <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5h16M8 9h8M4 13h16M8 17h8"/>
               </svg>
             </button>
-            <button className={style.button} title="Align Right">
+            <button className={`${style.button} ${active.align === "right" ? style.active : ""}`} onClick={() => applyAlign("right")} title="Align Right">
               <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5h16M12 9h8M4 13h16M12 17h8"/>
               </svg>
             </button>
-            <button className={style.button} title="Justify">
+            <button className={`${style.button} ${active.align === "justify" ? style.active : ""}`} onClick={() => applyAlign("justify")} title="Justify">
               <svg className="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 5h16M4 9h16M4 13h16M4 17h16"/>
               </svg>
@@ -186,9 +236,9 @@ const StyleMenu = () => {
         </div> 
         <div className={style.divider}></div>
         <div className={style.bottom}>
-          <OptionsPicker className={style.headers} value={active.headingLevel} options={[{value:0,label:'P'},{value:1,label:'H1'},{value:2,label:'H2'},{value:3,label:'H3'},{value:4,label:'H4'},{value:5,label:'H5'},{value:6,label:'H6'}]} onChange={(v)=>{setHeading(v)}} width="2.8rem" />
-          {/* <OptionsPicker className={style.fontSizes} value={fontSizeValue} options={[{value:'1',label:'8pt'},{value:'2',label:'10pt'},{value:'3',label:'12pt'},{value:'4',label:'14pt'},{value:'5',label:'18pt'},{value:'6',label:'24pt'},{value:'7',label:'36pt'}]} onChange={(v)=>{setFontSizeValue(v);handleFontSize(v);}} width="3.6rem" /> */}
-          <input className={style.color} type="color" title="Change Text Color"/>
+          <HeadingPicker className={style.headers} value={active.headingLevel} options={[{value:0,label:'P'},{value:1,label:'H1'},{value:2,label:'H2'},{value:3,label:'H3'},{value:4,label:'H4'},{value:5,label:'H5'},{value:6,label:'H6'}]} onChange={(v)=>{setHeading(v)}} width="2.8rem" />
+          <FontSizePicker className={style.fontSizes} value={active.fontSize} options={[{value:8,label:'8pt'},{value:10,label:'10pt'},{value:12,label:'12pt'},{value:14,label:'14pt'},{value:18,label:'18pt'},{value:24,label:'24pt'},{value:36,label:'36pt'}]} onChange={setFontSize} width="3.6rem" />
+          <ColorPalette className={style.color} value={active.textColor} onChange={(c)=>{ setColor(c); setActive(a => ({ ...a, textColor: c })); }} />
         </div>
       </div>
     )

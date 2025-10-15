@@ -64,6 +64,7 @@ export const keyBinding = () => {
         "Mod-i": toggleMark(rSchema.marks.em),
         "Mod-u": toggleMark(rSchema.marks.underline),
         "Mod-t": toggleMark(rSchema.marks.strike),
+        "Mod-h": toggleMark(rSchema.marks.highlight),
         "Mod-`": toggleMark(rSchema.marks.code),
         "Mod-Shift-`": setBlockType(rSchema.nodes.code_block),
         "Mod-1": setBlockType(rSchema.nodes.heading, { level: 1 }),

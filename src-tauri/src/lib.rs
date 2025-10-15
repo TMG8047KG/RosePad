@@ -3,6 +3,7 @@ use std::env;
 
 use tauri::{Emitter, Manager};
 
+use tauri_plugin_sql::{Migration, MigrationKind};
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
 use tauri_plugin_updater::UpdaterExt;
 
@@ -10,6 +11,7 @@ use tauri_plugin_updater::UpdaterExt;
 mod discord_rpc;
 
 mod settings;
+mod workspace;
 
 #[cfg(not(any(target_os = "ios", target_os = "android")))]
 #[tauri::command]
@@ -30,14 +32,22 @@ fn is_hyprland() -> bool {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let migrations = vec![Migration {
+        version: 1,
+        description: "init",
+        sql: include_str!("schema_v1.sql"),
+        kind: MigrationKind::Up
+    }];
     let _ = discord_rpc::connect_rpc();
     let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_sql::Builder::new().add_migrations("sqlite:rosepad.db", migrations).build())
         .plugin(tauri_plugin_cache::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init());
 
-    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]{
+    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
+    {
         builder = builder
             .plugin(tauri_plugin_updater::Builder::new().build())
             .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
@@ -56,10 +66,7 @@ pub fn run() {
 
     #[cfg(any(target_os = "ios", target_os = "android"))]
     {
-        builder = builder
-            .invoke_handler(tauri::generate_handler![
-                settings::settings
-            ])
+        builder = builder.invoke_handler(tauri::generate_handler![settings::settings])
     }
 
     #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
@@ -68,6 +75,19 @@ pub fn run() {
             .invoke_handler(tauri::generate_handler![
                 get_args,
                 is_hyprland,
+                workspace::scan_workspace,
+                workspace::analyze_paths,
+                workspace::rename_project,
+                workspace::delete_project,
+                workspace::move_project,
+                workspace::rename_physical_folder,
+                workspace::delete_physical_folder,
+                workspace::create_physical_folder,
+                workspace::watch_physical_folders,
+                workspace::read_rpad_data,
+                workspace::write_rpad_html,
+                workspace::import_project,
+                workspace::create_rpad_project,
                 discord_rpc::update_activity,
                 discord_rpc::clear_activity,
                 settings::settings
@@ -106,4 +126,3 @@ async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
     }
     Ok(())
 }
-

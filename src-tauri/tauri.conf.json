@@ -21,21 +21,41 @@
     ],
     "shortDescription": "Simple and Beautiful Text Editor",
     "fileAssociations": [
-        {
-        "ext": [".rpad"],
-        "name": "Rpad",
-        "rank": "Owner",
+      {
+        "name": "RosePad Project",
+        "description": "RosePad project file",
+        "ext": ["rpad"],
+        "mimeType": "application/x-rosepad",
+        "role": "Editor",
+        "rank": "Owner"
+      },
+      {
+        "name": "Text Document",
+        "description": "Plain text",
+        "ext": ["txt"],
         "role": "Editor"
       },
       {
-        "ext": [".txt"],
-        "rank": "Alternate",
-        "role": "Editor"
+        "name": "PDF Document",
+        "description": "Portable Document Format",
+        "ext": ["pdf"],
+        "role": "Viewer"
+      },
+      {
+        "name": "Word Document",
+        "description": "Microsoft Word",
+        "ext": ["doc","docx"],
+        "role": "Viewer"
       }
     ],
     "publisher": "TMG8047KG",
     "copyright": "© 2025 Alexandar Goranov(TMG8047KG)",
     "license": "GNU GPL-3",
     "licenseFile": "../LICENSE"
+  },
+  "plugins": {
+    "sql":{
+      "preload": ["sqlite:rosepad.db"]
+    }
   }
 }

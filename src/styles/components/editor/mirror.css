@@ -1,9 +1,10 @@
 .ProseMirror{
     font-weight: 400;
-    font-size: 16px;
+    font-size: 12pt;
     height: 100%;   
     padding: 5px;
     white-space: pre-wrap;
+    caret-color: var(--accent-primary);
 }
 
 .ProseMirror ul { 
@@ -19,9 +20,9 @@
 
 .ProseMirror code{
     background: rgb(from var(--bg-primary) r g b / 50%);
-    border: solid black 1px;
+    border: solid var(--bg-primary) 2px;
     border-radius: 5px;
-    padding: 0px 3px;
+    padding: 0px 2px;
     font-size: 14px;
 }
 
@@ -29,8 +30,8 @@
     overflow-y: hidden;
     overflow-x: scroll;
     padding: 3px;
-    margin: 5px;
-    border: solid var(--bg-primary) 2px;
+    margin: 5px 0;
+    border: solid var(--bg-secondary) 2px;
     border-radius: 10px;
     background: var(--bg-primary);
 }
@@ -41,4 +42,6 @@
 
 .ProseMirror pre code {
     background: none;
+    border: none;
+    padding: 0;
 }

@@ -47,7 +47,7 @@
     display: block;
     text-align: center;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12pt;
     color: var(--fg-muted);
     margin: auto 0px 10px 0px;
 }

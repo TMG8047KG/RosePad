@@ -1,5 +1,8 @@
 name: "RosePad Installers"
 
+permissions:
+  contents: write # needed to create/upload GitHub Releases
+
 on:
   workflow_dispatch:
   push:
@@ -25,18 +28,26 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # allow tagging/version logic
 
       - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          cache: pnpm
+
+      - name: Install Rosetta (macOS x64 target)
+        if: matrix.platform == 'macos-latest' && contains(matrix.args, 'x86_64-apple-darwin')
+        run: |
+          softwareupdate --install-rosetta --agree-to-license
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -44,16 +55,16 @@ jobs:
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: install dependencies (ubuntu only)
+      - name: Cache Rust build
+        uses: swatinem/rust-cache@v2
+
+      - name: install system dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
         # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
         # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
-
-      - name: install frontend dependencies
-        run: pnpm install # change this to npm, pnpm or bun depending on which one you use.
 
       # If tagName and releaseId are omitted tauri-action will only build the app and won't try to upload any assets.
       - uses: tauri-apps/tauri-action@v0

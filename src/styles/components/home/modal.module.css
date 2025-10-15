@@ -41,6 +41,22 @@
   border-radius: 20px;
 }
 
+.label {
+  font-size: 0.9rem;
+  color: var(--fg-tertiary);
+  align-self: flex-start;
+}
+
+.select {
+  background: var(--bg-tertiary);
+  color: var(--fg-tertiary);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 15px;
+  border: 2px solid var(--separator);
+  border-radius: 12px;
+}
+
 .input::placeholder{
   font-weight: 600;
   font-size: 14px;
