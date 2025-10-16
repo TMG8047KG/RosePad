@@ -120,12 +120,6 @@ export default function ColorPalette({ value, onChange, className, disabled, col
   const [hsv, setHsv] = useState(initialHsv);
   useEffect(()=> { if (!customOpen && !isDraggingRef.current) setHsv(initialHsv); }, [initialHsv, customOpen]);
 
-  const applyText = (t: string) => {
-    setText(t.toUpperCase());
-    const h = normalizeHex(t);
-    if (h) onChange(h);
-  };
-
   return (
     <div className={style.root}>
       <button

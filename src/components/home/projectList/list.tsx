@@ -36,7 +36,7 @@ const ListTab = ({ title, icon, type, onSelect, isActive }: ListTabProps) => {
 
 export const ProjectList = () => {
   const [listCurrentType, setListCurrentType] = useState<ListType>("all");
-  const { tree, loading, reindex, reload } = useWorkspace()
+  const { tree, loading, reindex } = useWorkspace()
   useFsAutoReload()
 
   const projectsMap = useMemo(() => {

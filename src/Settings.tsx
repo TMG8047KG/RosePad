@@ -14,7 +14,7 @@ function Settings() {
     const [autoSave, setAutoSaveActive] = useState(localStorage.getItem("autoSave")==="true");
     const [autoSaveInterval, setAutoSaveInterval] = useState(2);
     const [theme, setThemeButton] = useState<themes>(null);
-    const { setRoot, reindex, rootPath } = useWorkspace();
+    const { setRoot, rootPath } = useWorkspace();
 
     const handleAutoSaveChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         const checked = event.target.checked;

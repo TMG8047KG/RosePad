@@ -357,7 +357,7 @@ export async function addVirtualFolder(name:string, root?:string) {
   return id
 }
 
-export async function reconcileFromAnalyze(root:string, diff: AnalyzeResult) {
+export async function reconcileFromAnalyze(_root:string, diff: AnalyzeResult) {
   const d = await db()
   await d.execute('BEGIN')
   try {

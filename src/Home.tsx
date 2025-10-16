@@ -5,18 +5,17 @@ import SettingsButton from "./components/settings/buttonSettings"
 import MultiModal from './components/home/modal'
 import { ProjectList } from './components/home/projectList/list'
 
-import { create, readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs'
+// removed unused fs imports
 import { open } from '@tauri-apps/plugin-dialog'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { listen } from '@tauri-apps/api/event'
-import { join } from '@tauri-apps/api/path'
 import { type } from '@tauri-apps/plugin-os'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { rpc_main_menu, rpc_project } from './core/discord_rpc'
 import { applyTheme, setup } from './core/cache'
-import { addProject, pathFromOpenedFile, projectExists, selectDir, settings, settingsFile } from './core/projectHandler'
+import { addProject, pathFromOpenedFile, projectExists, selectDir, settings } from './core/projectHandler'
 import { addVirtualFolder, setVirtualFolderColor, setPhysicalFolderColor, createPhysicalFolder } from './core/db'
 
 import { useWorkspace } from './core/workspaceContext'

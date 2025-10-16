@@ -229,18 +229,6 @@ const CreateProjectView: React.FC<{
   );
 };
 
-function cssVarToHex(name: string): string | null {
-  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  if (!v) return null;
-  if (v.startsWith('#')) return v;
-  // rgb or rgba -> hex
-  const m = v.match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
-  if (!m) return null;
-  const r = parseInt(m[1], 10), g = parseInt(m[2], 10), b = parseInt(m[3], 10);
-  const toHex = (n:number) => n.toString(16).padStart(2,'0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
-
 // Palette used by ColorPalette's default; keep in sync with component defaults
 const PALETTE_DEFAULTS = [
   '#F43F5E', '#EF4444', '#F97316', '#F59E0B', '#FDE047',

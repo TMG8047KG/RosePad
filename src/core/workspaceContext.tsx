@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
-import { getWorkspaceRoot, getWatchedFolders, setWatchedFolders, setWorkspaceRoot as persistWorkspaceRoot } from "./cache"
+import { getWorkspaceRoot, setWatchedFolders, setWorkspaceRoot as persistWorkspaceRoot } from "./cache"
 import { startWatching } from "./bridge"
 import { getWorkspaceTree, reconcileFromScan, scanWorkspace, analyzePaths, reconcileFromAnalyze } from "./db"
 import { setWorkspaceRoot as clearPersistedRoot } from "./cache"
@@ -89,7 +89,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const init = useCallback(async () => {
     const root = await getWorkspaceRoot()
-    const _watched = await getWatchedFolders()
     if (root) {
       // Only set state and reindex; watcher is managed by a separate effect on rootPath
       setRootPath(root)
