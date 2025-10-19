@@ -32,31 +32,80 @@
   box-shadow: 0 8px 20px rgba(0,0,0,.35);
   padding: 10px;
   z-index: 9999;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transform-origin: top left;
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.panelHidden {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px) scale(0.98);
+}
+
+/* Inline variant to render grid inside dialogs */
+.inlinePanel {
+  position: static;
+  min-width: 220px;
+  max-width: 260px;
+  background: var(--bg-secondary);
+  color: var(--fg-primary);
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.35);
+  padding: 10px;
+}
+
+/* Standalone panel variant (identical look, static positioning) */
+.panelStatic {
+  position: static;
+  min-width: 220px;
+  max-width: 260px;
+  background: var(--bg-secondary);
+  color: var(--fg-primary);
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.35);
+  padding: 10px;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  gap: 6px;
+  gap: 5px;
 }
 
 .cell {
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--separator);
   cursor: pointer;
+}
+.cellSelected {
+  box-shadow: 0 0 0 2px var(--fg-secondary), inset 0 0 0 1px var(--separator);
 }
 
 .customBtn {
   height: 28px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px dashed var(--separator);
   background: var(--bg-tertiary);
   color: var(--fg-primary);
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.customBtn svg{
+  height: 20px;
+  width: 20px;
+}
+
+.customBtnSelected {
+  border-style: solid;
+  border-color: var(--fg-secondary);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.15);
 }
 
 .customRow {
@@ -93,8 +142,30 @@
 }
 
 /* Inline custom picker */
+/* Expand/collapse container for custom picker */
 .picker {
+  display: grid;
+  grid-template-rows: 0fr; /* collapsed */
+  transition: grid-template-rows 160ms ease, opacity 160ms ease, transform 160ms ease, margin-top 160ms ease;
+  transform-origin: top left;
+  opacity: 0;
+  margin-top: 0;
+}
+.pickerOpen {
+  grid-template-rows: 1fr; /* expanded */
+  opacity: 1;
   margin-top: 8px;
+  transform: translateY(0) scale(1);
+}
+.pickerClosed {
+  opacity: 0;
+  margin-top: 0;
+  transform: translateY(-4px) scale(0.98);
+}
+.pickerInner { overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel, .picker { transition: none; }
 }
 .sv {
   position: relative;

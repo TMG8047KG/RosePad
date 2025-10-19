@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useState } from "react"
+import { ReactNode, useMemo, useState, useEffect } from "react"
 import style from '../../../styles/components/home/projectList/list.module.css'
 import { useWorkspace } from "../../../core/workspaceContext"
 import { useFsAutoReload } from "../../../core/useFsReload"
@@ -36,6 +36,7 @@ const ListTab = ({ title, icon, type, onSelect, isActive }: ListTabProps) => {
 
 export const ProjectList = () => {
   const [listCurrentType, setListCurrentType] = useState<ListType>("all");
+  const [rows, setRows] = useState<number>(5)
   const { tree, loading, reindex } = useWorkspace()
   useFsAutoReload()
 
@@ -61,7 +62,7 @@ export const ProjectList = () => {
   }, [tree, projectsMap])
 
   return (
-    <div className={style.container}>
+    <div className={style.container} style={{ ['--rows' as any]: rows }}>
       <div className={style.listHead}>
         <div className={style.tabs}>
           <ListTab title="All" type="all" icon={
@@ -102,7 +103,7 @@ export const ProjectList = () => {
           (tree.physicalFolders.length === 0 && tree.virtualFolders.length === 0 && sortedRootProjectIds.length === 0) ? (
             <div className={style.empty}>There are no projects or folders!</div>
           ) : (
-            <div className={style.section}>
+            <>
               {tree.physicalFolders.map(f => {
                 const sortedIds = [...f.projectIds].sort((a, b) => ((projectsMap[b]?.lastModifiedMs ?? 0) - (projectsMap[a]?.lastModifiedMs ?? 0)))
                 return <Folder key={f.id} id={f.id} type="physical" name={f.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={f.color ?? undefined} />
@@ -118,7 +119,7 @@ export const ProjectList = () => {
                 const date = new Intl.DateTimeFormat(undefined,{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(p.lastModifiedMs))
                 return <ProjectCard key={p.id} name={p.title || p.name} date={date} path={p.path} ext={ext} onDelete={reindex} onRename={reindex} />
               })}
-            </div>
+            </>
           )
         )}
 
@@ -126,7 +127,7 @@ export const ProjectList = () => {
           (tree.physicalFolders.length <= 0 && tree.virtualFolders.length <= 0) ? (
             <div className={style.empty}>There are no folders!</div>
           ) : (
-            <div className={style.section}>
+            <>
               {tree.physicalFolders.map(f => {
                 const sortedIds = [...f.projectIds].sort((a, b) => ((projectsMap[b]?.lastModifiedMs ?? 0) - (projectsMap[a]?.lastModifiedMs ?? 0)))
                 return <Folder key={f.id} id={f.id} type="physical" name={f.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={f.color ?? undefined} />
@@ -135,7 +136,7 @@ export const ProjectList = () => {
                 const sortedIds = [...v.projectIds].sort((a, b) => ((projectsMap[b]?.lastModifiedMs ?? 0) - (projectsMap[a]?.lastModifiedMs ?? 0)))
                 return <Folder key={v.id} id={v.id} type="virtual" name={v.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={v.color ?? undefined} />
               })}
-            </div>
+            </>
           )
         )}
 
@@ -143,13 +144,13 @@ export const ProjectList = () => {
           (sortedProjects.length <= 0) ? (
             <div className={style.empty}>There are no projects!</div>
           ) : (
-            <div className={style.section}>
+            <>
               {sortedProjects.map(p => {
                 const ext = p.kind === 'rpad' ? '' : (p.ext === 'docx' ? 'doc' : (p.ext || p.kind)) as any
                 const date = new Intl.DateTimeFormat(undefined,{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(p.lastModifiedMs))
                 return <ProjectCard key={p.id} name={p.title || p.name} date={date} path={p.path} ext={ext} onDelete={reindex} onRename={reindex} />
               })}
-            </div>
+            </>
           )
         )}
       </div>

@@ -29,6 +29,7 @@
     flex-direction: column;
     row-gap: 10px;
     overflow-y: scroll;
+    overscroll-behavior: contain;
     border-radius: 10px;
 }
 

@@ -1,8 +1,5 @@
 
 
-.project + .project{
-    border-top: solid var(--separator-strong) 1px;
-}
 
 .project{
     background: var(--project-bg);
@@ -12,8 +9,22 @@
     padding: 5px;
     margin: 0;
     align-items: center;
-    max-height: 32px;
+    height: 40px;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
     transition: ease 0.3s;
+}
+
+.project:not(:first-child)::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--separator-strong);
+    pointer-events: none;
 }
 
 .buttons{
@@ -78,12 +89,12 @@
 
 .project:hover .options{
     background: transparent;
-    color: rgb(from var(--project-hover-text) r g b / 50%);
+    color: var(--project-title);
 }
-
+ 
 .project:hover .options:hover{
-    color: var(--project-hover-text);
-    background: rgb(from var(--project-active-bg) r g b / 20%);
+    color: var(--project-title);
+    background: rgb(from black r g b / 20%);
 }
 
 .select{

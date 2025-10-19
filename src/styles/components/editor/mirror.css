@@ -8,15 +8,26 @@
 }
 
 .ProseMirror ul { 
-    list-style: disc; 
+    list-style-type: disc;
     padding-left: 1.25rem; 
     margin-left: 0;
 }
 
+.ProseMirror ul ul { list-style-type: circle; }
+.ProseMirror ul ul ul { list-style-type: square; }
+.ProseMirror ul ul ul ul { list-style-type: none; }
+.ProseMirror ul ul ul ul > li::marker { content: "□ "; }
+.ProseMirror ul ul ul ul ul { list-style-type: disc; }
+
 .ProseMirror ol {
+    list-style-type: decimal;
     padding-left: 1.25rem; 
     margin-left: 0;
 }
+
+.ProseMirror ol ol { list-style-type: lower-alpha; }
+.ProseMirror ol ol ol { list-style-type: lower-roman; }
+.ProseMirror ol ol ol ol { list-style-type: decimal; }
 
 .ProseMirror code{
     background: rgb(from var(--bg-primary) r g b / 50%);
@@ -44,4 +55,39 @@
     background: none;
     border: none;
     padding: 0;
+}
+/* Footnote tooltip */
+.pm-footnote-tooltip{
+  position: fixed;
+  z-index: 9999;
+  width: 260px;
+  background: var(--bg-primary);
+  color: var(--fg-primary);
+  border: 1px solid var(--bg-secondary);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+  padding: 5px;
+}
+.pm-footnote-input{
+  width: 100%;
+  box-sizing: border-box;
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--bg-secondary);
+  border-radius: 6px;
+  padding: 3px 5px;
+  outline: none;
+}
+
+
+/* Hide inline footnote node content (rendered via decoration) */
+.ProseMirror footnote{ display:none; }
+
+/* Visible reference marker styling */
+.pm-footnote-ref{
+  cursor: pointer;
+  user-select: none;
+  color: var(--accent-primary);
 }

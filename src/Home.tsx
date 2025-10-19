@@ -167,12 +167,17 @@ function HomeShell() {
       <div className={style.projects}>
         <ProjectList/>
       </div>
-      <MultiModal type='custom' isOpen={isChooseOpen} onClose={() => setIsChooseOpen(false)} title='Create'>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-          <button className={style.button} onClick={() => { setIsChooseOpen(false); setIsCreateProjectOpen(true) }}>Project</button>
-          <button className={style.button} onClick={() => { setIsChooseOpen(false); setIsCreateFolderOpen(true) }}>Folder</button>
-        </div>
-      </MultiModal>
+      <MultiModal
+        type='chooseCreate'
+        isOpen={isChooseOpen}
+        onClose={() => setIsChooseOpen(false)}
+        title='Create'
+        onChoose={(choice) => {
+          setIsChooseOpen(false)
+          if (choice === 'project') setIsCreateProjectOpen(true)
+          else setIsCreateFolderOpen(true)
+        }}
+      />
       <MultiModal type='createProject' isOpen={isCreateProjectOpen} onClose={() => setIsCreateProjectOpen(false)} onSubmit={(n, d) => handleCreateProject(n, d)}/>
       <MultiModal type='createFolder' isOpen={isCreateFolderOpen} onClose={() => setIsCreateFolderOpen(false)} onSubmit={async (name, folderType, color) => {
         const root = await ensureWorkspace()

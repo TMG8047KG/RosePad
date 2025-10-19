@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import style from "../../styles/components/home/modal.module.css";
 import ColorPalette from "../colorPalette";
 import "../../styles/Main.css";
@@ -53,6 +54,12 @@ type ChangelogProps = BaseProps & {
   onAcknowledge?: () => void;
 };
 
+type ChooseCreateProps = BaseProps & {
+  type: "chooseCreate";
+  title?: string;
+  onChoose: (choice: 'project' | 'folder') => void;
+};
+
 type CustomProps = BaseProps & {
   type: "custom";
   title?: string;
@@ -67,6 +74,7 @@ export type MultiModalProps =
   | DeleteProjectProps
   | CreateFolderProps
   | ChangelogProps
+  | ChooseCreateProps
   | CustomProps;
 
 // Allow human-friendly names; forbid only filesystem-invalid characters.
@@ -318,7 +326,9 @@ const CreateFolderView: React.FC<{
         <option value="virtual">Virtual</option>
       </select>
       <label className={style.label} htmlFor="folderColor">Color</label>
-      <ColorPalette value={color} onChange={setColor} />
+      <div className={style.centerRow}>
+        <ColorPalette value={color} onChange={setColor} renderAs="panel" />
+      </div>
       {error && <div className={style.error}>{error}</div>}
       <div className={style.modalActions}>
         <button className={style.button} onClick={submit}>
@@ -438,6 +448,34 @@ const CustomView: React.FC<{
   );
 };
 
+const ChooseCreateView: React.FC<{
+  title: string;
+  onChoose: (choice: 'project' | 'folder') => void;
+  onClose: () => void;
+}> = ({ title, onChoose, onClose }) => {
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === "Escape") onClose();
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  return (
+    <div className={style.modal}>
+      <h2>{title}</h2>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+        <button className={style.button} onClick={() => onChoose('project')}>Project</button>
+        <button className={style.button} onClick={() => onChoose('folder')}>Folder</button>
+      </div>
+      <div className={style.modalActions}>
+        <button className={style.button} onClick={onClose}>Close</button>
+      </div>
+    </div>
+  );
+};
+
 const MultiModal: React.FC<MultiModalProps> = (props) => {
   const { isOpen, onClose } = props;
 
@@ -513,6 +551,14 @@ const MultiModal: React.FC<MultiModalProps> = (props) => {
             {props.children}
           </CustomView>
         );
+      case "chooseCreate":
+        return (
+          <ChooseCreateView
+            title={props.title ?? "Create"}
+            onChoose={props.onChoose}
+            onClose={onClose}
+          />
+        );
       default:
         return null;
     }
@@ -520,10 +566,11 @@ const MultiModal: React.FC<MultiModalProps> = (props) => {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className={style.modalOverlay} onClick={overlayClick}>
       {resolved}
-    </div>
+    </div>,
+    document.body
   );
 };
 

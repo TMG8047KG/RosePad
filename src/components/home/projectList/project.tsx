@@ -91,8 +91,31 @@ function Project({name, date, path, ext, onDelete, onRename, color }: {name: str
     onRename()
   }
 
-  const bg = color ? toAlpha(color, 0.2) : undefined
-  const border = color ? toAlpha(color, 0.55) : undefined
+  const bg = color ? toAlpha(color, 0.3) : undefined
+  const border = color ? toAlpha(color, 0.5) : undefined
+
+  function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+    if (!hex) return null
+    let h = hex.replace('#','').trim()
+    if (h.length === 3) h = h.split('').map(c=>c+c).join('')
+    if (h.length !== 6) return null
+    const r = parseInt(h.slice(0,2),16)
+    const g = parseInt(h.slice(2,4),16)
+    const b = parseInt(h.slice(4,6),16)
+    return { r, g, b }
+  }
+  function relativeLuminance(r:number,g:number,b:number): number {
+    const srgb = [r, g, b].map(v => v/255)
+    const lin = srgb.map(v => v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4)) as [number,number,number]
+    return 0.2126*lin[0] + 0.7152*lin[1] + 0.0722*lin[2]
+  }
+  const iconColor = useMemo(() => {
+    if (!color) return undefined
+    const rgb = hexToRgb(color)
+    if (!rgb) return undefined
+    const L = relativeLuminance(rgb.r, rgb.g, rgb.b)
+    return L < 0.55 ? '#FFFFFF' : '#0F1115'
+  }, [color])
 
   return(
     <>
@@ -111,7 +134,7 @@ function Project({name, date, path, ext, onDelete, onRename, color }: {name: str
           ))}
         </select>
       </MultiModal>
-      <div className={style.project} onClick={() => { openProject() }} style={bg || border ? { background: bg, borderColor: border } : undefined}>
+      <div className={style.project} onClick={() => { openProject() }} style={(bg || border || iconColor) ? ({ background: bg, borderColor: border, ['--project-title' as any]: iconColor } as any) : undefined}>
         <h4 className={style.name}>{name}</h4>
         <FileExt type={ext}/>
         <div className={style.data}>

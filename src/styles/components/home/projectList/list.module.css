@@ -99,9 +99,12 @@
     overflow-x: hidden;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    overscroll-behavior: contain;
     border-radius: 12px 12px 12px 12px;
-    max-height: 159px;
-    transition: ease 0.3s;
+    background: var(--project-bg);
+    height: 200px;
+    transition: .3s ease;
+    position: relative;
 }
 
 .empty{
@@ -113,6 +116,7 @@
     padding: 5px;
     margin: 0;
     align-items: center;
-    height: 159px;
-    transition: ease 0.3s;
+    height: calc(40px * 5);
+    transition: height .3s ease;
+    will-change: height;
 }

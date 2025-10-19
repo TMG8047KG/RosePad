@@ -144,9 +144,11 @@
   }
 }
 
+html, body, #root{
+  height: 100%;
+}
 
-
-html body{
+html, body{
   margin: 0;
   padding: 0;
 
@@ -158,6 +160,10 @@ html body{
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE10+/Edge */
   user-select: none;
+
+  /* Prevent page-level rubber-band/overscroll */
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 main{

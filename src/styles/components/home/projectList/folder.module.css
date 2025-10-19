@@ -1,3 +1,28 @@
+.container{
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+}
+
+.container:not(:first-child)::before{
+    content: "";
+    position: absolute;
+    top: 0px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--separator-strong);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.body{
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
 .head{
     background: var(--project-bg);
     display: flex;
@@ -8,6 +33,19 @@
     align-items: center;
     height: 30px;
     transition: ease 0.3s;
+    position: relative;
+}
+
+/* Separator between header and first project (only when expanded) */
+.body > *:first-child::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--separator-strong);
+    pointer-events: none;
 }
 
 .head:hover{
@@ -56,10 +94,10 @@
 
 .head:hover .options{ 
     background: transparent;
-    color: rgb(from var(--project-hover-text) r g b / 50%);
+    color: var(--project-title);
 }
 
 .head:hover .options:hover{
-    color: var(--project-hover-text);
-    background: rgb(from var(--project-active-bg) r g b / 20%);
+    color: var(--project-title);
+    background: rgb(from black r g b / 20%);
 }

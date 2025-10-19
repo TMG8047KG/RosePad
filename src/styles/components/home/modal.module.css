@@ -98,4 +98,10 @@
   font-size: 13px;
   font-weight: 600;
 }
+ 
+/* Simple centering wrapper for standalone widgets */
+.centerRow {
+  display: flex;
+  justify-content: center;
+}
   
