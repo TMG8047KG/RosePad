@@ -44,7 +44,6 @@ export const rEvent = () => {
                     if (!type) return fallback;
                     const sel: any = selection;
 
-                    // 1) Prefer stored marks (typing after color change)
                     const stored = view.state.storedMarks;
                     if (stored && stored.length) {
                         const m = pickMark(stored, type);
@@ -52,13 +51,11 @@ export const rEvent = () => {
                         if (val) return val;
                     }
 
-                    // 2) If cursor selection, inspect marks at cursor
                     if (sel.empty) {
                         const m = pickMark(sel.$from.marks(), type);
                         const val = readAttr(m, key);
                         if (val) return val;
                     } else {
-                        // 3) Non-empty selection: find first node with the mark
                         let found: string | null = null;
                         doc.nodesBetween(sel.from, sel.to, node => {
                             if (found != null) return false;
@@ -78,6 +75,15 @@ export const rEvent = () => {
 
                 const alignForView = (view: any): AlignState => getSelectionAlign(view.state);
 
+                const isInList = (listType: any) => {
+                    if (!listType) return false;
+                    const { $from } = selection as any;
+                    for (let d = $from.depth; d > 0; d--) {
+                        if ($from.node(d).type === listType) return true;
+                    }
+                    return false;
+                };
+
                 const active = {
                     bold: markOn(marks?.strong),
                     italic: markOn(marks?.em),
@@ -85,8 +91,8 @@ export const rEvent = () => {
                     strike: markOn(marks?.strike),
                     code: markOn(marks?.code),
                     headingLevel: selection.$from.parent.type === nodes?.heading ? selection.$from.parent.attrs.level : null,
-                    inBullet: selection.$from.depth > 0 && selection.$from.node(-1).type === nodes?.bullet_list,
-                    inOrdered: selection.$from.depth > 0 && selection.$from.node(-1).type === nodes?.ordered_list,
+                    inBullet: isInList(nodes?.bullet_list),
+                    inOrdered: isInList(nodes?.ordered_list),
                     inCodeBlock: selection.$from.parent.type === nodes?.code_block,
                     textColor: activeTextColor,
                     highlight: activeHighlight,

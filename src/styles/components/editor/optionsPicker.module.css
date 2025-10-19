@@ -50,6 +50,7 @@
     overflow-x: hidden;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    overscroll-behavior: contain;
     background: var(--bg-secondary); 
     color: var(--fg-primary);
     border-radius: 10px;  
