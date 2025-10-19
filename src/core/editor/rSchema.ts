@@ -40,6 +40,16 @@ export const rSchema = new Schema({
                 return [`h${level}`, attrs, 0];
             }
         },
+        footnote: {
+            inline: true,
+            group: "inline",
+            content: "inline*",
+            atom: true,
+            selectable: false,
+            defining: true,
+            parseDOM: [{ tag: "footnote" }],
+            toDOM() { return ["footnote", 0] as any }
+        },
         list_item: {
             content: "paragraph block*",
             defining: true,

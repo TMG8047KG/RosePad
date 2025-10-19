@@ -9,6 +9,7 @@ import style from '../../styles/Editor.module.css'
 import '../../styles/components/editor/mirror.css'
 import { rEvent } from "./rEvent";
 import { setView } from "./editorBridge";
+import { footnotePlugin } from "./footnote";
 
 export default function EditorPanel(){
     const editorRef = useRef<HTMLDivElement>(null);
@@ -22,6 +23,7 @@ export default function EditorPanel(){
                 rRules(),
                 keyBinding(),
                 rEvent(),
+                footnotePlugin(),
                 history({ depth: 100, newGroupDelay: 500 }),
             ]}
         )

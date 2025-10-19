@@ -3,6 +3,7 @@ import { redo, undo } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { splitListItem, sinkListItem, liftListItem } from "prosemirror-schema-list";
 import { rSchema } from "./rSchema";
+import { insertFootnote } from "./footnote";
 import { AllSelection, TextSelection } from "prosemirror-state";
 import { ResolvedPos, NodeType } from "prosemirror-model";
 
@@ -67,6 +68,7 @@ export const keyBinding = () => {
         "Mod-h": toggleMark(rSchema.marks.highlight),
         "Mod-`": toggleMark(rSchema.marks.code),
         "Mod-Shift-`": setBlockType(rSchema.nodes.code_block),
+        "Mod-Shift-f": insertFootnote(),
         "Mod-1": setBlockType(rSchema.nodes.heading, { level: 1 }),
         "Mod-2": setBlockType(rSchema.nodes.heading, { level: 2 }),
         "Mod-3": setBlockType(rSchema.nodes.heading, { level: 3 }),
