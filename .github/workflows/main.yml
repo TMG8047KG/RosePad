@@ -1,7 +1,7 @@
 name: "RosePad Installers"
 
 permissions:
-  contents: write
+  contents: write # Needed for creating/uploading GitHub Releases
 
 on:
   workflow_dispatch:
@@ -33,18 +33,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # allow tagging/version logic
 
-      - name: setup node
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: pnpm
 
-      - name: Install Rosetta (macOS x64 target)
-        if: matrix.platform == 'macos-latest' && contains(matrix.args, 'x86_64-apple-darwin')
-        run: |
-          softwareupdate --install-rosetta --agree-to-license
+      - name: Enable pnpm (via Corepack)
+        run: corepack enable
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -54,7 +52,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: install Rust stable
+      - name: Install Rosetta (macOS x64 target)
+        if: matrix.platform == 'macos-latest' && contains(matrix.args, 'x86_64-apple-darwin')
+        run: softwareupdate --install-rosetta --agree-to-license
+
+      - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ (matrix.platform == 'macos-latest') && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
@@ -62,13 +64,13 @@ jobs:
       - name: Cache Rust build
         uses: swatinem/rust-cache@v2
 
-      - name: install system dependencies (ubuntu only)
+      - name: Install system dependencies (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-      - name: Build tauri app (installer)
+      - name: Build tauri app installer
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -76,7 +78,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           args: ${{ matrix.args }}
-          # Don't set tagName/release* on build jobs
+          # tagName and release fields are omitted here
 
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
@@ -84,7 +86,7 @@ jobs:
           name: ${{ matrix.artifact }}
           path: |
             src-tauri/target/release/bundle/**/*
-            # Adjust path to match where your installer gets output
+            # Adjust if your output location or filenames differ
 
   release-tauri:
     needs: build-tauri
@@ -93,7 +95,6 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          # Downloads all artifacts from matrix jobs
           path: ./dist
 
       - name: Create GitHub Release with installers
@@ -103,6 +104,7 @@ jobs:
           draft: true
           prerelease: false
           name: "RosePad ${{ github.ref_name }}"
-          body: "See the assets below to download installers for your platform."
+          body: |
+            See the assets below to download installers for your platform.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
