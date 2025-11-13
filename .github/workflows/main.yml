@@ -1,110 +1,70 @@
 name: "RosePad Installers"
 
-permissions:
-  contents: write # Needed for creating/uploading GitHub Releases
-
 on:
   workflow_dispatch:
   push:
     tags:
       - "v*"
+# This workflow will build your tauri app without uploading it anywhere.
 
 jobs:
-  build-tauri:
+  test-tauri:
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-latest"
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
             args: "--target aarch64-apple-darwin"
-            artifact: "installer-macos-arm"
-          - platform: "macos-latest"
+          - platform: "macos-latest" # for Intel based macs.
             args: "--target x86_64-apple-darwin"
-            artifact: "installer-macos-x64"
-          - platform: "ubuntu-22.04"
+          - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
             args: ""
-            artifact: "installer-linux"
           - platform: "windows-latest"
             args: ""
-            artifact: "installer-windows"
 
     runs-on: ${{ matrix.platform }}
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # allow tagging/version logic
 
-      - name: Set up Node.js
+      - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: pnpm
-
-      - name: Enable pnpm (via Corepack)
-        run: corepack enable
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
-      - name: Install Rosetta (macOS x64 target)
-        if: matrix.platform == 'macos-latest' && contains(matrix.args, 'x86_64-apple-darwin')
-        run: softwareupdate --install-rosetta --agree-to-license
-
-      - name: Install Rust stable
+      - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ (matrix.platform == 'macos-latest') && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: Cache Rust build
-        uses: swatinem/rust-cache@v2
-
-      - name: Install system dependencies (Ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+        # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
+        # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
 
-      - name: Build tauri app installer
-        uses: tauri-apps/tauri-action@v0
+      - name: install frontend dependencies
+        run: pnpm install # change this to npm, pnpm or bun depending on which one you use.
+
+      # If tagName and releaseId are omitted tauri-action will only build the app and won't try to upload any assets.
+      - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          args: ${{ matrix.args }}
-          # tagName and release fields are omitted here
-
-      - name: Upload installer artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact }}
-          path: |
-            src-tauri/target/release/bundle/**/*
-            # If your Tauri config sets a custom output path, change this accordingly
-
-  release-tauri:
-    needs: build-tauri
-    runs-on: ubuntu-22.04
-    if: startsWith(github.ref, 'refs/tags/v')
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: ./dist
-
-      - name: Create GitHub Release with installers
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/**/*
-          draft: true
+          tagName: v__VERSION__
+          releaseName: 'RosePad v__VERSION__ ${{matrix.platform}}'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: true
           prerelease: false
-          name: "RosePad ${{ github.ref_name }}"
-          body: |
-            See the assets below to download installers for your platform.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          args: ${{ matrix.args }}
