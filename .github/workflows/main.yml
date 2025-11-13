@@ -49,6 +49,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Get package version
+        id: get_version
+        run: |
+          echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_ENV
+
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -73,8 +78,8 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          tagName: v__VERSION__
-          releaseName: 'RosePad v__VERSION__ ${{matrix.platform}}'
+          tagName: v${{ env.VERSION }}
+          releaseName: 'RosePad v${{ env.VERSION }} ${{ matrix.platform }}'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
           prerelease: false
