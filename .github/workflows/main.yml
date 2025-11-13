@@ -86,7 +86,7 @@ jobs:
           name: ${{ matrix.artifact }}
           path: |
             src-tauri/target/release/bundle/**/*
-            # Adjust if your output location or filenames differ
+            # If your Tauri config sets a custom output path, change this accordingly
 
   release-tauri:
     needs: build-tauri
