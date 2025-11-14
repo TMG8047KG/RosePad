@@ -36,11 +36,9 @@ const ListTab = ({ title, icon, type, onSelect, isActive }: ListTabProps) => {
 
 export const ProjectList = () => {
   const [listCurrentType, setListCurrentType] = useState<ListType>("all");
-  const [rows, setRows] = useState<number>(5)
+  const [rows] = useState<number>(5)
   const { tree, loading, reindex } = useWorkspace()
   useFsAutoReload()
-
-  setRows(5)
   const projectsMap = useMemo(() => {
     const m: Record<string, any> = {}
     if (!tree) return m
