@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useState, useEffect } from "react"
+import { ReactNode, useMemo, useState } from "react"
 import style from '../../../styles/components/home/projectList/list.module.css'
 import { useWorkspace } from "../../../core/workspaceContext"
 import { useFsAutoReload } from "../../../core/useFsReload"
@@ -40,6 +40,7 @@ export const ProjectList = () => {
   const { tree, loading, reindex } = useWorkspace()
   useFsAutoReload()
 
+  setRows(5)
   const projectsMap = useMemo(() => {
     const m: Record<string, any> = {}
     if (!tree) return m

@@ -56,14 +56,14 @@ function replaceFootnoteText(view: EditorView, start: number, text: string) {
   dispatch(tr);
 }
 
-function removeFootnote(view: EditorView, start: number) {
-  const { state, dispatch } = view;
-  const node = state.doc.nodeAt(start);
-  if (!node || node.type.name !== "footnote") return;
-  const from = start;
-  const to = start + node.nodeSize;
-  dispatch(state.tr.delete(from, to));
-}
+// function removeFootnote(view: EditorView, start: number) {
+//   const { state, dispatch } = view;
+//   const node = state.doc.nodeAt(start);
+//   if (!node || node.type.name !== "footnote") return;
+//   const from = start;
+//   const to = start + node.nodeSize;
+//   dispatch(state.tr.delete(from, to));
+// }
 
 // label support removed
 
@@ -294,7 +294,7 @@ export function footnotePlugin() {
     key: footnoteKey,
     state: {
       init: (_, state) => ({ decorations: buildDecorations(state) }),
-      apply(tr, prev, oldState, newState) {
+      apply(tr, _prev, _oldState, newState) {
         // Keep tooltip open across content edits. Track mapped position and close only
         // if the footnote node no longer exists at that position.
         if (openForPos != null) {
@@ -328,7 +328,7 @@ export function footnotePlugin() {
       },
       handleDOMEvents: {
         
-        scroll(view, _evt) {
+        scroll(_view, _evt) {
           // Reposition open tooltip on scroll
           if (!tooltipEl || openForPos == null) return false;
           const ref = document.querySelector(`.pm-footnote-ref[data-fn-pos="${openForPos}"]`) as HTMLElement | null;

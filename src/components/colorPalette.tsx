@@ -34,7 +34,6 @@ export default function ColorPalette({ value, onChange, className, disabled, col
   const [panelPos, setPanelPos] = useState<{left:number; top:number; ready:boolean}>({ left: 0, top: 0, ready: false });
   const isDraggingRef = useRef(false);
   const palette = colors ?? DEFAULT_COLORS;
-  const gradientIdRef = useRef(`picker_${Math.random().toString(36).slice(2)}`);
   const isPopover = renderAs === 'popover';
   const orientationRef = useRef<null | 'below' | 'above'>(null);
 
