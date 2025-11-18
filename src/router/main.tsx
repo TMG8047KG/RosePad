@@ -1,9 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
-import App from "../Home";
-import Editor from "../Editor";
-import Settings from "../Settings";
+import App from "../home";
+import Editor from "../editor";
+import Settings from "../settings";
 import { WorkspaceProvider } from "../core/workspaceContext";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

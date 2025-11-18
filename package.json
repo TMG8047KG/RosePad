@@ -1,13 +1,14 @@
 {
   "name": "rosepad",
   "private": true,
-  "version": "1.0.0-beta-3",
+  "version": "1.0.0-beta-3z",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "tauri:msi": "node scripts/tauri-msi-build.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",

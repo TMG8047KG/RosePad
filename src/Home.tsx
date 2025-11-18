@@ -5,7 +5,6 @@ import SettingsButton from "./components/settings/buttonSettings"
 import MultiModal from './components/home/modal'
 import { ProjectList } from './components/home/projectList/list'
 
-// removed unused fs imports
 import { open } from '@tauri-apps/plugin-dialog'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { listen } from '@tauri-apps/api/event'
@@ -28,7 +27,6 @@ applyTheme()
 settings()
 
 async function createRpadFile(dir: string, name: string) {
-  // Create via backend to ensure unique filename and initial manifest title
   const filePath = await invoke<string>('create_rpad_project', { destDir: dir, name })
   return filePath
 }
