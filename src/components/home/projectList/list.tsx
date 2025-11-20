@@ -96,7 +96,7 @@ export const ProjectList = () => {
 
   const itemCount = useMemo(() => {
     if (!tree || loading) return 0
-    const countFolderItems = (folders: typeof tree.physicalFolders, type: 'physical' | 'virtual') => {
+    const countFolderItems = (folders: typeof tree.physicalFolders | typeof tree.virtualFolders, type: 'physical' | 'virtual') => {
       let count = 0
       for (const f of folders) {
         const key = folderKey(type, f.id)
