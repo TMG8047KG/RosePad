@@ -265,6 +265,14 @@ input:checked + .slider:before {
     outline: none;
 }
 
+.hint{
+    grid-column: 1 / span 2;
+    color: var(--fg-tertiary);
+    padding: 0 5px 5px 5px;
+    margin: 0;
+    font-size: 0.9em;
+}
+
 .report{
     position: fixed;
     bottom: 0;

@@ -8,12 +8,14 @@ import { type } from '@tauri-apps/plugin-os';
 import { getTheme, setThemeCache } from './core/cache';
 import { themes } from './core/themeManager';
 import { useWorkspace } from './core/workspaceContext';
+import { isRpcEnabled, rpc_main_menu, setRpcEnabled } from './core/discord_rpc';
 
 function Settings() {
     const [version, setVersion] = useState<string>();
     const [autoSave, setAutoSaveActive] = useState(localStorage.getItem("autoSave")==="true");
     const [autoSaveInterval, setAutoSaveInterval] = useState(2);
     const [theme, setThemeButton] = useState<themes>(null);
+    const [richPresenceEnabled, setRichPresenceEnabled] = useState<boolean>(isRpcEnabled());
     const { setRoot, rootPath } = useWorkspace();
 
     const handleAutoSaveChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,6 +30,13 @@ function Settings() {
         if(value > 60) value = 60;
         setAutoSaveInterval(value);
         localStorage.setItem("autoSaveInterval", value.toString());
+    }
+
+    const handleRichPresenceChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const enabled = event.target.checked;
+        setRichPresenceEnabled(enabled);
+        await setRpcEnabled(enabled);
+        if(enabled) await rpc_main_menu();
     }
 
     const tooltipAC = () => {
@@ -66,6 +75,10 @@ function Settings() {
             setThemeButton(await getTheme());
         }
         loadThemeState();
+        const loadRpcState = () => {
+            setRichPresenceEnabled(isRpcEnabled());
+        }
+        loadRpcState();
     }, []);
 
     const handleDirChange = async () =>{
@@ -89,16 +102,26 @@ function Settings() {
                 <div>
                     <h3 className={style.heads}>Editor Preferences</h3>
                     <div className={style.option}>
-                        <p>Auto-Save</p>
-                        <label className={style.switch}>
-                            <input type="checkbox" checked={autoSave} onChange={handleAutoSaveChange}/>
-                            <span className={style.slider}></span>
-                        </label>
-                        <p>Auto-Save interval</p>
-                        <input className={style.inputNumber} type="number" min={1} max={60} value={autoSaveInterval} onChange={handleAutoSaveIntervalChange} placeholder='s' />
-                    </div>
+                    <p>Auto-Save</p>
+                    <label className={style.switch}>
+                        <input type="checkbox" checked={autoSave} onChange={handleAutoSaveChange}/>
+                        <span className={style.slider}></span>
+                    </label>
+                    <p>Auto-Save interval</p>
+                    <input className={style.inputNumber} type="number" min={1} max={60} value={autoSaveInterval} onChange={handleAutoSaveIntervalChange} placeholder='s' />
+                </div>
                 </div>
                  <div>
+                    <h3 className={style.heads}>Discord</h3>
+                    <div className={style.option}>
+                        <p>Rich Presence</p>
+                        <label className={style.switch}>
+                            <input type="checkbox" checked={richPresenceEnabled} onChange={handleRichPresenceChange}/>
+                            <span className={style.slider}></span>
+                        </label>
+                    </div>
+                </div>
+                <div>
                     <h3 className={style.heads}>Theme</h3>
                     <div className={style.multiOption}>
                         <button className={theme === "light" ? style.activeMultiBtn : style.inactiveMultiBtn} onClick={() => changeTheme("light")}>
