@@ -32,7 +32,7 @@
         "windows": {
             "allowDowngrades": false,
             "wix": {
-                "version": "1.0.0.3",
+                "version": "1.0.0.0",
                 "bannerPath": "../public/images/Banner.bmp",
                 "dialogImagePath": "../public/images/dialog.bmp"
             },

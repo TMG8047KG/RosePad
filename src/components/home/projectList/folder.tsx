@@ -19,13 +19,32 @@ function toAlpha(hex: string, alpha: number) {
 
 export type FolderType = 'virtual' | 'physical'
 
-export function Folder({ id, type, name, projectIds, projectMap, onChanged, color }: { id:string; type:FolderType; name:string; projectIds:string[]; projectMap:Record<string,Project>; onChanged:()=>void; color?:string|null }) {
+export function Folder({
+  id,
+  type,
+  name,
+  projectIds,
+  projectMap,
+  onChanged,
+  color,
+  collapsed = false,
+  onToggle,
+}: {
+  id:string;
+  type:FolderType;
+  name:string;
+  projectIds:string[];
+  projectMap:Record<string,Project>;
+  onChanged:()=>void;
+  color?:string|null;
+  collapsed?: boolean;
+  onToggle?: () => void;
+}) {
   const ids = projectIds;
   const [isRenameModalOpen, setIsRenameOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteOpen] = useState(false)
   const [isColorModalOpen, setIsColorOpen] = useState(false)
   const [selectedColor, setSelectedColor] = useState<string>(color ?? '#aabbcc')
-  const [collapsed, setCollapsed] = useState(false)
 
   const projectOptions = Menu.new({
     id: `folderOptions_${type}_${id}`,
@@ -42,7 +61,7 @@ export function Folder({ id, type, name, projectIds, projectMap, onChanged, colo
     menu.popup()
   }
 
-  const toggleList = () => setCollapsed(c => !c)
+  const toggleList = () => onToggle?.()
 
   const handleRename = async (newName: string) => {
     if (!newName || newName === name) { setIsRenameOpen(false); return }

@@ -102,21 +102,26 @@
     overscroll-behavior: contain;
     border-radius: 12px 12px 12px 12px;
     background: var(--project-bg);
-    height: 200px;
+    height: calc(var(--row-height, 40px) * var(--rows, 8));
     transition: .3s ease;
     position: relative;
+}
+
+.listBodyEmpty{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .empty{
     background: var(--project-bg);
     display: flex;
+    align-items: center;
     justify-content: center;
-    align-items: center;
     border-radius: 0;
-    padding: 5px;
+    padding: 5px 10px;
     margin: 0;
-    align-items: center;
-    height: calc(40px * 5);
-    transition: height .3s ease;
-    will-change: height;
+    text-align: center;
+    width: 100%;
 }
