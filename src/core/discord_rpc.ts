@@ -37,12 +37,54 @@ export async function rpc_main_menu() {
   });
 }
 
-export async function rpc_project(name: string, path: string) {
+export async function rpc_settings() {
+  await pushActivity({
+    state: "Thinkering with the brain",
+    details: "In settings",
+    largeImage: "logo",
+    largeImageText: "RosePad",
+    start: Date.now(),
+  });
+}
+
+function getCachedProject() {
+  const path = sessionStorage.getItem("path");
+  if (!path) return null;
+  const name =
+    sessionStorage.getItem("projectName") ||
+    sessionStorage.getItem("name") ||
+    "Untitled";
+  const charCountRaw = sessionStorage.getItem("characterCount");
+  const characterCount =
+    charCountRaw && !Number.isNaN(Number(charCountRaw))
+      ? Number(charCountRaw)
+      : undefined;
+  return { name, path, characterCount };
+}
+
+export async function rpc_from_last_page() {
+  const lastPage = localStorage.getItem("activePage");
+  if (lastPage === "editor") {
+    const cached = getCachedProject();
+    if (cached) {
+      await rpc_project(cached.name, cached.path, cached.characterCount);
+      return;
+    }
+  }
+  await rpc_main_menu();
+}
+
+export async function rpc_project(name: string, path: string, characterCount?: number) {
   const spliPath = path.split(".");
   const file_extension = spliPath[spliPath.length - 1];
+  const characterLabel =
+    typeof characterCount === "number" ? ` | ${characterCount} chars` : "";
+  if (typeof characterCount === "number") {
+    sessionStorage.setItem("characterCount", String(characterCount));
+  }
   await pushActivity({
     state: `Extension: ${file_extension}`,
-    details: `Editing ${name}`,
+    details: `Editing: ${name}${characterLabel}`,
     largeImage: "logo",
     largeImageText: "RosePad",
     start: Date.now(),

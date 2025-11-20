@@ -111,6 +111,16 @@ function HomeShell() {
     return () => { unlisten.then(f => f()) }
   }, [])
 
+  useEffect(() => {
+    const refreshRpc = () => {
+      localStorage.setItem("activePage", "home")
+      rpc_main_menu()
+    }
+    refreshRpc()
+    window.addEventListener("focus", refreshRpc)
+    return () => window.removeEventListener("focus", refreshRpc)
+  }, [])
+
   const handleCreateProject = async (name: string, dest?: string) => {
     // Ensure we have a workspace root to work with
     const root = await ensureWorkspace()

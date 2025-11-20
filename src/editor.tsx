@@ -8,6 +8,7 @@ import { save } from "@tauri-apps/plugin-dialog"
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs"
 import { type } from "@tauri-apps/plugin-os"
 import { invoke } from "@tauri-apps/api/core"
+import { rpc_project } from "./core/discord_rpc"
 
 import EditorPanel from "./core/editor/rPanel"
 import StyleMenu from "./components/stylesMenu"
@@ -52,6 +53,7 @@ export default function Editor() {
   const navigator = useNavigate()
   const [characters, setCharacters] = useState(0)
   const [isSaved, setSaved] = useState(true)
+  const charactersRef = useRef(0)
 
   const getIntervalMs = () => {
     const raw = localStorage.getItem("autoSaveInterval")
@@ -174,6 +176,36 @@ export default function Editor() {
     const id = requestAnimationFrame(() => loadProject())
     return () => cancelAnimationFrame(id)
   }, [])
+
+  useEffect(() => {
+    charactersRef.current = characters
+  }, [characters])
+
+  useEffect(() => {
+    const refreshRpc = () => {
+      const path = sessionStorage.getItem("path")
+      if (!path) return
+      const name =
+        sessionStorage.getItem("projectName") ||
+        sessionStorage.getItem("name") ||
+        "Untitled"
+      localStorage.setItem("activePage", "editor")
+      rpc_project(name, path, charactersRef.current)
+    }
+    refreshRpc()
+    window.addEventListener("focus", refreshRpc)
+    return () => window.removeEventListener("focus", refreshRpc)
+  }, [])
+
+  useEffect(() => {
+    const path = sessionStorage.getItem("path")
+    if (!path) return
+    const name =
+      sessionStorage.getItem("projectName") ||
+      sessionStorage.getItem("name") ||
+      "Untitled"
+    rpc_project(name, path, characters)
+  }, [characters])
 
   return (
     <main>

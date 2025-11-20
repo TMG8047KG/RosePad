@@ -8,7 +8,7 @@ import { type } from '@tauri-apps/plugin-os';
 import { getTheme, setThemeCache } from './core/cache';
 import { themes } from './core/themeManager';
 import { useWorkspace } from './core/workspaceContext';
-import { isRpcEnabled, rpc_main_menu, setRpcEnabled } from './core/discord_rpc';
+import { isRpcEnabled, rpc_from_last_page, rpc_settings, setRpcEnabled } from './core/discord_rpc';
 
 function Settings() {
     const [version, setVersion] = useState<string>();
@@ -36,7 +36,7 @@ function Settings() {
         const enabled = event.target.checked;
         setRichPresenceEnabled(enabled);
         await setRpcEnabled(enabled);
-        if(enabled) await rpc_main_menu();
+        if(enabled) await rpc_settings();
     }
 
     const tooltipAC = () => {
@@ -79,6 +79,20 @@ function Settings() {
             setRichPresenceEnabled(isRpcEnabled());
         }
         loadRpcState();
+    }, []);
+
+    useEffect(() => {
+        const updateActivity = () => rpc_settings();
+        updateActivity();
+        window.addEventListener("focus", updateActivity);
+        const restoreActivity = () => rpc_from_last_page();
+        window.addEventListener("blur", restoreActivity);
+        window.addEventListener("beforeunload", restoreActivity);
+        return () => {
+            window.removeEventListener("focus", updateActivity);
+            window.removeEventListener("blur", restoreActivity);
+            window.removeEventListener("beforeunload", restoreActivity);
+        }
     }, []);
 
     const handleDirChange = async () =>{
