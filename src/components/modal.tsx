@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import style from "../../styles/components/home/modal.module.css";
-import ColorPalette from "../colorPalette";
-import "../../styles/Main.css";
-import { useWorkspace } from "../../core/workspaceContext";
+import style from "../styles/components/modal.module.css";
+import ColorPalette from "./colorPalette";
+import "../styles/Main.css";
+import { useWorkspace } from "../core/workspaceContext";
 
 type BaseProps = {
   isOpen: boolean;
@@ -43,6 +43,7 @@ type DeleteProjectProps = BaseProps & InfoModalProps & {
 type CreateFolderProps = BaseProps & TextModalCommon & {
   type: "createFolder";
   initialName?: string;
+  initialType?: 'physical'|'virtual';
   onSubmit: (name: string, folderType: 'physical'|'virtual', color?: string) => void;
 };
 
@@ -254,13 +255,14 @@ const CreateFolderView: React.FC<{
   initial: string;
   placeholder: string;
   buttonLabel: string;
+  initialType?: 'physical'|'virtual';
   onSubmit: (name: string, folderType: 'physical'|'virtual', color?: string) => void;
   onClose: () => void;
-}> = ({ title, initial, placeholder, buttonLabel, onSubmit, onClose }) => {
+}> = ({ title, initial, placeholder, buttonLabel, initialType, onSubmit, onClose }) => {
   const { tree } = useWorkspace();
   const [name, setName] = useState(initial);
   const [error, setError] = useState("");
-  const [folderType, setFolderType] = useState<'physical'|'virtual'>('physical');
+  const [folderType, setFolderType] = useState<'physical'|'virtual'>(initialType ?? 'physical');
   const [color, setColor] = useState<string>(randomPaletteColor());
   const latestName = useRef(name);
   const latestType = useRef<'physical'|'virtual'>(folderType);
@@ -268,6 +270,7 @@ const CreateFolderView: React.FC<{
   const latestTree = useRef<typeof tree>(tree);
 
   useEffect(() => { setName(initial) }, [initial])
+  useEffect(() => { if (initialType) setFolderType(initialType) }, [initialType])
   // When opened anew, seed a random color from the palette
   useEffect(() => { setColor(randomPaletteColor()) }, [])
   useEffect(() => { latestName.current = name }, [name])
@@ -526,6 +529,7 @@ const MultiModal: React.FC<MultiModalProps> = (props) => {
             initial={props.initialName ?? ""}
             placeholder={props.placeholder ?? "Enter folder name"}
             buttonLabel={props.buttonLabel ?? "Create"}
+            initialType={props.initialType}
             onSubmit={props.onSubmit}
             onClose={onClose}
           />
