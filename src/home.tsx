@@ -2,7 +2,7 @@ import './styles/Main.css'
 import style from './styles/Home.module.css'
 import NavBar from './components/nav'
 import SettingsButton from "./components/settings/buttonSettings"
-import MultiModal from './components/home/modal'
+import MultiModal from './components/modal'
 import { ProjectList } from './components/home/projectList/list'
 
 import { open } from '@tauri-apps/plugin-dialog'
@@ -36,6 +36,7 @@ function HomeShell() {
   const [isChooseOpen, setIsChooseOpen] = useState(false)
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false)
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false)
+  const [folderPresetType, setFolderPresetType] = useState<'physical' | 'virtual'>('physical')
 
   const { rootPath, setRoot, reindex } = useWorkspace();
 
@@ -121,6 +122,39 @@ function HomeShell() {
     return () => window.removeEventListener("focus", refreshRpc)
   }, [])
 
+  useEffect(() => {
+    const isTypingTarget = (el: EventTarget | null) => {
+      if (!el || !(el as HTMLElement).tagName) return false
+      const target = el as HTMLElement
+      const tag = target.tagName.toLowerCase()
+      const editable = target.getAttribute?.('contenteditable')
+      return tag === 'input' || tag === 'textarea' || tag === 'select' || editable === 'true'
+    }
+    const handleShortcut = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey
+      if (!mod) return
+      if (isTypingTarget(e.target)) return
+      if (isCreateProjectOpen || isCreateFolderOpen || isChooseOpen) return
+
+      const key = e.key.toLowerCase()
+      const isShift = e.shiftKey
+      if (key === 'p') {
+        e.preventDefault()
+        setIsCreateProjectOpen(true)
+        setIsChooseOpen(false)
+        return
+      }
+      if (key === 'f') {
+        e.preventDefault()
+        setFolderPresetType(isShift ? 'virtual' : 'physical')
+        setIsCreateFolderOpen(true)
+        setIsChooseOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleShortcut)
+    return () => window.removeEventListener('keydown', handleShortcut)
+  }, [isChooseOpen, isCreateFolderOpen, isCreateProjectOpen])
+
   const handleCreateProject = async (name: string, dest?: string) => {
     // Ensure we have a workspace root to work with
     const root = await ensureWorkspace()
@@ -183,11 +217,17 @@ function HomeShell() {
         onChoose={(choice) => {
           setIsChooseOpen(false)
           if (choice === 'project') setIsCreateProjectOpen(true)
-          else setIsCreateFolderOpen(true)
+          else {
+            setFolderPresetType('physical')
+            setIsCreateFolderOpen(true)
+          }
         }}
       />
       <MultiModal type='createProject' isOpen={isCreateProjectOpen} onClose={() => setIsCreateProjectOpen(false)} onSubmit={(n, d) => handleCreateProject(n, d)}/>
-      <MultiModal type='createFolder' isOpen={isCreateFolderOpen} onClose={() => setIsCreateFolderOpen(false)} onSubmit={async (name, folderType, color) => {
+      <MultiModal type='createFolder' initialType={folderPresetType} isOpen={isCreateFolderOpen} onClose={() => {
+        setIsCreateFolderOpen(false)
+        setFolderPresetType('physical')
+      }} onSubmit={async (name, folderType, color) => {
         const root = await ensureWorkspace()
         if (folderType === 'physical') {
           const p = await createPhysicalFolder(root, name)
@@ -198,6 +238,7 @@ function HomeShell() {
         }
         await reindex()
         setIsCreateFolderOpen(false)
+        setFolderPresetType('physical')
       }}/>
       <div className={style.settings}>
         <SettingsButton/>
