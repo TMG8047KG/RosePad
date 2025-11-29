@@ -3,7 +3,7 @@ import ProjectCard from './project'
 import style from '../../../styles/components/home/projectList/folder.module.css'
 import { Project, setPhysicalFolderColor, setVirtualFolderColor, renameVirtualFolder, deleteVirtualFolder, renamePhysicalFolder, deletePhysicalFolder } from '../../../core/db';
 import { Menu } from '@tauri-apps/api/menu';
-import MultiModal from '../modal'
+import MultiModal from '../../modal'
 import ColorPalette from '../../colorPalette'
 
 function toAlpha(hex: string, alpha: number) {

@@ -5,7 +5,7 @@
 
 .main{
     display: grid;
-    grid-template-columns: 70px auto;
+    grid-template-columns: 50px auto;
     height: calc(100% - 30px);
     background: var(--bg-primary);
 }
@@ -13,7 +13,6 @@
 .sidebar{
     display: flex;
     flex-direction: column;
-    justify-self: center;
     align-items: center;
     -webkit-user-select: none; /* Safari */        
     -moz-user-select: none; /* Firefox */
@@ -21,35 +20,6 @@
     user-select: none;
     background: var(--bg-secondary);
     width: 100%;
-}
-
-.button{
-    border: 0px;
-    padding: 0px;
-    margin: 10px 0px 0px 0px;
-    background: var(--btn-tertiary-bg);
-    border-radius: 10px;
-    color: var(--fg-tertiary);
-    font-size: 15px;
-    font-weight: 700;
-    height: 3rem;
-    width: 3rem;
-    box-shadow: var(--accent-secondary) 0px 0px 5px;
-    z-index: 10;
-}
-
-.button:hover{
-    background: var(--btn-tertiary-hover);
-    color: var(--btn-tertiary-text);
-}
-
-.textData{
-    display: block;
-    text-align: center;
-    font-weight: 600;
-    font-size: 12pt;
-    color: var(--fg-muted);
-    margin: auto 0px 10px 0px;
 }
 
 .container{

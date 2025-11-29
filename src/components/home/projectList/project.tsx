@@ -3,7 +3,7 @@ import style from '../../../styles/components/home/projectList/project.module.cs
 import { rpc_project } from '../../../core/discord_rpc'
 import { useMemo, useState } from 'react'
 import { Menu } from '@tauri-apps/api/menu'
-import MultiModal from '../modal'
+import MultiModal from '../../modal'
 import { extType, FileExt } from './fileExt'
 import { deleteProjectPath, renameProjectPath, moveProjectPath, assignProjectPathToVirtual } from '../../../core/db'
 import { useWorkspace } from '../../../core/workspaceContext'

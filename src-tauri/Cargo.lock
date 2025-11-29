@@ -3772,7 +3772,7 @@ dependencies = [
 
 [[package]]
 name = "rosepad"
-version = "1.0.0-beta-3"
+version = "1.0.0-beta-4"
 dependencies = [
  "anyhow",
  "blake3",

@@ -11,7 +11,7 @@
     -moz-user-select: none; /* Firefox */
     -ms-user-select: none; /* IE10+/Edge */
     user-select: none;
-    z-index: 1;
+    z-index: 50;
     color: var(--fg-primary)
 }
 
@@ -22,12 +22,37 @@
     font-size: 16px;
 }
 
+.backButton{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    color: var(--btn-secondary-text);
+    transition: ease .3s;
+}
+
+.backButton svg{
+    align-self: center;
+    width: 20px;
+    height: 20px;
+}
+
+.backButton:hover{
+    background: var(--btn-primary-hover);
+    color: var(--btn-primary-text);
+}
+
 .titleBarButtons{
     display: inline-flex;
     align-items: center;
     margin-right: 4px;
     height: 100%;
-    gap: 3px;
+    gap: 6px;
 }
 
 .titleBarButtons .button{
@@ -55,17 +80,31 @@
     height: 20px;
 }
 
+.fileActions{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.fileActions::after{
+    flex: 1;
+    content: "";
+    background: var(--separator-strong);
+    padding: 10px 1px;
+    border-radius: 5px;
+}
+
 .logo{
     width: 1rem;
     height: 1rem;
+    padding: 0 5px 0 2px;
 }
 
 .logotitle{
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 5px;
-    gap: 5px;
+    padding-left: 3px;
 }
 
 .projectName{
@@ -75,21 +114,12 @@
     color: var(--fg-secondary);
 }
 
-.projectName::before{
-    flex: 1;
-    content: "";
-    background: var(--separator-strong);
-    padding: 10px 1px;
-    margin-right: 5px;
-    border-radius: 5px;
-}
-
-.settings{
+.misc{
     display: flex;
     align-items: center;
 }
 
-.settings::after{
+.misc::after{
     flex: 1;
     content: "";
     background: var(--separator-strong);
@@ -98,7 +128,12 @@
     margin-left: 5px;
 }
 
+.misc * + *{
+    margin-left: 3px;
+}
+
 .projectDot{
     font-size: 24px;
     color: var(--accent-secondary);
+    padding-left: 5px;
 }

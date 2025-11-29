@@ -1,0 +1,78 @@
+.tabs{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    align-items: end;
+    justify-content: start;
+    padding: 20px 0 0 0;
+    gap: 0px;
+}
+
+.tab{
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    padding: 10px;
+    width: 40px;
+    border: none;
+    border-radius: 10px 0 0 10px;
+    background: var(--accent-primary);
+    color: var(--fg-secondary);
+    cursor: pointer;
+    z-index: 100;
+    position: relative;
+}
+
+.tab:hover{
+    background: var(--bg-tertiary);
+    color: var(--btn-tertiary-text);
+}
+
+.tabActive{
+    background: var(--bg-tertiary);
+    color: var(--fg-primary);
+    z-index: 200;
+}
+
+.tabActive::before,
+.tabActive::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+}
+
+.tabActive::before {
+    top: -20px;
+    border-bottom-right-radius: 20px;
+    box-shadow: 10px 10px 0 0 var(--bg-tertiary);
+}
+
+.tabActive::after {
+    bottom: -20px;
+    border-top-right-radius: 20px;
+    box-shadow: 10px -10px 0 0 var(--bg-tertiary);
+}
+
+.tabActive:hover{
+    background: var(--bg-tertiary);
+    color: var(--fg-primary);
+}
+
+.tabName{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.tabPlaceholder{
+    color: var(--fg-muted);
+    font-size: 12px;
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: 10px;
+}
