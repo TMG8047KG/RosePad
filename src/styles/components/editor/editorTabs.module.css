@@ -6,59 +6,62 @@
     align-items: end;
     justify-content: start;
     padding: 20px 0 0 0;
-    gap: 0px;
+    gap: 3px;
 }
 
 .tab{
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     white-space: nowrap;
-    overflow: hidden;
-    padding: 10px;
     width: 40px;
+    height: 45px;
     border: none;
-    border-radius: 10px 0 0 10px;
-    background: var(--accent-primary);
-    color: var(--fg-secondary);
+    border-radius: 15px 0 0 15px;
+    background: var(--btn-tertiary-bg);
+    color: var(--accent-primary);
     cursor: pointer;
-    z-index: 100;
+    z-index: 10;
     position: relative;
+    box-shadow: var(--btn-primary-bg) inset -5px 0px 5px -5px;
+    margin: 0;
+    transition: background-color 220ms ease, color 220ms ease, box-shadow 220ms ease, clip-path 320ms ease;
+}
+
+.tab svg{
+  padding-left: 5px;
+  padding-bottom: 3px;
+  height: 50px;
+  width: 50px;
+  position: absolute;
 }
 
 .tab:hover{
-    background: var(--bg-tertiary);
-    color: var(--btn-tertiary-text);
+  box-shadow: var(--btn-primary-bg) inset -30px 0px 50px -5px;
 }
 
 .tabActive{
     background: var(--bg-tertiary);
-    color: var(--fg-primary);
-    z-index: 200;
-}
-
-.tabActive::before,
-.tabActive::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    width: 20px;
-    height: 20px;
-    background: transparent;
-}
-
-.tabActive::before {
-    top: -20px;
-    border-bottom-right-radius: 20px;
-    box-shadow: 10px 10px 0 0 var(--bg-tertiary);
-}
-
-.tabActive::after {
-    bottom: -20px;
-    border-top-right-radius: 20px;
-    box-shadow: 10px -10px 0 0 var(--bg-tertiary);
+    box-shadow: none;
+    color: var(--btn-tertiary-text);
+    z-index: 12;
+    height: 75px;
+    width: 45px;
+    margin: -15px -1px -15px;
+    clip-path: shape(from bottom right,
+    curve to calc(100% - 15px) calc(100% - 15px) with 100% calc(100% - 15px),
+    hline to 15px,
+    curve to 0 calc(100% - 30px) with 0 calc(100% - 15px),
+    vline to 30px,
+    curve to 15px 15px with 0 15px,
+    hline to calc(100% - 15px),
+    curve to 100% 0 with 100% 15px);
+    transition: background-color 220ms ease, color 220ms ease, box-shadow 0ms ease, clip-path 320ms ease;
 }
 
 .tabActive:hover{
     background: var(--bg-tertiary);
+    box-shadow: none;
     color: var(--fg-primary);
 }
 
@@ -76,3 +79,6 @@
     padding: 10px 6px;
     border-radius: 10px;
 }
+
+
+

@@ -1,4 +1,5 @@
 import style from "../../styles/components/editor/editorTabs.module.css"
+import { FlowerNumber } from "../../core/FlowerSVG"
 
 export type OpenProject = { name: string; path: string }
 
@@ -25,7 +26,7 @@ export default function EditorTabs({ openProjects, currentPath, onSwitch }: Edit
               aria-selected={isActive}
               type="button"
             >
-              proj
+              <FlowerNumber number={openProjects.indexOf(project)+1} seed={8}/>
             </button>
           )
         })

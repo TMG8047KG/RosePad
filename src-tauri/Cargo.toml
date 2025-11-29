@@ -1,6 +1,6 @@
 [package]
 name = "rosepad"
-version = "1.0.0-beta-4"
+version = "1.0.0-beta-5"
 description = "Simple and Beautiful Text Editor"
 authors = ["Alexandar Goranov"]
 license = "GNU GPL-3"
