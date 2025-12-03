@@ -1,9 +1,11 @@
-import { ReactNode, useEffect, useMemo, useState } from "react"
+import { ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import style from '../../../styles/components/home/projectList/list.module.css'
 import { useWorkspace } from "../../../core/workspaceContext"
 import { useFsAutoReload } from "../../../core/useFsReload"
 import ProjectCard from "./project"
 import { Folder } from "./folder"
+import { useNavigate } from "react-router-dom"
+import { rpc_project } from "../../../core/discord_rpc"
 
 type ListType = 'all' | 'folders' | 'projects'
 
@@ -53,12 +55,25 @@ export const ProjectList = () => {
       return {}
     }
   })
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedPaths, setSelectedPaths] = useState<string[]>([])
+  const shiftTimerRef = useRef<number | null>(null)
+  const shiftHeldRef = useRef(false)
+  const selectionModeRef = useRef(false)
+  const selectedPathsRef = useRef<string[]>([])
+  const navigator = useNavigate()
   const { tree, loading, reindex } = useWorkspace()
   useFsAutoReload()
   const projectsMap = useMemo(() => {
     const m: Record<string, any> = {}
     if (!tree) return m
     for (const p of tree.projects) m[p.id] = p
+    return m
+  }, [tree])
+  const projectsByPath = useMemo(() => {
+    const m = new Map<string, any>()
+    if (!tree) return m
+    for (const p of tree.projects) m.set(p.path, p)
     return m
   }, [tree])
 
@@ -135,7 +150,110 @@ export const ProjectList = () => {
     return sortedProjects.length === 0
   }, [loading, tree, listCurrentType, sortedRootProjectIds, sortedProjects])
 
+  const clearShiftTimer = useCallback(() => {
+    if (shiftTimerRef.current !== null) {
+      window.clearTimeout(shiftTimerRef.current)
+      shiftTimerRef.current = null
+    }
+  }, [])
+
+  const exitSelection = useCallback(() => {
+    clearShiftTimer()
+    setIsSelectionMode(false)
+    setSelectedPaths([])
+  }, [clearShiftTimer])
+
+  const toggleSelection = useCallback((path: string) => {
+    setSelectedPaths(prev => {
+      if (prev.includes(path)) return prev.filter(p => p !== path)
+      return [...prev, path]
+    })
+  }, [])
+
+  const openSelectedProjects = useCallback((pathsOverride?: string[]) => {
+    const pathsToOpen = pathsOverride ?? selectedPathsRef.current
+    const uniquePaths = Array.from(new Set(pathsToOpen))
+    const openProjects = uniquePaths.map(path => {
+      const p = projectsByPath.get(path)
+      if (!p) return null
+      return { name: p.title || p.name, path: p.path }
+    }).filter(Boolean) as { name: string; path: string }[]
+
+    if (!openProjects.length) {
+      exitSelection()
+      return
+    }
+
+    sessionStorage.setItem("openProjects", JSON.stringify(openProjects))
+    const active = openProjects[0]
+    sessionStorage.setItem("path", active.path)
+    sessionStorage.setItem("projectName", active.name)
+    sessionStorage.setItem("name", active.name)
+    rpc_project(active.name, active.path)
+    navigator(`/editor/${active.name}`)
+    exitSelection()
+  }, [projectsByPath, navigator, exitSelection])
+
   useEffect(() => {
+    selectedPathsRef.current = selectedPaths
+  }, [selectedPaths])
+
+  useEffect(() => {
+    selectionModeRef.current = isSelectionMode
+  }, [isSelectionMode])
+
+  useEffect(() => {
+    if (!tree) {
+      setSelectedPaths([])
+      setIsSelectionMode(false)
+      return
+    }
+    setSelectedPaths(prev => prev.filter(p => projectsByPath.has(p)))
+  }, [tree, projectsByPath])
+
+  useEffect(() => {
+    const isTypingTarget = (el: EventTarget | null) => {
+      if (!el || !(el as HTMLElement).tagName) return false
+      const target = el as HTMLElement
+      const tag = target.tagName.toLowerCase()
+      const editable = target.getAttribute?.('contenteditable')
+      return tag === 'input' || tag === 'textarea' || tag === 'select' || editable === 'true'
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Shift') return
+      if (isTypingTarget(e.target)) return
+      if (shiftHeldRef.current) return
+      shiftHeldRef.current = true
+      clearShiftTimer()
+      shiftTimerRef.current = window.setTimeout(() => {
+        shiftTimerRef.current = null
+        setIsSelectionMode(true)
+      }, 3000)
+    }
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key !== 'Shift') return
+      shiftHeldRef.current = false
+      clearShiftTimer()
+      if (!selectionModeRef.current) return
+      if (selectedPathsRef.current.length > 0) {
+        openSelectedProjects(selectedPathsRef.current)
+      } else {
+        exitSelection()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      clearShiftTimer()
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [clearShiftTimer, openSelectedProjects, exitSelection])
+
+  useLayoutEffect(() => {
     if (typeof window === 'undefined') return
     const recalcRows = () => {
       const currentHeight = window.innerHeight || BASE_WINDOW_HEIGHT
@@ -195,19 +313,19 @@ export const ProjectList = () => {
               {tree.physicalFolders.map(f => {
                 const sortedIds = [...f.projectIds].sort((a, b) => ((projectsMap[b]?.lastModifiedMs ?? 0) - (projectsMap[a]?.lastModifiedMs ?? 0)))
                 const collapsed = collapsedFolders[folderKey('physical', f.id)] ?? false
-                return <Folder key={f.id} id={f.id} type="physical" name={f.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={f.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('physical', f.id)} />
+                return <Folder key={f.id} id={f.id} type="physical" name={f.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={f.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('physical', f.id)} selectionMode={isSelectionMode} selectedPaths={selectedPaths} onToggleSelect={toggleSelection} />
               })}
               {tree.virtualFolders.map(v => {
                 const sortedIds = [...v.projectIds].sort((a, b) => ((projectsMap[b]?.lastModifiedMs ?? 0) - (projectsMap[a]?.lastModifiedMs ?? 0)))
                 const collapsed = collapsedFolders[folderKey('virtual', v.id)] ?? false
-                return <Folder key={v.id} id={v.id} type="virtual" name={v.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={v.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('virtual', v.id)} />
+                return <Folder key={v.id} id={v.id} type="virtual" name={v.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={v.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('virtual', v.id)} selectionMode={isSelectionMode} selectedPaths={selectedPaths} onToggleSelect={toggleSelection} />
               })}
               {sortedRootProjectIds.map(pid => {
                 const p = projectsMap[pid]
                 if (!p) return null
                 const ext = p.kind === 'rpad' ? '' : (p.ext === 'docx' ? 'doc' : (p.ext || p.kind)) as any
                 const date = new Intl.DateTimeFormat(undefined,{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(p.lastModifiedMs))
-                return <ProjectCard key={p.id} name={p.title || p.name} date={date} path={p.path} ext={ext} onDelete={reindex} onRename={reindex} />
+                return <ProjectCard key={p.id} name={p.title || p.name} date={date} path={p.path} ext={ext} onDelete={reindex} onRename={reindex} selectionMode={isSelectionMode} selected={selectedPaths.includes(p.path)} onToggleSelect={toggleSelection} />
               })}
             </>
           )
@@ -221,12 +339,12 @@ export const ProjectList = () => {
               {tree.physicalFolders.map(f => {
                 const sortedIds = [...f.projectIds].sort((a, b) => ((projectsMap[b]?.lastModifiedMs ?? 0) - (projectsMap[a]?.lastModifiedMs ?? 0)))
                 const collapsed = collapsedFolders[folderKey('physical', f.id)] ?? false
-                return <Folder key={f.id} id={f.id} type="physical" name={f.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={f.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('physical', f.id)} />
+                return <Folder key={f.id} id={f.id} type="physical" name={f.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={f.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('physical', f.id)} selectionMode={isSelectionMode} selectedPaths={selectedPaths} onToggleSelect={toggleSelection} />
               })}
               {tree.virtualFolders.map(v => {
                 const sortedIds = [...v.projectIds].sort((a, b) => ((projectsMap[b]?.lastModifiedMs ?? 0) - (projectsMap[a]?.lastModifiedMs ?? 0)))
                 const collapsed = collapsedFolders[folderKey('virtual', v.id)] ?? false
-                return <Folder key={v.id} id={v.id} type="virtual" name={v.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={v.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('virtual', v.id)} />
+                return <Folder key={v.id} id={v.id} type="virtual" name={v.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={v.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('virtual', v.id)} selectionMode={isSelectionMode} selectedPaths={selectedPaths} onToggleSelect={toggleSelection} />
               })}
             </>
           )
@@ -240,7 +358,7 @@ export const ProjectList = () => {
               {sortedProjects.map(p => {
                 const ext = p.kind === 'rpad' ? '' : (p.ext === 'docx' ? 'doc' : (p.ext || p.kind)) as any
                 const date = new Intl.DateTimeFormat(undefined,{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(p.lastModifiedMs))
-                return <ProjectCard key={p.id} name={p.title || p.name} date={date} path={p.path} ext={ext} onDelete={reindex} onRename={reindex} />
+                return <ProjectCard key={p.id} name={p.title || p.name} date={date} path={p.path} ext={ext} onDelete={reindex} onRename={reindex} selectionMode={isSelectionMode} selected={selectedPaths.includes(p.path)} onToggleSelect={toggleSelection} />
               })}
             </>
           )

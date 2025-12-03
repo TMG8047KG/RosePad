@@ -29,7 +29,6 @@
     "prosemirror-view": "^1.41.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-modal": "^3.16.3",
     "react-router-dom": "^7.9.6",
     "tauri-plugin-cache-api": "^0.1.5",
     "uuid": "^11.1.0"

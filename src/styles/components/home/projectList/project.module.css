@@ -1,10 +1,7 @@
-
-
-
 .project{
     background: var(--project-bg);
     display: grid;
-    grid-template-columns: 50% 10% 30% 10%;
+    grid-template-columns: var(--select-col, 0px) 2fr .5fr 1.2fr .4fr;
     border-radius: 0;
     padding: 5px;
     margin: 0;
@@ -13,7 +10,7 @@
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
-    transition: ease 0.3s;
+    transition: ease 0.3s, grid-template-columns 0.2s ease;
 }
 
 .project:not(:first-child)::before{
@@ -36,6 +33,57 @@
 
 .project:hover{
     background: var(--project-hover-bg);
+}
+
+.selectionMode{
+    --select-col: 38px;
+}
+
+.selectedRow{
+    background: var(--project-hover-bg);
+}
+
+.selectionSlot{
+    width: 0;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: width 0.18s ease, opacity 0.18s ease;
+    pointer-events: none;
+}
+
+.selectionVisible{
+    width: 32px;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.selectCheckbox{
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-secondary);
+    background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 150ms ease, background-color 150ms ease, transform 120ms ease;
+}
+
+.selectCheckbox:hover{
+    transform: scale(1.05);
+}
+
+.selectCheckbox:checked{
+    border-color: var(--accent-primary);
+    background: radial-gradient(circle at center, var(--accent-primary) 0 60%, transparent 60%);
+}
+
+.selectCheckbox:focus-visible{
+    outline: none;
 }
 
 .data{
@@ -105,6 +153,7 @@
     padding: 6px 10px;
     border: 2px solid var(--separator);
     border-radius: 12px;
+    margin: 5px;
 }
 
 @media only screen and (max-height: 400px), only screen and (max-width: 650px)  {

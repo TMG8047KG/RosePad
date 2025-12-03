@@ -5,17 +5,7 @@ import { Project, setPhysicalFolderColor, setVirtualFolderColor, renameVirtualFo
 import { Menu } from '@tauri-apps/api/menu';
 import MultiModal from '../../modal'
 import ColorPalette from '../../colorPalette'
-
-function toAlpha(hex: string, alpha: number) {
-  if (!hex) return ''
-  let h = hex.replace('#','')
-  if (h.length === 3) h = h.split('').map(c=>c+c).join('')
-  if (h.length !== 6) return hex
-  const r = parseInt(h.slice(0,2),16)
-  const g = parseInt(h.slice(2,4),16)
-  const b = parseInt(h.slice(4,6),16)
-  return `rgba(${r},${g},${b},${alpha})`
-}
+import { readableTextColor, withAlpha } from '../../../utils/color'
 
 export type FolderType = 'virtual' | 'physical'
 
@@ -29,6 +19,9 @@ export function Folder({
   color,
   collapsed = false,
   onToggle,
+  selectionMode = false,
+  selectedPaths = [],
+  onToggleSelect,
 }: {
   id:string;
   type:FolderType;
@@ -39,6 +32,9 @@ export function Folder({
   color?:string|null;
   collapsed?: boolean;
   onToggle?: () => void;
+  selectionMode?: boolean;
+  selectedPaths?: string[];
+  onToggleSelect?: (path: string) => void;
 }) {
   const ids = projectIds;
   const [isRenameModalOpen, setIsRenameOpen] = useState(false)
@@ -46,14 +42,14 @@ export function Folder({
   const [isColorModalOpen, setIsColorOpen] = useState(false)
   const [selectedColor, setSelectedColor] = useState<string>(color ?? '#aabbcc')
 
-  const projectOptions = Menu.new({
+  const projectOptions = useMemo(() => Menu.new({
     id: `folderOptions_${type}_${id}`,
     items: [
       { id: `${type}:${id}:rename`, text: "Rename", action: () => { setIsRenameOpen(true) }},
       { id: `${type}:${id}:color`, text: "Change color", action: () => { setSelectedColor(color ?? '#aabbcc'); setIsColorOpen(true) }},
       { id: `${type}:${id}:delete`, text: "Delete", action: () => { setIsDeleteOpen(true) }},
     ],
-  })
+  }), [color, id, type])
 
   const handleOptionsMenu = async (event: { stopPropagation: () => void }) => {
     event.stopPropagation()
@@ -91,30 +87,8 @@ export function Folder({
     onChanged()
   }
 
-  const bg = color ? toAlpha(color, .9) : undefined
-
-  function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-    if (!hex) return null
-    let h = hex.replace('#','').trim()
-    if (h.length === 3) h = h.split('').map(c=>c+c).join('')
-    if (h.length !== 6) return null
-    const r = parseInt(h.slice(0,2),16)
-    const g = parseInt(h.slice(2,4),16)
-    const b = parseInt(h.slice(4,6),16)
-    return { r, g, b }
-  }
-  function relativeLuminance(r:number,g:number,b:number): number {
-    const srgb = [r, g, b].map(v => v/255)
-    const lin = srgb.map(v => v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4)) as [number,number,number]
-    return 0.2126*lin[0] + 0.7152*lin[1] + 0.0722*lin[2]
-  }
-  const titleColor = useMemo(() => {
-    if (!color) return undefined
-    const rgb = hexToRgb(color)
-    if (!rgb) return undefined
-    const L = relativeLuminance(rgb.r, rgb.g, rgb.b)
-    return L < 0.55 ? '#FFFFFF' : '#0F1115'
-  }, [color])
+  const bg = color ? withAlpha(color, .9) : undefined
+  const titleColor = color ? readableTextColor(color) : undefined
 
   return (
     <>
@@ -157,6 +131,9 @@ export function Folder({
                 onDelete={() => onChanged()}
                 onRename={() => onChanged()}
                 color={color || undefined}
+                selectionMode={selectionMode}
+                selected={selectedPaths.includes(p.path)}
+                onToggleSelect={onToggleSelect}
               />
             )
           })}
