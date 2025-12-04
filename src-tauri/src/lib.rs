@@ -36,11 +36,16 @@ pub fn run() {
         version: 1,
         description: "init",
         sql: include_str!("schema_v1.sql"),
-        kind: MigrationKind::Up
+        kind: MigrationKind::Up,
     }];
     let _ = discord_rpc::connect_rpc();
     let mut builder = tauri::Builder::default()
-        .plugin(tauri_plugin_sql::Builder::new().add_migrations("sqlite:rosepad.db", migrations).build())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(
+            tauri_plugin_sql::Builder::new()
+                .add_migrations("sqlite:rosepad.db", migrations)
+                .build(),
+        )
         .plugin(tauri_plugin_cache::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())

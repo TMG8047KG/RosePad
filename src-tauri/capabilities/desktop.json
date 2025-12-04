@@ -15,6 +15,7 @@
     "dialog:allow-open",
     "core:app:allow-set-app-theme",
     "core:window:allow-show",
-    "core:window:allow-set-focus"
+    "core:window:allow-set-focus",
+    "opener:default"
   ]
 }

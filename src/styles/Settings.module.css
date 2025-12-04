@@ -232,11 +232,21 @@ input:checked + .slider:before {
 }
 
 .option p {
-    display: table-cell;
+    display: flex;
     color: var(--fg-secondary);
     align-self: center;
     padding: 5px;
     font-size: 1em;
+}
+
+.option p span{
+    display: flex;
+    color: var(--fg-tertiary);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: .8em;
+    padding: 0 5px;
 }
 
 .inputNumber{
