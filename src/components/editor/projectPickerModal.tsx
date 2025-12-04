@@ -4,11 +4,12 @@ import overlayStyle from "../../styles/components/modal.module.css"
 import style from "../../styles/components/editor/projectPicker.module.css"
 import type { OpenProject } from "./editorTabs"
 
-const DEFAULT_ROWS = 8
+const DEFAULT_ROWS = 3
 const MIN_ROWS = 2
 const MAX_ROWS = 6
 const ROW_HEIGHT = 30
 const ROW_GAP = 4
+const ROW_BLOCK = ROW_HEIGHT + 10 // matches --row-block fallback in CSS
 const BASE_WINDOW_HEIGHT = 600
 
 export type ProjectOption = { id?: string; name: string; path: string; lastModifiedMs?: number }
@@ -223,7 +224,7 @@ export default function ProjectPickerModal({
     if (typeof window === "undefined") return
     const recalcRows = () => {
       const currentHeight = window.innerHeight || BASE_WINDOW_HEIGHT
-      const rowSpace = ROW_HEIGHT + ROW_GAP
+      const rowSpace = ROW_BLOCK + ROW_GAP
       const deltaRows = Math.floor((currentHeight - BASE_WINDOW_HEIGHT) / rowSpace)
       const next = Math.max(MIN_ROWS, Math.min(MAX_ROWS, DEFAULT_ROWS + deltaRows))
       setRows(prev => (prev === next ? prev : next))

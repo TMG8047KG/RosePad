@@ -10,6 +10,13 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.modal::-webkit-scrollbar{
+  width: 0;
+  height: 0;
 }
 
 .header{
@@ -85,7 +92,7 @@
 .list{
   --row-block: calc(var(--row-height, 30px) + 10px);
   border-radius: 12px;
-  max-height: calc(var(--rows, 6) * var(--row-block) + (var(--rows, 6) - 1) * var(--row-gap, 4px));
+  max-height: calc(var(--rows, 3) * var(--row-block) + (var(--rows, 3) - 1) * var(--row-gap, 4px));
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -181,7 +188,7 @@
 
 .selectedList{
   --row-block: calc(var(--row-height, 30px) + 8px);
-  max-height: calc(var(--rows, 6) * var(--row-block) + (var(--rows, 6) - 1) * var(--row-gap, 4px));
+  max-height: calc(var(--rows, 3) * var(--row-block) + (var(--rows, 3) - 1) * var(--row-gap, 4px));
   overflow-y: auto;
   display: flex;
   flex-direction: column;
