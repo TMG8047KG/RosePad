@@ -505,6 +505,7 @@ export default function Editor() {
       sessionStorage.removeItem("projectName")
       sessionStorage.removeItem("name")
       window.dispatchEvent(new Event("storage"))
+      navigator("/")
       return
     }
 

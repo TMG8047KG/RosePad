@@ -13,9 +13,7 @@ type EditorTabsProps = {
 export default function EditorTabs({ openProjects, currentPath, onSwitch, onAdd }: EditorTabsProps) {
   return (
     <div className={style.tabs} role="tablist" aria-label="Open projects">
-      {openProjects.length === 0 ? (
-        <div className={style.tabPlaceholder}>No open projects yet</div>
-      ) : (
+      {openProjects.length === 0 ? "" : (
         openProjects.map((project, index) => {
           const isActive = project.path === currentPath
           return (
