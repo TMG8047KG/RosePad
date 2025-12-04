@@ -98,7 +98,7 @@ export default function Editor() {
   const [currentPath, setCurrentPath] = useState(sessionStorage.getItem("path") || "")
   const openProjectsRef = useRef(openProjects)
   const currentPathRef = useRef(currentPath)
-  const switchProjectRef = useRef<(project: OpenProject) => Promise<void>>()
+  const switchProjectRef = useRef<(project: OpenProject) => Promise<void> | undefined>(undefined)
   const [unsavedPaths, setUnsavedPaths] = useState<Set<string>>(() => {
     try {
       const raw = sessionStorage.getItem("unsavedPaths")
