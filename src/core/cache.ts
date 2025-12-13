@@ -1,6 +1,5 @@
 import { get, set } from "tauri-plugin-cache-api";
 import { readTextFile, writeTextFile, exists, BaseDirectory } from '@tauri-apps/plugin-fs'
-import { type as osType } from '@tauri-apps/plugin-os'
 import { themes } from './themeManager';
 import { setTheme } from "@tauri-apps/api/app";
 
@@ -8,8 +7,7 @@ type Settings = { projectPath: string | null; watched?: string[] }
 const SETTINGS_FILE = 'settings.json'
 
 async function baseDir() {
-  const t = await osType()
-  return ['android','ios'].includes(t) ? BaseDirectory.AppLocalData : BaseDirectory.AppConfig
+  return BaseDirectory.AppConfig
 }
 
 async function readSettings(): Promise<Settings> {

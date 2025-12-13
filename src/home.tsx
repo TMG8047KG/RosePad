@@ -8,7 +8,6 @@ import { ProjectList } from './components/home/projectList/list'
 import { open } from '@tauri-apps/plugin-dialog'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { listen } from '@tauri-apps/api/event'
-import { type } from '@tauri-apps/plugin-os'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -251,7 +250,7 @@ function App() {
   return (
     <main>
       <div className={style.shadow}/>
-        {!["android","ios"].includes(type()) ? <NavBar/> : ""}
+        <NavBar/>
         <HomeShell/>
     </main>
   )

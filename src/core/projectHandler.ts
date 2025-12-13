@@ -1,6 +1,5 @@
 import { open } from '@tauri-apps/plugin-dialog'
 import { readTextFile, writeTextFile, exists, BaseDirectory, mkdir } from '@tauri-apps/plugin-fs'
-import { type as osType } from '@tauri-apps/plugin-os'
 import { db } from './db'
 import { invoke } from '@tauri-apps/api/core'
 import { join } from '@tauri-apps/api/path'
@@ -13,8 +12,7 @@ type SettingsShape = {
 }
 
 async function baseDir() {
-  const t = await osType()
-  return ['android','ios'].includes(t) ? BaseDirectory.AppLocalData : BaseDirectory.AppConfig
+  return BaseDirectory.AppConfig
 }
 
 async function ensureSettings(): Promise<SettingsShape> {
@@ -102,4 +100,3 @@ export async function pathFromOpenedFile(): Promise<string | null> {
   } catch {}
   return null
 }
-

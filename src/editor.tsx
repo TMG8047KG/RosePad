@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { save } from "@tauri-apps/plugin-dialog"
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs"
-import { type } from "@tauri-apps/plugin-os"
 import { invoke } from "@tauri-apps/api/core"
 import { rpc_project } from "./core/discord_rpc"
 
@@ -604,16 +603,14 @@ export default function Editor() {
 
   return (
     <main>
-      {!["android","ios"].includes(type()) ? (
-        <NavBar
-          isSaved={isSaved}
-          onBack={() => navigator('/')}
-          onSave={handleSaving}
-          onSaveAs={handleSavingAs}
-          characters={characters}
-          words={words}
-        />
-      ) : ""}
+      <NavBar
+        isSaved={isSaved}
+        onBack={() => navigator('/')}
+        onSave={handleSaving}
+        onSaveAs={handleSavingAs}
+        characters={characters}
+        words={words}
+      />
       <div className={style.main}>
         <div className={style.sidebar}>
           <EditorTabs

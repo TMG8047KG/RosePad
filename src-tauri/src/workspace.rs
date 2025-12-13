@@ -1,8 +1,6 @@
-#[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
 use lazy_static::lazy_static;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
-#[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
 use std::sync::Mutex;
 use std::{
     fs,
@@ -341,57 +339,46 @@ pub async fn watch_physical_folders(
     let handle = app.clone();
 
     // Single global watcher instance; replace watched folders on subsequent calls
-    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     lazy_static! {
         static ref WATCHER: Mutex<Option<(RecommendedWatcher, Vec<String>)>> = Mutex::new(None);
     }
 
-    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
-    {
-        let mut guard = WATCHER
-            .lock()
-            .map_err(|_| "watcher lock poisoned".to_string())?;
-        if let Some((ref mut watcher, ref mut prev)) = *guard {
-            // Unwatch previous folders
-            for p in prev.drain(..) {
-                let _ = watcher.unwatch(Path::new(&p));
-            }
-            // Watch new folders
-            for f in &folders {
-                let _ = watcher.watch(Path::new(&f), RecursiveMode::Recursive);
-            }
-            *prev = folders;
-            return Ok(());
+    let mut guard = WATCHER
+        .lock()
+        .map_err(|_| "watcher lock poisoned".to_string())?;
+    if let Some((ref mut watcher, ref mut prev)) = *guard {
+        // Unwatch previous folders
+        for p in prev.drain(..) {
+            let _ = watcher.unwatch(Path::new(&p));
         }
-
-        // Create a new watcher
-        let mut watcher: RecommendedWatcher =
-            notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
-                if let Ok(event) = res {
-                    let paths: Vec<String> = event
-                        .paths
-                        .iter()
-                        .map(|p| p.to_string_lossy().to_string())
-                        .collect();
-                    let _ = handle.emit("fs:changed", paths);
-                }
-            })
-            .map_err(|e| format!("failed to create file watcher: {e}"))?;
-
+        // Watch new folders
         for f in &folders {
             let _ = watcher.watch(Path::new(&f), RecursiveMode::Recursive);
         }
-
-        *guard = Some((watcher, folders));
-        Ok(())
+        *prev = folders;
+        return Ok(());
     }
 
-    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
-    {
-        // No-op on mobile platforms
-        let _ = folders;
-        Ok(())
+    // Create a new watcher
+    let mut watcher: RecommendedWatcher =
+        notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
+            if let Ok(event) = res {
+                let paths: Vec<String> = event
+                    .paths
+                    .iter()
+                    .map(|p| p.to_string_lossy().to_string())
+                    .collect();
+                let _ = handle.emit("fs:changed", paths);
+            }
+        })
+        .map_err(|e| format!("failed to create file watcher: {e}"))?;
+
+    for f in &folders {
+        let _ = watcher.watch(Path::new(&f), RecursiveMode::Recursive);
     }
+
+    *guard = Some((watcher, folders));
+    Ok(())
 }
 
 #[tauri::command]

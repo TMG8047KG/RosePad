@@ -4,7 +4,6 @@ import { selectDir } from './core/projectHandler';
 import { useEffect, useState } from 'react';
 import NavSettings from './components/settings/navSettings';
 import { getVersion, setTheme } from '@tauri-apps/api/app';
-import { type } from '@tauri-apps/plugin-os';
 import { getTheme, setThemeCache } from './core/cache';
 import { themes } from './core/themeManager';
 import { useWorkspace } from './core/workspaceContext';
@@ -105,15 +104,15 @@ function Settings() {
 
     return (
         <main>
-            {type() !== "android" || "ios" ? <NavSettings/> : ""}
+            <NavSettings/>
             <div className={style.container}>
-                {type() !== "android" || "ios" ? <div>
+                <div>
                     <h3 className={style.heads}>Workspace Directory</h3>
                     <div className={style.pathInput} title={rootPath as string}>
                         <p>{rootPath}</p>
                         <button className={style.button} onClick={ () => handleDirChange() }>Select</button>
                     </div>
-                </div> : ""}
+                </div>
                 <div>
                     <h3 className={style.heads}>Editor Preferences</h3>
                     <div className={style.option}>
