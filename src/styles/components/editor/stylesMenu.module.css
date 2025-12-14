@@ -31,6 +31,7 @@
     overflow-y: scroll;
     overscroll-behavior: contain;
     border-radius: 10px;
+    scroll-snap-type: y mandatory;
 }
 
 .top::-webkit-scrollbar{
@@ -44,6 +45,11 @@
 
 .top::-webkit-scrollbar-track{
     margin: 3px;
+}
+
+.top > *{
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
 }
 
 .bottom{
