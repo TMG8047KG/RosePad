@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import style from "../styles/components/modal.module.css";
 import ColorPalette from "./colorPalette";
@@ -155,6 +155,8 @@ const CreateProjectView: React.FC<{
   const [name, setName] = useState(initial);
   const [error, setError] = useState("");
   const [dest, setDest] = useState<string>(rootPath ?? "");
+  const [destOpen, setDestOpen] = useState(false);
+  const selectRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => setName(initial), [initial]);
   useEffect(() => {
@@ -174,6 +176,46 @@ const CreateProjectView: React.FC<{
   useModalKeydown({ onClose, onEnter: submit });
 
   const hasWorkspace = !!rootPath && !!tree;
+  const folderOptions = React.useMemo(() => {
+    if (!hasWorkspace) return [];
+    const options: Array<{ kind: "option"; value: string; label: string } | { kind: "section"; label: string }> = [];
+    if (rootPath) options.push({ kind: "option", value: rootPath, label: "Root" });
+    tree?.physicalFolders.forEach((f) => {
+      options.push({ kind: "option", value: f.path, label: f.name });
+    });
+    if (tree?.virtualFolders.length) {
+      options.push({ kind: "section", label: "Virtual folders" });
+      tree.virtualFolders.forEach((v) => {
+        options.push({ kind: "option", value: `vf:${v.id}`, label: `${v.name}` });
+      });
+    }
+    return options;
+  }, [hasWorkspace, rootPath, tree]);
+
+  const firstSelectable = folderOptions.find((opt) => opt.kind === "option") as
+    | { kind: "option"; value: string; label: string }
+    | undefined;
+  const selectedOption = folderOptions.find(
+    (opt) => opt.kind === "option" && opt.value === dest
+  ) as { kind: "option"; value: string; label: string } | undefined;
+
+  useEffect(() => {
+    if (!hasWorkspace || !firstSelectable) return;
+    if (!dest || !selectedOption) {
+      setDest(firstSelectable.value);
+    }
+  }, [dest, firstSelectable, hasWorkspace, selectedOption]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!destOpen) return;
+      if (selectRef.current && !selectRef.current.contains(e.target as Node)) {
+        setDestOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [destOpen]);
 
   return (
     <div className={style.modal}>
@@ -188,28 +230,47 @@ const CreateProjectView: React.FC<{
       />
       {hasWorkspace ? (
         <>
-          <label className={style.label} htmlFor="dest">
-            Folder
-          </label>
-          <select
-            id="dest"
-            className={style.select}
-            value={dest}
-            onChange={(e) => setDest((e.target as HTMLSelectElement).value)}
-          >
-            {rootPath ? <option value={rootPath}>Root</option> : null}
-            {tree?.physicalFolders.map((f) => (
-              <option key={f.id} value={f.path}>
-                {f.name}
-              </option>
-            ))}
-            {tree?.virtualFolders.length ? <option disabled>— Virtual Folders —</option> : null}
-            {tree?.virtualFolders.map((v) => (
-              <option key={v.id} value={`vf:${v.id}`}>
-                {v.name} (virtual)
-              </option>
-            ))}
-          </select>
+          <label className={style.label} htmlFor="dest">Folder</label>
+          <div className={style.selectBody} ref={selectRef}>
+            <button type="button" id="dest"
+              className={`${style.select} ${destOpen ? style.selectOpen : ""}`}
+              onClick={() => setDestOpen((open) => !open)}
+              aria-haspopup="listbox"
+              aria-expanded={destOpen}
+            >
+              <span className={style.selectValue}>{selectedOption?.label ?? "Select a folder"}</span>
+              <span className={style.selectArrow} aria-hidden="true">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M13.729 5.575c1.304-1.074 3.27-.146 3.27 1.544v9.762c0 1.69-1.966 2.618-3.27 1.544l-5.927-4.881a2 2 0 0 1 0-3.088l5.927-4.88Z" clip-rule="evenodd"/>
+                </svg>
+              </span>
+            </button>
+            {destOpen ? (
+              <div className={style.selectMenu} role="listbox" aria-labelledby="dest">
+                {folderOptions.map((option, index) =>
+                  option.kind === "section" ? (
+                    <div key={`section-${option.label}-${index}`} className={style.selectSection}>
+                      {option.label}
+                    </div>
+                  ) : (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="option"
+                      aria-selected={dest === option.value}
+                      className={`${style.selectOption} ${dest === option.value ? style.selectOptionActive : ""}`}
+                      onClick={() => {
+                        setDest(option.value);
+                        setDestOpen(false);
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  )
+                )}
+              </div>
+            ) : null}
+          </div>
         </>
       ) : null}
       {error && <div className={style.error}>{error}</div>}
@@ -263,11 +324,23 @@ const CreateFolderView: React.FC<{
   const [error, setError] = useState("");
   const [folderType, setFolderType] = useState<"physical" | "virtual">(initialType ?? "physical");
   const [color, setColor] = useState<string>(randomPaletteColor());
+  const [typeOpen, setTypeOpen] = useState(false);
+  const typeSelectRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => setName(initial), [initial]);
   useEffect(() => {
     if (initialType) setFolderType(initialType);
   }, [initialType]);
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!typeOpen) return;
+      if (typeSelectRef.current && !typeSelectRef.current.contains(e.target as Node)) {
+        setTypeOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [typeOpen]);
 
   const submit = () => {
     const value = name.trim();
@@ -314,15 +387,40 @@ const CreateFolderView: React.FC<{
       <label className={style.label} htmlFor="folderType">
         Folder Type
       </label>
-      <select
-        id="folderType"
-        className={style.select}
-        value={folderType}
-        onChange={(e) => setFolderType((e.target as HTMLSelectElement).value as "physical" | "virtual")}
-      >
-        <option value="physical">Physical</option>
-        <option value="virtual">Virtual</option>
-      </select>
+      <div className={style.selectBody} ref={typeSelectRef}>
+        <button type="button" id="folderType"
+          className={`${style.select} ${typeOpen ? style.selectOpen : ""}`}
+          onClick={() => setTypeOpen((open) => !open)}
+          aria-haspopup="listbox"
+          aria-expanded={typeOpen}
+        >
+          <span className={style.selectValue}>{folderType === "physical" ? "Physical" : "Virtual"}</span>
+          <span className={style.selectArrow} aria-hidden="true">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+              <path fill-rule="evenodd" d="M13.729 5.575c1.304-1.074 3.27-.146 3.27 1.544v9.762c0 1.69-1.966 2.618-3.27 1.544l-5.927-4.881a2 2 0 0 1 0-3.088l5.927-4.88Z" clip-rule="evenodd"/>
+            </svg>
+          </span>
+        </button>
+        {typeOpen ? (
+          <div className={style.selectMenu} role="listbox" aria-labelledby="folderType">
+            {(["physical", "virtual"] as const).map((type) => (
+              <button
+                key={type}
+                type="button"
+                role="option"
+                aria-selected={folderType === type}
+                className={`${style.selectOption} ${folderType === type ? style.selectOptionActive : ""}`}
+                onClick={() => {
+                  setFolderType(type);
+                  setTypeOpen(false);
+                }}
+              >
+                {type === "physical" ? "Physical" : "Virtual"}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
       <label className={style.label} htmlFor="folderColor">
         Color
       </label>
@@ -447,11 +545,18 @@ const ChooseCreateView: React.FC<{
   return (
     <div className={style.modal}>
       <h2>{title}</h2>
-      <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-        <button className={style.button} onClick={() => onChoose("project")}>
+      <div className={style.chooseCreate}>
+        <button className={style.button} onClick={() => onChoose("project")} title="Create a new project">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" strokeLinejoin="round" strokeWidth="2" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/>
+          </svg>
           Project
         </button>
-        <button className={style.button} onClick={() => onChoose("folder")}>
+        <span className={style.separator}/>
+        <button className={style.button} onClick={() => onChoose("folder")} title="Create a new folder"   >
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 19V6a1 1 0 0 1 1-1h4.032a1 1 0 0 1 .768.36l1.9 2.28a1 1 0 0 0 .768.36H16a1 1 0 0 1 1 1v1M3 19l3-8h15l-3 8H3Z"/>
+          </svg>
           Folder
         </button>
       </div>
@@ -478,7 +583,7 @@ const MultiModal: React.FC<MultiModalProps> = (props) => {
     case "createProject":
       resolved = (
         <CreateProjectView
-          title={props.title ?? "Create Project"}
+          title={props.title ?? "New Project"}
           initial={props.initialName ?? ""}
           placeholder={props.placeholder ?? "Enter project name"}
           buttonLabel={props.buttonLabel ?? "Create"}

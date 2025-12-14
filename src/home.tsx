@@ -157,7 +157,7 @@ function HomeShell() {
         type='chooseCreate'
         isOpen={isChooseOpen}
         onClose={() => setIsChooseOpen(false)}
-        title='Create'
+        title='Creation Wizard'
         onChoose={(choice) => {
           setIsChooseOpen(false)
           if (choice === 'project') setIsCreateProjectOpen(true)

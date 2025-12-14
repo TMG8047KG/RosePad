@@ -20,9 +20,9 @@
   background-color: var(--bg-secondary);
   padding: 10px;
   border-radius: 8px;
-  width: 24rem;
   text-align: center;
-  gap: 10px;
+  gap: 5px;
+  min-width: 20rem;
 }
 
 .modal h2{
@@ -36,23 +36,7 @@
   font-size: 16px;
   padding: 10px 15px;
   border: 2px solid var(--separator);
-  border-radius: 20px;
-}
-
-.label {
-  font-size: 0.9rem;
-  color: var(--fg-tertiary);
-  align-self: flex-start;
-}
-
-.select {
-  background: var(--bg-tertiary);
-  color: var(--fg-tertiary);
-  font-weight: 600;
-  font-size: 14px;
-  padding: 10px 15px;
-  border: 2px solid var(--separator);
-  border-radius: 12px;
+  border-radius: 25px;
 }
 
 .input::placeholder{
@@ -62,19 +46,135 @@
   color:var(--fg-muted);
 }
 
+.label {
+  font-size: 12pt;
+  color: var(--fg-tertiary);
+  text-align: center;
+}
+
 .input:focus {
   outline: none;
+  border-color: var(--accent-primary);
+}
+
+.selectBody{
+  position: relative;
+  width: 100%;
+}
+
+.select:focus{
+  border-color: var(--accent-primary);
+}
+
+.select {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  color: var(--fg-tertiary);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 15px;
+  border: 2px solid var(--separator);
+  border-radius: 25px;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  z-index: 6;
+}
+
+.selectOpen {
+  border-color: var(--accent-primary);
+  z-index: 10;
+}
+
+.selectValue {
+  flex: 1;
+  text-align: left;
+}
+
+.selectArrow{
+  height: 20px;
+  width: 20px;
+}
+
+.selectArrow svg{
+  height: 20px;
+  width: 20px;
+  transition: ease .3s;
+}
+
+.selectOpen .selectArrow svg {
+  transform: rotate(-90deg);
+}
+
+.selectMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-secondary);
+  border: 2px solid var(--accent-primary);
+  border-radius: 25px;
+  padding: 5px;
+  max-height: 214px;
+  overflow-y: scroll;
+  z-index: 10;
+}
+
+.selectMenu::-webkit-scrollbar{
+  display: none;
+}
+
+.selectSection {
+  padding: 10px 6px;
+  font-size: 10pt;
+  font-weight: 700;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.selectOption {
+  text-align: left;
+  background: var(--bg-tertiary);
+  color: var(--fg-tertiary);
+  border: 0;
+  border-radius: 20px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.selectOption:hover {
+  background: var(--bg-primary);
+  color: var(--fg-secondary);
+}
+
+.selectOptionActive {
+  background: var(--accent-primary);
+  color: var(--btn-secondary-text);
+}
+
+.selectOptionActive:hover{
+  background: var(--accent-primary);
+  color: var(--btn-secondary-text);
 }
 
 .modalActions {
   display: flex;
   align-self: flex-end;
+  gap: 5px;
 }
 
 .button{
-  border: 0px;
+  border: 0;
   background: var(--btn-tertiary-bg);
-  padding: 10px 20px 10px 20px;
+  padding: 10px 20px;
   border-radius: 15px;
   color: var(--btn-tertiary-text);
   font-size: 15px;
@@ -87,8 +187,11 @@
   color: var(--btn-secondary-text);
 }
 
-.button + .button{
-  margin-left: 5px;
+.separator{
+  padding: 15px 1px;
+  background: var(--separator);
+  border-radius: 10px;
+  margin: 0;
 }
 
 .content{
@@ -101,9 +204,37 @@
   font-weight: 600;
 }
  
-/* Simple centering wrapper for standalone widgets */
 .centerRow {
   display: flex;
   justify-content: center;
+  align-self: center;
+  padding: 10px;
+  border: 2px solid var(--separator);
+  border-radius: 20px;
+  background: var(--bg-tertiary);
 }
-  
+
+.chooseCreate{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  gap: 10px;
+  background: var(--bg-primary);
+  padding: 5px;
+  border-radius: 22px;
+  border: solid var(--bg-tertiary);
+}
+
+.chooseCreate .button{
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+}
+
+.chooseCreate .button svg{
+  height: 20px;
+  width: 20px;
+}
