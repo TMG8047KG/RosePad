@@ -7,7 +7,7 @@
     width: 24px;
     height: 24px;
     border-radius: 6px;
-    transition: ease .3;
+    transition: ease .3s;
 }
 
 .settings:hover{
