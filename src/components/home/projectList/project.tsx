@@ -4,13 +4,29 @@ import { rpc_project } from '../../../core/discord_rpc'
 import { useMemo, useState } from 'react'
 import { Menu } from '@tauri-apps/api/menu'
 import MultiModal from '../../modal'
-import { extType, FileExt } from './fileExt'
 import { deleteProjectPath, renameProjectPath, moveProjectPath, assignProjectPathToVirtual } from '../../../core/db'
 import { useWorkspace } from '../../../core/workspaceContext'
 import { readableTextColor, withAlpha } from '../../../utils/color'
 
+type DisplayNameInput = {
+  name: string;
+  kind: string;
+  path: string;
+  ext?: string | null;
+};
+
+export function formatProjectDisplayName({ name, kind, path, ext }: DisplayNameInput) {
+  if (kind === 'rpad') return name
+  const pathExt = /\.([^.\\/]+)$/.exec(path)?.[1] ?? ''
+  const chosenExt = pathExt || (ext ?? '')
+  const cleanExt = chosenExt.startsWith('.') ? chosenExt.slice(1) : chosenExt
+  if (!cleanExt) return name
+  return `${name}.${cleanExt}`
+}
+
 function Project({
   name,
+  kind,
   date,
   path,
   ext,
@@ -23,8 +39,9 @@ function Project({
 }: {
   name: string;
   date: string;
+  kind: string;
   path: string;
-  ext: extType;
+  ext?: string | null;
   onDelete: () => void;
   onRename: () => void;
   color?: string;
@@ -55,10 +72,12 @@ function Project({
     menu.popup()
   }
 
+  const displayName = formatProjectDisplayName({ name, kind, path, ext })
+
   const openProject = () =>{
     sessionStorage.setItem("path", path)
-    sessionStorage.setItem("projectName", name)
-    rpc_project(name, path)
+    sessionStorage.setItem("projectName", displayName)
+    rpc_project(displayName, path)
     navigator(`/editor/${name}`)
   }
   const toggleSelection = () => onToggleSelect?.(path)
@@ -111,7 +130,7 @@ function Project({
   return(
     <>
       <MultiModal type='renameProject' isOpen={isRenameModalOpen} onClose={() => setIsRenameOpen(false)} onSubmit={handleRename} title={'New project name'} buttonLabel='Rename' placeholder='New project name' initialName={name} />
-      <MultiModal type='deleteProject' isOpen={isDeleteModalOpen} onClose={() => setIsDeleteOpen(false)} onSubmit={handleDeletion} title={'Warning'} declineButtonLabel='Cancel' acceptButtonLabel='Delete' info={`Are you sure you want to delete ${name}!?`}/>
+      <MultiModal type='deleteProject' isOpen={isDeleteModalOpen} onClose={() => setIsDeleteOpen(false)} onSubmit={handleDeletion} title={'Warning'} declineButtonLabel='Cancel' acceptButtonLabel='Delete' info={`Are you sure you want to delete ${displayName}!?`}/>
       <MultiModal type='custom' isOpen={isMoveModalOpen} onClose={() => setIsMoveOpen(false)} title={'Move project'} primaryAction={{ label: 'Move', onClick: handleMove }}>
         <label htmlFor="dest">Destination folder</label>
         <select id="dest" className={style.select} value={targetDir || currentDir} onChange={(e) => setTargetDir((e.target as HTMLSelectElement).value)}>
@@ -139,11 +158,10 @@ function Project({
             className={style.selectCheckbox}
             checked={selected}
             onChange={() => toggleSelection()}
-            aria-label={`Select ${name}`}
+            aria-label={`Select ${displayName}`}
           />
         </div>
-        <h4 className={style.name}>{name}</h4>
-        <FileExt type={ext}/>
+        <h4 className={style.name}>{displayName}</h4>
         <div className={style.data}>
           <p className={style.p}><strong>Last Updated:</strong><br/>{date}</p>
         </div>
@@ -159,4 +177,3 @@ function Project({
   )
 }
 export default Project
-

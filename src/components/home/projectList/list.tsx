@@ -2,7 +2,7 @@ import { ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, us
 import style from '../../../styles/components/home/projectList/list.module.css'
 import { useWorkspace } from "../../../core/workspaceContext"
 import { useFsAutoReload } from "../../../core/useFsReload"
-import ProjectCard from "./project"
+import ProjectCard, { formatProjectDisplayName } from "./project"
 import { Folder } from "./folder"
 import { useNavigate } from "react-router-dom"
 import { rpc_project } from "../../../core/discord_rpc"
@@ -176,7 +176,8 @@ export const ProjectList = () => {
     const openProjects = uniquePaths.map(path => {
       const p = projectsByPath.get(path)
       if (!p) return null
-      return { name: p.title || p.name, path: p.path }
+      const displayName = formatProjectDisplayName({ name: p.title || p.name, kind: p.kind, path: p.path, ext: p.ext })
+      return { name: displayName, path: p.path }
     }).filter(Boolean) as { name: string; path: string }[]
 
     if (!openProjects.length) {
@@ -323,9 +324,8 @@ export const ProjectList = () => {
               {sortedRootProjectIds.map(pid => {
                 const p = projectsMap[pid]
                 if (!p) return null
-                const ext = p.kind === 'rpad' ? '' : (p.ext === 'docx' ? 'doc' : (p.ext || p.kind)) as any
                 const date = new Intl.DateTimeFormat(undefined,{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(p.lastModifiedMs))
-                return <ProjectCard key={p.id} name={p.title || p.name} date={date} path={p.path} ext={ext} onDelete={reindex} onRename={reindex} selectionMode={isSelectionMode} selected={selectedPaths.includes(p.path)} onToggleSelect={toggleSelection} />
+                return <ProjectCard key={p.id} name={p.title || p.name} kind={p.kind} date={date} path={p.path} ext={p.ext ?? null} onDelete={reindex} onRename={reindex} selectionMode={isSelectionMode} selected={selectedPaths.includes(p.path)} onToggleSelect={toggleSelection} />
               })}
             </>
           )
@@ -356,9 +356,8 @@ export const ProjectList = () => {
           ) : (
             <>
               {sortedProjects.map(p => {
-                const ext = p.kind === 'rpad' ? '' : (p.ext === 'docx' ? 'doc' : (p.ext || p.kind)) as any
                 const date = new Intl.DateTimeFormat(undefined,{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(p.lastModifiedMs))
-                return <ProjectCard key={p.id} name={p.title || p.name} date={date} path={p.path} ext={ext} onDelete={reindex} onRename={reindex} selectionMode={isSelectionMode} selected={selectedPaths.includes(p.path)} onToggleSelect={toggleSelection} />
+                return <ProjectCard key={p.id} name={p.title || p.name} kind={p.kind} date={date} path={p.path} ext={p.ext ?? null} onDelete={reindex} onRename={reindex} selectionMode={isSelectionMode} selected={selectedPaths.includes(p.path)} onToggleSelect={toggleSelection} />
               })}
             </>
           )

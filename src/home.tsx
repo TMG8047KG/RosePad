@@ -7,19 +7,17 @@ import { ProjectList } from './components/home/projectList/list'
 
 import { open } from '@tauri-apps/plugin-dialog'
 import { getCurrentWindow } from '@tauri-apps/api/window'
-import { listen } from '@tauri-apps/api/event'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { rpc_main_menu, rpc_project } from './core/discord_rpc'
 import { applyTheme, setup } from './core/cache'
-import { addProject, pathFromOpenedFile, projectExists, selectDir, settings } from './core/projectHandler'
+import { addProject, settings } from './core/projectHandler'
 import { addVirtualFolder, setVirtualFolderColor, setPhysicalFolderColor, createPhysicalFolder } from './core/db'
 
 import { useWorkspace } from './core/workspaceContext'
 import { invoke } from '@tauri-apps/api/core'
-
-let openedPathCache: string | null = null
+import { useHandleFileOpen } from './hooks/useHandleFileOpen'
 
 setup()
 applyTheme()
@@ -37,45 +35,9 @@ function HomeShell() {
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false)
   const [folderPresetType, setFolderPresetType] = useState<'physical' | 'virtual'>('physical')
 
-  const { rootPath, setRoot, reindex } = useWorkspace();
+  const { reindex } = useWorkspace();
 
-  const ensureWorkspace = async () => {
-    if (rootPath) return rootPath
-    const dir = await selectDir()
-    if (!dir) throw new Error('No workspace selected')
-    await setRoot(dir)
-    return dir
-  }
-
-  const importIntoWorkspace = async (filePath: string) => {
-    const root = await ensureWorkspace()
-    const dest = await invoke<string>('import_project', { root, src: filePath })
-    return dest
-  }
-
-  const handleFileOpen = async (filePath: string) => {
-    if (!filePath) return
-    // copy into workspace if needed
-    const insidePath = await importIntoWorkspace(filePath)
-
-    // name derivation
-    let name = insidePath.split(/[/\\]/g).pop() || insidePath
-    const dot = name.lastIndexOf('.')
-    if (dot > 0) name = name.slice(0, dot)
-
-    sessionStorage.setItem('path', insidePath)
-    sessionStorage.setItem('name', name)
-    sessionStorage.setItem('projectName', name)
-
-    if (!(await projectExists(insidePath))) {
-      await addProject(name, insidePath) // recents list
-    }
-
-    await reindex()             // <— now it appears in the project list
-    await rpc_project(name, insidePath)
-    navigator(`/editor/${name}`)
-  }
-
+  const { handleFileOpen, ensureWorkspace } = useHandleFileOpen()
   const importProject = async () => {
     const p = await open({
       multiple: false,
@@ -83,8 +45,9 @@ function HomeShell() {
       title: 'Select a project to import',
       filters: [
         { name: 'RosePad Files', extensions: ['rpad','txt','pdf','doc','docx'] },
+        { name: 'Common Text & Code', extensions: ['txt','md','json','log','js','jsx','ts','tsx','html','css','xml','yaml','yml','ini','cfg','conf','sql','csv','tsv','sh','bat','ps1','py','rs','go','java','kt','c','cpp','h'] },
         { name: 'RosePad Project', extensions: ['rpad'] },
-        { name: 'Supported Files', extensions: ['txt','pdf','doc','docx'] }
+        { name: 'All Files', extensions: ['*'] }
       ]
     })
     if (p) await handleFileOpen(p as string)
@@ -97,18 +60,7 @@ function HomeShell() {
     }
     showWindow()
 
-    const unlisten = listen<string[]>('file-open', async (event) => {
-      const args = event.payload || []
-      if (args.length > 1) {
-        const openedPath = args[1]
-        await handleFileOpen(openedPath)
-      }
-    })
-
-    openedFromFile()
     rpc_main_menu()
-
-    return () => { unlisten.then(f => f()) }
   }, [])
 
   useEffect(() => {
@@ -180,13 +132,6 @@ function HomeShell() {
     }
     setIsCreateProjectOpen(false)
     navigator(`/editor/${name}`)
-  }
-
-  const openedFromFile = async () => {
-    if (!openedPathCache) {
-      openedPathCache = await pathFromOpenedFile()
-      if (openedPathCache) await handleFileOpen(openedPathCache)
-    }
   }
 
   return (

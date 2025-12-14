@@ -119,14 +119,11 @@ export default function Editor() {
     }))
   }, [tree])
   const sanitizeSelection = (list: OpenProject[]) => {
-    const allowed = new Set(projectOptions.map(p => p.path))
-    const allowAny = allowed.size === 0
     const seen = new Set<string>()
     const filtered: OpenProject[] = []
     for (const item of list) {
       if (!item?.path || !item?.name) continue
       if (seen.has(item.path)) continue
-      if (!allowAny && !allowed.has(item.path)) continue
       seen.add(item.path)
       filtered.push({ name: item.name, path: item.path })
     }
@@ -153,8 +150,8 @@ export default function Editor() {
     }
   }
 
-  const persistDraft = () => {
-    const path = sessionStorage.getItem("path") || currentPath
+  const persistDraft = (targetPath?: string) => {
+    const path = targetPath || currentPathRef.current || sessionStorage.getItem("path") || currentPath
     if (!path) return
     if (isSaved && !unsavedPaths.has(path)) return
     const v = getView()
@@ -245,6 +242,34 @@ export default function Editor() {
     }
   }, [unsavedPaths])
 
+  useEffect(() => {
+    const onExternalOpen = (event: Event) => {
+      const detail = (event as CustomEvent<{
+        projects?: OpenProject[];
+        activePath?: string;
+        activeName?: string;
+      }>).detail || {}
+
+      const nextProjects = Array.isArray(detail.projects) ? detail.projects : readOpenProjects()
+      const sanitized = sanitizeSelection(nextProjects)
+      setOpenProjects(sanitized)
+
+      const targetPath = detail.activePath || sessionStorage.getItem("path") || ""
+      const targetName =
+        detail.activeName ||
+        sanitized.find(p => p.path === targetPath)?.name ||
+        sessionStorage.getItem("projectName") ||
+        "Untitled"
+
+      if (targetPath && targetPath !== currentPathRef.current) {
+        void switchProjectRef.current?.({ path: targetPath, name: targetName })
+      }
+    }
+
+    window.addEventListener("rosepad:open-projects-changed", onExternalOpen)
+    return () => window.removeEventListener("rosepad:open-projects-changed", onExternalOpen)
+  }, [sanitizeSelection])
+
   const scheduleAutoSave = () => {
     if (autoSaveTimer.current) window.clearTimeout(autoSaveTimer.current)
     if (!isAutoSaveEnabled()) return
@@ -265,11 +290,21 @@ export default function Editor() {
     return div.innerHTML
   }
 
-  const saveNow = async () => {
+  const saveNow = async (target?: { path?: string; name?: string }) => {
     const v = getView()
     if (!v) return
-    const path = sessionStorage.getItem("path") || ""
+    const path =
+      target?.path ||
+      currentPathRef.current ||
+      sessionStorage.getItem("path") ||
+      ""
     if (!path) return
+    const title =
+      target?.name ||
+      openProjectsRef.current.find(p => p.path === path)?.name ||
+      sessionStorage.getItem("projectName") ||
+      sessionStorage.getItem("name") ||
+      "Untitled"
 
     const ext = extOf(path)
     if (ext === "txt") {
@@ -277,7 +312,6 @@ export default function Editor() {
       await writeTextFile(path, payload)
     } else if (ext === "rpad") {
       const html = serializeHTML()
-      const title = sessionStorage.getItem("projectName") || "Untitled"
       await invoke("write_rpad_html", { path, html, title })
     } else {
       // fallback: write plain text
@@ -483,10 +517,16 @@ export default function Editor() {
   }, [characters])
 
   const applyProjectSelection = async (projects: OpenProject[]) => {
+    const activePath = currentPathRef.current || sessionStorage.getItem("path") || ""
+    const activeName =
+      openProjectsRef.current.find(p => p.path === activePath)?.name ||
+      sessionStorage.getItem("projectName") ||
+      sessionStorage.getItem("name") ||
+      "Untitled"
     if (isAutoSaveEnabled()) {
-      await saveNow()
+      await saveNow({ path: activePath, name: activeName })
     } else {
-      persistDraft()
+      persistDraft(activePath)
     }
     sessionStorage.setItem("openProjects", JSON.stringify(projects))
     hasSyncedOpenProjects.current = true
@@ -527,10 +567,18 @@ export default function Editor() {
   const switchProject = async (project: OpenProject) => {
     if (!project.path) return
     if (project.path === currentPath) return
-    if (isAutoSaveEnabled()) {
-      await saveNow()
-    } else {
-      persistDraft()
+    const prevPath = currentPathRef.current || sessionStorage.getItem("path") || ""
+    const prevName =
+      openProjectsRef.current.find(p => p.path === prevPath)?.name ||
+      sessionStorage.getItem("projectName") ||
+      sessionStorage.getItem("name") ||
+      "Untitled"
+    if (prevPath) {
+      if (isAutoSaveEnabled()) {
+        await saveNow({ path: prevPath, name: prevName })
+      } else {
+        persistDraft(prevPath)
+      }
     }
     sessionStorage.setItem("path", project.path)
     sessionStorage.setItem("projectName", project.name)

@@ -76,7 +76,17 @@ fn detect_kind_ext(ext: &str) -> (&'static str, Option<String>) {
         "doc" | "docx" => ("doc", Some("doc".into())),
         "pdf" => ("pdf", Some("pdf".into())),
         "txt" => ("txt", Some("txt".into())),
-        _ => ("unknown", Some(ext.into())),
+        "" => ("txt", None),
+        // Treat common text/code formats as text while preserving the extension for display
+        "md" | "mdx" | "json" | "log" | "js" | "jsx" | "ts" | "tsx" | "html" | "htm" | "css"
+        | "scss" | "sass" | "less" | "xml" | "yaml" | "yml" | "ini" | "cfg" | "conf" | "env"
+        | "properties" | "toml" | "csv" | "tsv" | "sql" | "sh" | "bash" | "zsh" | "ksh"
+        | "bat" | "cmd" | "ps1" | "psm1" | "py" | "rs" | "go" | "java" | "kt" | "kts"
+        | "c" | "cpp" | "cxx" | "h" | "hpp" | "hh" | "m" | "mm" | "swift" | "scala"
+        | "rb" | "php" | "pl" | "lua" | "r" | "tex" | "groovy" | "gradle" | "dart"
+        | "erl" | "ex" | "exs" | "elm" | "clj" | "cljs" | "coffee" | "hx" | "vb"
+        | "vbs" | "f90" | "f95" | "f03" | "make" | "mk" | "cmake" => ("txt", Some(ext.into())),
+        _ => ("txt", Some(ext.into())),
     }
 }
 
@@ -122,13 +132,14 @@ pub async fn scan_workspace(root: String) -> Result<ScanResultDto, String> {
                         continue;
                     }
 
-                    let ext = match cp.extension().and_then(|s| s.to_str()) {
-                        Some(e) => e.to_lowercase(),
-                        None => continue,
-                    };
-                    if !["rpad", "doc", "docx", "pdf", "txt"].contains(&ext.as_str()) {
+                    if !allowed_ext(&cp) {
                         continue;
                     }
+                    let ext = cp
+                        .extension()
+                        .and_then(|s| s.to_str())
+                        .map(|s| s.to_lowercase())
+                        .unwrap_or_else(|| "".to_string());
 
                     let md = match fs::metadata(&cp) {
                         Ok(m) => m,
@@ -171,13 +182,14 @@ pub async fn scan_workspace(root: String) -> Result<ScanResultDto, String> {
                 items,
             ));
         } else if p.is_file() {
-            let ext = match p.extension().and_then(|s| s.to_str()) {
-                Some(e) => e.to_lowercase(),
-                None => continue,
-            };
-            if !["rpad", "doc", "docx", "pdf", "txt"].contains(&ext.as_str()) {
+            if !allowed_ext(&p) {
                 continue;
             }
+            let ext = p
+                .extension()
+                .and_then(|s| s.to_str())
+                .map(|s| s.to_lowercase())
+                .unwrap_or_else(|| "".to_string());
 
             let md = match fs::metadata(&p) {
                 Ok(m) => m,
@@ -446,14 +458,29 @@ pub async fn write_rpad_html(
 }
 
 fn allowed_ext(p: &Path) -> bool {
-    match p
+    let ext_opt = p
         .extension()
         .and_then(|s| s.to_str())
-        .map(|s| s.to_ascii_lowercase())
-    {
-        Some(ext) if ["rpad", "txt", "pdf", "doc", "docx"].contains(&ext.as_str()) => true,
-        _ => false,
+        .map(|s| s.to_ascii_lowercase());
+    let ext = match ext_opt {
+        Some(e) => e,
+        None => return true, // allow extension-less text files
+    };
+
+    // Skip clearly binary/heavy formats to avoid junk in the workspace tree
+    const BLOCKED: &[&str] = &[
+        "exe", "dll", "so", "dylib", "bin", "apk", "msi", "dmg", "iso", "img", "jar", "war",
+        "zip", "tar", "tgz", "gz", "bz2", "xz", "7z", "rar",
+        "jpg", "jpeg", "png", "gif", "bmp", "webp", "ico", "psd", "ai", "sketch",
+        "mp3", "wav", "flac", "ogg", "mp4", "mkv", "avi", "mov", "wmv",
+        "woff", "woff2", "ttf", "otf",
+    ];
+    if BLOCKED.contains(&ext.as_str()) {
+        return false;
     }
+
+    // Everything else (including unknown extensions) is allowed so users can open arbitrary text/code files.
+    true
 }
 
 fn unique_dest(dest: PathBuf) -> PathBuf {
@@ -484,8 +511,52 @@ fn unique_dest(dest: PathBuf) -> PathBuf {
     }
 }
 
+fn files_equal(a: &Path, b: &Path) -> bool {
+    let ma = match fs::metadata(a) {
+        Ok(m) => m,
+        Err(_) => return false,
+    };
+    let mb = match fs::metadata(b) {
+        Ok(m) => m,
+        Err(_) => return false,
+    };
+    if ma.len() != mb.len() {
+        return false;
+    }
+    let mut fa = match fs::File::open(a) {
+        Ok(f) => f,
+        Err(_) => return false,
+    };
+    let mut fb = match fs::File::open(b) {
+        Ok(f) => f,
+        Err(_) => return false,
+    };
+    let mut buf_a = [0u8; 8192];
+    let mut buf_b = [0u8; 8192];
+    loop {
+        let ra = match fa.read(&mut buf_a) {
+            Ok(n) => n,
+            Err(_) => return false,
+        };
+        let rb = match fb.read(&mut buf_b) {
+            Ok(n) => n,
+            Err(_) => return false,
+        };
+        if ra != rb {
+            return false;
+        }
+        if ra == 0 {
+            break;
+        }
+        if buf_a[..ra] != buf_b[..rb] {
+            return false;
+        }
+    }
+    true
+}
+
 #[tauri::command]
-pub async fn import_project(root: String, src: String) -> Result<String, String> {
+pub async fn import_project(root: String, src: String, copy: Option<bool>) -> Result<String, String> {
     let rootp = PathBuf::from(&root);
     let srcp = PathBuf::from(&src);
 
@@ -504,9 +575,23 @@ pub async fn import_project(root: String, src: String) -> Result<String, String>
         return Ok(srcp.to_string_lossy().to_string());
     }
 
+    // Respect user preference: default to not copying external files; copy only when explicitly requested.
+    let should_copy = copy.unwrap_or(false);
+    if !should_copy {
+        return Ok(srcp.to_string_lossy().to_string());
+    }
+
     let fname = srcp.file_name().ok_or("invalid filename")?;
     let dest0 = rootp.join(fname);
-    let dest = unique_dest(dest0);
+    let dest = if dest0.exists() {
+        if files_equal(&srcp, &dest0) {
+            dest0
+        } else {
+            unique_dest(dest0)
+        }
+    } else {
+        dest0
+    };
 
     fs::copy(&srcp, &dest).map_err(|e| e.to_string())?;
     Ok(dest.to_string_lossy().to_string())

@@ -1,5 +1,7 @@
 use std::env;
+use std::sync::Mutex;
 
+use lazy_static::lazy_static;
 use tauri::{Emitter, Manager};
 
 use tauri_plugin_sql::{Migration, MigrationKind};
@@ -9,6 +11,22 @@ mod discord_rpc;
 
 mod settings;
 mod workspace;
+
+lazy_static! {
+    static ref PENDING_OPEN_PATHS: Mutex<Vec<String>> = Mutex::new(Vec::new());
+}
+
+fn enqueue_open_paths(args: &[String]) {
+    if args.is_empty() {
+        return;
+    }
+    let mut guard = match PENDING_OPEN_PATHS.lock() {
+        Ok(g) => g,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+    // Skip the executable path and only keep meaningful payload
+    guard.extend(args.iter().skip(1).cloned().filter(|s| !s.is_empty()));
+}
 
 #[tauri::command]
 async fn get_args() -> Vec<String> {
@@ -25,7 +43,18 @@ fn is_hyprland() -> bool {
         || std::env::var("XDG_SESSION_DESKTOP").map_or(false, |v| v == "Hyprland")
 }
 
+#[tauri::command]
+async fn take_pending_open_paths() -> Vec<String> {
+    let mut guard = match PENDING_OPEN_PATHS.lock() {
+        Ok(g) => g,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+    guard.drain(..).collect()
+}
+
 pub fn run() {
+    enqueue_open_paths(&env::args().collect::<Vec<_>>());
+
     let migrations = vec![Migration {
         version: 1,
         description: "init",
@@ -45,6 +74,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            enqueue_open_paths(&args);
             let window = app.get_window("main").unwrap();
             window.show().unwrap();
             window.set_focus().unwrap();
@@ -76,7 +106,8 @@ pub fn run() {
             workspace::create_rpad_project,
             discord_rpc::update_activity,
             discord_rpc::clear_activity,
-            settings::settings
+            settings::settings,
+            take_pending_open_paths
         ])
         .setup(|app| {
             let handle = app.handle().clone();

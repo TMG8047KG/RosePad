@@ -1,7 +1,7 @@
 .project{
     background: var(--project-bg);
     display: grid;
-    grid-template-columns: var(--select-col, 0px) 2fr .5fr 1.2fr .4fr;
+    grid-template-columns: var(--select-col, 0px) 2.5fr 1.2fr .4fr;
     border-radius: 0;
     padding: 5px;
     margin: 0;

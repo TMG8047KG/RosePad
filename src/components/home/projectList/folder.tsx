@@ -119,7 +119,6 @@ export function Folder({
           {ids.map(id => {
             const p = projectMap[id]
             if (!p) return null
-            const ext = p.kind === 'rpad' ? '' : (p.ext === 'docx' ? 'doc' : (p.ext || p.kind)) as any
             const date = new Intl.DateTimeFormat(undefined,{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(p.lastModifiedMs))
             return (
               <ProjectCard
@@ -127,7 +126,8 @@ export function Folder({
                 name={p.title || p.name}
                 date={date}
                 path={p.path}
-                ext={ext}
+                ext={p.ext ?? null}
+                kind={p.kind}
                 onDelete={() => onChanged()}
                 onRename={() => onChanged()}
                 color={color || undefined}
