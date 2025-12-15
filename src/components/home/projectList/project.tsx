@@ -7,6 +7,7 @@ import MultiModal from '../../modal'
 import { deleteProjectPath, renameProjectPath, moveProjectPath, assignProjectPathToVirtual } from '../../../core/db'
 import { useWorkspace } from '../../../core/workspaceContext'
 import { readableTextColor, withAlpha } from '../../../utils/color'
+import Select, { SelectOption } from '../../select'
 
 type DisplayNameInput = {
   name: string;
@@ -126,23 +127,34 @@ function Project({
   const bg = color ? withAlpha(color, 0.3) : undefined
   const border = color ? withAlpha(color, 0.5) : undefined
   const iconColor = color ? readableTextColor(color) : undefined
+  const destinationOptions = useMemo<SelectOption[]>(() => {
+    const options: SelectOption[] = []
+    if (rootPath) options.push({ kind: "option", value: rootPath, label: "Root" })
+    tree?.physicalFolders.forEach((f) => {
+      options.push({ kind: "option", value: f.path, label: f.name })
+    })
+    if (tree?.virtualFolders.length) {
+      options.push({ kind: "section", label: "Virtual folders" })
+      tree.virtualFolders.forEach((v) => {
+        options.push({ kind: "option", value: `vf:${v.id}`, label: `${v.name}` })
+      })
+    }
+    return options
+  }, [rootPath, tree])
 
   return(
     <>
       <MultiModal type='renameProject' isOpen={isRenameModalOpen} onClose={() => setIsRenameOpen(false)} onSubmit={handleRename} title={'New project name'} buttonLabel='Rename' placeholder='New project name' initialName={name} />
-      <MultiModal type='deleteProject' isOpen={isDeleteModalOpen} onClose={() => setIsDeleteOpen(false)} onSubmit={handleDeletion} title={'Warning'} declineButtonLabel='Cancel' acceptButtonLabel='Delete' info={`Are you sure you want to delete ${displayName}!?`}/>
+      <MultiModal type='delete' isOpen={isDeleteModalOpen} onClose={() => setIsDeleteOpen(false)} onSubmit={handleDeletion} title={'Warning'} declineButtonLabel='Cancel' acceptButtonLabel='Delete' message={`Are you sure you want to delete this project!?`} name={(<>Project Name:<span>{displayName}</span></>)}/>
       <MultiModal type='custom' isOpen={isMoveModalOpen} onClose={() => setIsMoveOpen(false)} title={'Move project'} primaryAction={{ label: 'Move', onClick: handleMove }}>
-        <label htmlFor="dest">Destination folder</label>
-        <select id="dest" className={style.select} value={targetDir || currentDir} onChange={(e) => setTargetDir((e.target as HTMLSelectElement).value)}>
-          {rootPath ? <option value={rootPath}>Root</option> : null}
-          {tree?.physicalFolders.map(f => (
-            <option key={f.id} value={f.path}>{f.name}</option>
-          ))}
-                    {tree?.virtualFolders.length ? <option disabled>-- Virtual Folders --</option> : null}
-          {tree?.virtualFolders.map(v => (
-            <option key={v.id} value={`vf:${v.id}`}>{v.name} (virtual)</option>
-          ))}
-        </select>
+        <label className={style.label} htmlFor="dest">Destination folder</label>
+        <Select
+          id="dest"
+          value={targetDir || currentDir}
+          options={destinationOptions}
+          placeholder="Select a folder"
+          onChange={(val) => setTargetDir(val)}
+        />
       </MultiModal>
       <div
         className={`${style.project} ${selectionMode ? style.selectionMode : ''} ${selected ? style.selectedRow : ''}`}

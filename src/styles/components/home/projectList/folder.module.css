@@ -101,3 +101,14 @@
     color: var(--project-title);
     background: rgb(from black r g b / 20%);
 }
+
+
+.centerRow {
+  display: flex;
+  justify-content: center;
+  align-self: center;
+  padding: 10px;
+  border: 2px solid var(--separator);
+  border-radius: 20px;
+  background: var(--bg-tertiary);
+}

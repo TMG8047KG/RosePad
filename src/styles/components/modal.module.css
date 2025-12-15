@@ -9,7 +9,7 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  font-family: var(--font-body, "Segoe UI", sans-serif);
+  font-family: var(--font-body);
   font-weight: 500;
   font-style: normal;
 }
@@ -21,12 +21,16 @@
   padding: 10px;
   border-radius: 8px;
   text-align: center;
-  gap: 5px;
   min-width: 20rem;
 }
 
 .modal h2{
   color:var(--fg-secondary);
+  margin-bottom: 5px;
+}
+
+.warning{
+  color: red !important;
 }
 
 .input {
@@ -48,8 +52,24 @@
 
 .label {
   font-size: 12pt;
-  color: var(--fg-tertiary);
+  color: var(--fg-secondary);
   text-align: center;
+  padding: 8px 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 10px;
+}
+
+.label::before,
+.label::after{
+  content: "";
+  flex: 1 1 30px;
+  max-width: 30px;
+  background: var(--separator);
+  height: 3px;
+  border-radius: 5px;
 }
 
 .input:focus {
@@ -120,8 +140,10 @@
   border: 2px solid var(--accent-primary);
   border-radius: 25px;
   padding: 5px;
-  max-height: 214px;
+  max-height: 206px;
   overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior-y: contain;
   z-index: 10;
 }
 
@@ -166,6 +188,7 @@
 }
 
 .modalActions {
+  margin-top: 10px;
   display: flex;
   align-self: flex-end;
   gap: 5px;
@@ -188,14 +211,40 @@
 }
 
 .separator{
-  padding: 15px 1px;
+  padding: 15px 2px;
   background: var(--separator);
   border-radius: 10px;
   margin: 0;
 }
 
+.infoBox{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .content{
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   color: var(--fg-tertiary);
+  padding: 0 10px;
+  font-size: 13pt;
+}
+
+.deleteName{
+  display: flex;
+  align-self: center;
+  padding: 10px 15px;
+  border: 2px solid var(--separator);
+  border-radius: 25px;
+  color: var(--fg-secondary);
+  background: var(--bg-tertiary);
+  gap: 5px;
+}
+
+.deleteName span{
+  color: var(--accent-primary);
 }
 
 .error{  

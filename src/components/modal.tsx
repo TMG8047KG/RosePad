@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { Component, ReactElement, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import style from "../styles/components/modal.module.css";
 import ColorPalette from "./colorPalette";
+import Select, { SelectOption } from "./select";
 import "../styles/Main.css";
 import { useWorkspace } from "../core/workspaceContext";
 import { useModalKeydown } from "../hooks/useModalKeydown";
@@ -17,9 +18,10 @@ type TextModalCommon = {
   buttonLabel?: string;
 };
 
-type InfoModalProps = {
+type DeleteModalProps = {
   title?: string;
-  info: string;
+  message: string;
+  name: React.ReactNode;
   acceptButtonLabel?: string;
   declineButtonLabel?: string;
 };
@@ -39,8 +41,8 @@ type RenameProjectProps = BaseProps &
   };
 
 type DeleteProjectProps = BaseProps &
-  InfoModalProps & {
-    type: "deleteProject";
+  DeleteModalProps & {
+    type: "delete";
     onSubmit: (name: string) => void;
   };
 
@@ -94,6 +96,9 @@ const nameOk = (s: string) => {
   return true;
 };
 
+type OptionItem = Extract<SelectOption, { kind: "option" }>;
+const isSelectableOption = (opt: SelectOption): opt is OptionItem => opt.kind === "option";
+
 const TextEntryView: React.FC<{
   title: string;
   initial: string;
@@ -129,6 +134,7 @@ const TextEntryView: React.FC<{
         placeholder={placeholder}
         className={style.input}
         autoFocus
+        spellCheck={false}
       />
       {error && <div className={style.error}>{error}</div>}
       <div className={style.modalActions}>
@@ -155,8 +161,6 @@ const CreateProjectView: React.FC<{
   const [name, setName] = useState(initial);
   const [error, setError] = useState("");
   const [dest, setDest] = useState<string>(rootPath ?? "");
-  const [destOpen, setDestOpen] = useState(false);
-  const selectRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => setName(initial), [initial]);
   useEffect(() => {
@@ -176,9 +180,9 @@ const CreateProjectView: React.FC<{
   useModalKeydown({ onClose, onEnter: submit });
 
   const hasWorkspace = !!rootPath && !!tree;
-  const folderOptions = React.useMemo(() => {
+  const folderOptions = React.useMemo<SelectOption[]>(() => {
     if (!hasWorkspace) return [];
-    const options: Array<{ kind: "option"; value: string; label: string } | { kind: "section"; label: string }> = [];
+    const options: SelectOption[] = [];
     if (rootPath) options.push({ kind: "option", value: rootPath, label: "Root" });
     tree?.physicalFolders.forEach((f) => {
       options.push({ kind: "option", value: f.path, label: f.name });
@@ -192,12 +196,10 @@ const CreateProjectView: React.FC<{
     return options;
   }, [hasWorkspace, rootPath, tree]);
 
-  const firstSelectable = folderOptions.find((opt) => opt.kind === "option") as
-    | { kind: "option"; value: string; label: string }
-    | undefined;
+  const firstSelectable = folderOptions.find(isSelectableOption);
   const selectedOption = folderOptions.find(
-    (opt) => opt.kind === "option" && opt.value === dest
-  ) as { kind: "option"; value: string; label: string } | undefined;
+    (opt): opt is OptionItem => opt.kind === "option" && opt.value === dest
+  );
 
   useEffect(() => {
     if (!hasWorkspace || !firstSelectable) return;
@@ -205,17 +207,6 @@ const CreateProjectView: React.FC<{
       setDest(firstSelectable.value);
     }
   }, [dest, firstSelectable, hasWorkspace, selectedOption]);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (!destOpen) return;
-      if (selectRef.current && !selectRef.current.contains(e.target as Node)) {
-        setDestOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [destOpen]);
 
   return (
     <div className={style.modal}>
@@ -231,46 +222,13 @@ const CreateProjectView: React.FC<{
       {hasWorkspace ? (
         <>
           <label className={style.label} htmlFor="dest">Folder</label>
-          <div className={style.selectBody} ref={selectRef}>
-            <button type="button" id="dest"
-              className={`${style.select} ${destOpen ? style.selectOpen : ""}`}
-              onClick={() => setDestOpen((open) => !open)}
-              aria-haspopup="listbox"
-              aria-expanded={destOpen}
-            >
-              <span className={style.selectValue}>{selectedOption?.label ?? "Select a folder"}</span>
-              <span className={style.selectArrow} aria-hidden="true">
-                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                  <path fill-rule="evenodd" d="M13.729 5.575c1.304-1.074 3.27-.146 3.27 1.544v9.762c0 1.69-1.966 2.618-3.27 1.544l-5.927-4.881a2 2 0 0 1 0-3.088l5.927-4.88Z" clip-rule="evenodd"/>
-                </svg>
-              </span>
-            </button>
-            {destOpen ? (
-              <div className={style.selectMenu} role="listbox" aria-labelledby="dest">
-                {folderOptions.map((option, index) =>
-                  option.kind === "section" ? (
-                    <div key={`section-${option.label}-${index}`} className={style.selectSection}>
-                      {option.label}
-                    </div>
-                  ) : (
-                    <button
-                      key={option.value}
-                      type="button"
-                      role="option"
-                      aria-selected={dest === option.value}
-                      className={`${style.selectOption} ${dest === option.value ? style.selectOptionActive : ""}`}
-                      onClick={() => {
-                        setDest(option.value);
-                        setDestOpen(false);
-                      }}
-                    >
-                      {option.label}
-                    </button>
-                  )
-                )}
-              </div>
-            ) : null}
-          </div>
+          <Select
+            id="dest"
+            value={dest}
+            options={folderOptions}
+            placeholder="Select a folder"
+            onChange={(value) => setDest(value)}
+          />
         </>
       ) : null}
       {error && <div className={style.error}>{error}</div>}
@@ -324,23 +282,19 @@ const CreateFolderView: React.FC<{
   const [error, setError] = useState("");
   const [folderType, setFolderType] = useState<"physical" | "virtual">(initialType ?? "physical");
   const [color, setColor] = useState<string>(randomPaletteColor());
-  const [typeOpen, setTypeOpen] = useState(false);
-  const typeSelectRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => setName(initial), [initial]);
   useEffect(() => {
     if (initialType) setFolderType(initialType);
   }, [initialType]);
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (!typeOpen) return;
-      if (typeSelectRef.current && !typeSelectRef.current.contains(e.target as Node)) {
-        setTypeOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [typeOpen]);
+
+  const folderTypeOptions = React.useMemo<SelectOption[]>(
+    () => [
+      { kind: "option", value: "physical", label: "Physical" },
+      { kind: "option", value: "virtual", label: "Virtual" },
+    ],
+    []
+  );
 
   const submit = () => {
     const value = name.trim();
@@ -387,40 +341,13 @@ const CreateFolderView: React.FC<{
       <label className={style.label} htmlFor="folderType">
         Folder Type
       </label>
-      <div className={style.selectBody} ref={typeSelectRef}>
-        <button type="button" id="folderType"
-          className={`${style.select} ${typeOpen ? style.selectOpen : ""}`}
-          onClick={() => setTypeOpen((open) => !open)}
-          aria-haspopup="listbox"
-          aria-expanded={typeOpen}
-        >
-          <span className={style.selectValue}>{folderType === "physical" ? "Physical" : "Virtual"}</span>
-          <span className={style.selectArrow} aria-hidden="true">
-            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-              <path fill-rule="evenodd" d="M13.729 5.575c1.304-1.074 3.27-.146 3.27 1.544v9.762c0 1.69-1.966 2.618-3.27 1.544l-5.927-4.881a2 2 0 0 1 0-3.088l5.927-4.88Z" clip-rule="evenodd"/>
-            </svg>
-          </span>
-        </button>
-        {typeOpen ? (
-          <div className={style.selectMenu} role="listbox" aria-labelledby="folderType">
-            {(["physical", "virtual"] as const).map((type) => (
-              <button
-                key={type}
-                type="button"
-                role="option"
-                aria-selected={folderType === type}
-                className={`${style.selectOption} ${folderType === type ? style.selectOptionActive : ""}`}
-                onClick={() => {
-                  setFolderType(type);
-                  setTypeOpen(false);
-                }}
-              >
-                {type === "physical" ? "Physical" : "Virtual"}
-              </button>
-            ))}
-          </div>
-        ) : null}
-      </div>
+      <Select 
+        id="folderType"
+        value={folderType}
+        options={folderTypeOptions}
+        placeholder="Select folder type"
+        onChange={(value) => setFolderType(value as "physical" | "virtual")}
+      />
       <label className={style.label} htmlFor="folderColor">
         Color
       </label>
@@ -440,15 +367,16 @@ const CreateFolderView: React.FC<{
   );
 };
 
-const InfoView: React.FC<{
+const DeleteView: React.FC<{
   title?: string;
-  info: string;
+  message: string;
+  name: React.ReactNode;
   agreeButtonLabel?: string;
   declineButtonLabel?: string;
   onSubmit?: (...props: any) => void;
   onAcknowledge?: () => void;
   onClose: () => void;
-}> = ({ title, info, agreeButtonLabel, declineButtonLabel, onSubmit, onAcknowledge, onClose }) => {
+}> = ({ title, message, name, agreeButtonLabel, declineButtonLabel, onSubmit, onAcknowledge, onClose }) => {
   useModalKeydown({ onClose });
 
   const agreeText = agreeButtonLabel ?? "Ok";
@@ -463,8 +391,11 @@ const InfoView: React.FC<{
 
   return (
     <div className={style.modal}>
-      <h2>{title}</h2>
-      <div className={style.content}>{info}</div>
+      <h2 className={style.warning}>{title}</h2>
+      <div className={style.infoBox}>
+        <div className={style.content}>{message}</div>
+        <div className={style.deleteName}>{name}</div>
+      </div>
       <div className={style.modalActions}>
         {agreeText ? (
           <button className={style.button} onClick={ack}>
@@ -604,11 +535,12 @@ const MultiModal: React.FC<MultiModalProps> = (props) => {
         />
       );
       break;
-    case "deleteProject":
+    case "delete":
       resolved = (
-        <InfoView
+        <DeleteView
           title={props.title ?? "Delete Project"}
-          info={props.info}
+          message={props.message}
+          name={props.name}
           agreeButtonLabel={props.acceptButtonLabel ?? "Ok"}
           declineButtonLabel={props.declineButtonLabel}
           onSubmit={props.onSubmit}

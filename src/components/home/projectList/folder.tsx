@@ -93,7 +93,7 @@ export function Folder({
   return (
     <>
       <MultiModal type='renameProject' isOpen={isRenameModalOpen} onClose={() => setIsRenameOpen(false)} onSubmit={handleRename} title={'New folder name'} buttonLabel='Rename' placeholder='New folder name' initialName={name} />
-      <MultiModal type='deleteProject' isOpen={isDeleteModalOpen} onClose={() => setIsDeleteOpen(false)} onSubmit={handleDeletion} title={'Warning'} declineButtonLabel='Cancel' acceptButtonLabel='Delete' info={`Are you sure you want to delete folder ${name}?`}/>
+      <MultiModal type='delete' isOpen={isDeleteModalOpen} onClose={() => setIsDeleteOpen(false)} onSubmit={handleDeletion} title={'Warning'} declineButtonLabel='Cancel' acceptButtonLabel='Delete' message={`Are you sure you want to delete this folder!?`} name={(<>Folder Name: <span>{name}</span></>)}/>
       <MultiModal type='custom' isOpen={isColorModalOpen} onClose={() => setIsColorOpen(false)} title={'Folder color'} primaryAction={{ label: 'Apply', onClick: applyColor }}>
         <div className={style.centerRow}>
           <ColorPalette value={selectedColor} onChange={setSelectedColor} renderAs="panel" />

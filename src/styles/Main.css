@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
 :root {
-  --font-body: "Segoe UI", "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Roboto", sans-serif;
   --bg-primary: #FFFFFF;
   --bg-secondary: #eaeaea;
   --bg-tertiary: #d0d0d0;
