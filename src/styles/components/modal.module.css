@@ -22,6 +22,12 @@
   border-radius: 8px;
   text-align: center;
   min-width: 20rem;
+  max-width: calc(100% - 100px);
+  max-height: calc(100% - 100px);
+}
+
+.modal::-webkit-scrollbar{
+  display: none;
 }
 
 .modal h2{
@@ -230,6 +236,42 @@
   color: var(--fg-tertiary);
   padding: 0 10px;
   font-size: 13pt;
+}
+
+.changelog{
+  display: flex;
+  flex-direction: column;
+  text-align: start;
+  color: var(--fg-tertiary);
+  overflow-y: scroll;
+  padding: 5px;
+  font-size: 14pt;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--separator);
+  border-radius: 15px;
+}
+
+.changelog::-webkit-scrollbar{
+    width: 6px;
+}
+
+.changelog::-webkit-scrollbar-thumb{
+    border-radius: 5px;
+    background: var(--accent-primary);
+}
+
+.changelog::-webkit-scrollbar-track{
+    margin: 15px;
+}
+
+.changelog h3, h4, h5{
+  color: var(--accent-primary);
+  font-size: calc(100% + 4pt);
+  padding: 10px 15px;
+}
+
+.changelog ul{
+  padding-left: 40px;
 }
 
 .deleteName{

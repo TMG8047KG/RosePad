@@ -429,7 +429,7 @@ const ChangelogView: React.FC<{
   return (
     <div className={style.modal}>
       <h2>{title}</h2>
-      <div className={style.content}>{content}</div>
+      <div className={style.changelog}>{content}</div>
       <div className={style.modalActions}>
         <button className={style.button} onClick={ack}>
           {buttonLabel}

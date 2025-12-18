@@ -8,7 +8,9 @@ import { ProjectList } from './components/home/projectList/list'
 import { open } from '@tauri-apps/plugin-dialog'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
 import { rpc_main_menu, rpc_project } from './core/discord_rpc'
 import { applyTheme, setup } from './core/cache'
@@ -18,6 +20,7 @@ import { addVirtualFolder, setVirtualFolderColor, setPhysicalFolderColor, create
 import { useWorkspace } from './core/workspaceContext'
 import { invoke } from '@tauri-apps/api/core'
 import { useHandleFileOpen } from './hooks/useHandleFileOpen'
+import formattedChangeLog from './core/changelog'
 
 setup()
 applyTheme()
@@ -33,6 +36,8 @@ function HomeShell() {
   const [isChooseOpen, setIsChooseOpen] = useState(false)
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false)
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false)
+  const [isChangeLogOpen, setIsChangeLogOpen] = useState(false)
+  const [changeLogContent, setChangeLogContent] = useState<ReactNode>('Loading changelog...')
   const [folderPresetType, setFolderPresetType] = useState<'physical' | 'virtual'>('physical')
 
   const { reindex } = useWorkspace();
@@ -106,6 +111,45 @@ function HomeShell() {
     return () => window.removeEventListener('keydown', handleShortcut)
   }, [isChooseOpen, isCreateFolderOpen, isCreateProjectOpen])
 
+  useEffect(() => {
+    if (!isChangeLogOpen) return
+
+    let cancelled = false
+
+    const loadChangeLog = async () => {
+      setChangeLogContent('Loading changelog...')
+      try {
+        const content = await formattedChangeLog()
+        if (!cancelled) setChangeLogContent(content)
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        if (!cancelled) setChangeLogContent(`Failed to load changelog: ${message}`)
+      }
+    }
+
+    loadChangeLog()
+    return () => { cancelled = true }
+  }, [isChangeLogOpen])
+
+  useEffect(() => {
+    let unlisten: UnlistenFn | undefined
+
+    listen('open-changelog', () => {
+      setIsChangeLogOpen(true)
+      setIsChooseOpen(false)
+      setIsCreateFolderOpen(false)
+      setIsCreateProjectOpen(false)
+    }).then((fn) => {
+      unlisten = fn
+    }).catch((err) => {
+      console.error('Failed to bind changelog listener', err)
+    })
+
+    return () => {
+      unlisten?.()
+    }
+  }, [])
+
   const handleCreateProject = async (name: string, dest?: string) => {
     // Ensure we have a workspace root to work with
     const root = await ensureWorkspace()
@@ -168,10 +212,7 @@ function HomeShell() {
         }}
       />
       <MultiModal type='createProject' isOpen={isCreateProjectOpen} onClose={() => setIsCreateProjectOpen(false)} onSubmit={(n, d) => handleCreateProject(n, d)}/>
-      <MultiModal type='createFolder' initialType={folderPresetType} isOpen={isCreateFolderOpen} onClose={() => {
-        setIsCreateFolderOpen(false)
-        setFolderPresetType('physical')
-      }} onSubmit={async (name, folderType, color) => {
+      <MultiModal type='createFolder' initialType={folderPresetType} isOpen={isCreateFolderOpen} onClose={() => { setIsCreateFolderOpen(false), setFolderPresetType('physical')}} onSubmit={async (name, folderType, color) => {
         const root = await ensureWorkspace()
         if (folderType === 'physical') {
           const p = await createPhysicalFolder(root, name)
@@ -184,6 +225,7 @@ function HomeShell() {
         setIsCreateFolderOpen(false)
         setFolderPresetType('physical')
       }}/>
+      <MultiModal type='changelog' isOpen={isChangeLogOpen} onClose={() => setIsChangeLogOpen(false)} content={changeLogContent}/>
       <div className={style.settings}>
         <SettingsButton/>
       </div>
