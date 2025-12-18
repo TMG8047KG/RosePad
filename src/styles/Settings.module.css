@@ -22,6 +22,11 @@
     padding: 5px;
     height: calc(100vh - 40px);
     background: var(--bg-tertiary);
+    overflow: scroll;
+}
+
+.container::-webkit-scrollbar{
+    display: none;
 }
 
 .pathInput{
@@ -71,6 +76,29 @@
     color: var(--fg-tertiary);
     line-height: 21.6px;
     vertical-align: bottom;
+}
+
+.changelogBtn{
+    display: flex;
+    border: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--fg-muted);
+    margin-left: 5px;
+    padding: 2px;
+    transition: ease .3s;
+}
+
+.changelogBtn:hover{
+    background-color: var(--accent-primary);
+    color: var(--fg-secondary);
+}
+
+.changelogBtn svg{
+    height: 20px;
+    width: 20px;
 }
 
 .links{
