@@ -26,14 +26,15 @@ Developed using Tauri v2 in combination with Vite, React, and Typescript.
 ### Idea and Reason
 The idea behind this project is to combine the simplicity and style of Notepad and the text formatting functionality of Microsoft Word while being able to handle all or most of the text file extensions in one app.
 
-The reason for making this is came when I got pissed at how I couldn't style text I was writing in my trusty Notepad which lead me to switching to Word. Which, is not a great experience since it's slow and, with a pretty cluttered UI, and on top of that, it sometimes has unexplainable behaviors, and requires a paid license. That doesn't help when you're trying to download it because Word may be the hardest downloadable thing.
+The reason for making this came when I got pissed at how I couldn't style text I was writing in my trusty Notepad, which led me to switch to Word. Which is not a great experience since it's slow and, with a pretty cluttered UI, and on top of that, it sometimes has unexplainable behaviors, and requires a paid license. That doesn't help when you're trying to download it because Word may be the hardest downloadable thing.
 
 ---
 
 ### Supported Platforms
 All supported platforms and the app's working status on those platforms.
 > [!NOTE]
-> There is a chance you might need to download or do something extra on some distros of Linux to be able to run the editor properly.
+> There is a chance you might need to download or do something extra on some distros of Linux distributions to be able to run the editor properly.<br>
+> Linux support is mainly tested on Arch Linux!
 
 > [!TIP]
 > When you're downloading RosePad on your macOS device, you might need to allow the app from the security settings due to the app not being certified by Apple.
@@ -41,7 +42,7 @@ All supported platforms and the app's working status on those platforms.
 | **Platform** 	 	|	**Supported** 	|  **Tested** 	|
 |:-------------:	|:-------------:	|:----------:	|
 |    Windows    	|       ✅       	|      ✅     	|
-|     Linux     	|       ✅       	|  Partially  	|
+|     Linux     	|       ✅       	| 	   ✅	 	|
 |     MacOS     	|       ✅       	|      ✅     	|
 |    Android    	|       ❌       	|      ❌     	|
 |      IOS      	|       ❌       	|      ❌     	|
@@ -50,8 +51,8 @@ All supported platforms and the app's working status on those platforms.
 
 ### How to build the app from the source
 If you want to build the app yourself from the source code or to make modifications and build the app with them, you will need to:
-1. Clone or download the repository on your computer. That can be done by clicking "code", and selecting/copying the option you prefer. (Using git is recommended)
-2. Then, if you don't have [node.js](https://nodejs.org/en) and [rust](https://www.rust-lang.org/tools/install), you need to download them. You will also need to install [`pnpm`](https://pnpm.io/installation), which is used from the project.
+1. Clone or download the repository on your computer. That can be done by clicking "code" and selecting/copying the option you prefer. (Using git is recommended)
+2. Then, if you don't have [Node.js](https://nodejs.org/en) and [Rust](https://www.rust-lang.org/tools/install), you will need to download them. You will also need to install [`pnpm`](https://pnpm.io/installation), which is used for the project.
 3. After you've downloaded everything, you need to set up the project in an IDE or terminal of your choice. In which you have to execute this command:
    - ```pnpm install```
 5. When everything is done, you just need to build it, or if you want to make changes and test them, you can run it in development mode with these commands:
@@ -59,8 +60,15 @@ If you want to build the app yourself from the source code or to make modificati
    - For development mode: ```pnpm tauri dev```
 
 > [!NOTE]
-> The installer you get from the build will adapt to your operating system. For more info, check the Tauri [docs](https://v2.tauri.app/).
+> The build will create a system-specific installer.<br>
+> *Example:
+> On Windows, it will build WiX and NSIS installers.<br>*
+> For more information, check the Tauri [documentation](https://v2.tauri.app/).
 
+### Contributions
+Everyone is free to contribute to and modify the app's code as they see fit, provided they follow the Contribution and License rules and clauses.
 
+### Credits
+Testers: [Sof](https://github.com/louis0s) and [Pl46u3](https://github.com/Pl46u32023)
 
 
