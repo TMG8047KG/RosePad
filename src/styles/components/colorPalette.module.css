@@ -115,7 +115,7 @@
 }
 
 .hexInput {
-  flex: 1;
+  display: flex;
   height: 28px;
   border: none;
   border-radius: 8px;
@@ -123,9 +123,13 @@
   background: var(--bg-tertiary);
   color: var(--fg-primary);
   font-weight: 600;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
-.applyBtn, .cancelBtn {
+.applyBtn, .cancelBtn, .actionBtn {
+  display: flex;
+  align-items: center;
   height: 28px;
   border-radius: 8px;
   border: 1px solid var(--separator);
@@ -133,12 +137,12 @@
   color: var(--btn-tertiary-text);
   padding: 0 8px;
   font-weight: 700;
+  cursor: pointer;
 }
 .preview {
-  width: 24px;
+  width: 3px;
   height: 24px;
   border-radius: 6px;
-  box-shadow: inset 0 0 0 1px var(--separator);
 }
 
 /* Inline custom picker */
@@ -162,7 +166,13 @@
   margin-top: 0;
   transform: translateY(-4px) scale(0.98);
 }
-.pickerInner { overflow: hidden; }
+.pickerInner { 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  width: 100%;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .panel, .picker { transition: none; }
@@ -193,6 +203,7 @@
   background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
   box-shadow: inset 0 0 0 1px var(--separator);
   margin-bottom: 8px;
+  width: calc(100% - 20px);
 }
 .hueHandle {
   position: absolute;
@@ -207,5 +218,28 @@
 .pickerRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  width: 100%;
+  gap: 5px;
+  box-sizing: border-box;
+}
+.pickerActions {
+  display: flex;
+  gap: 5px;
+  justify-content: end;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+.actionBtn svg {
+  width: 16px;
+  height: 16px;
+  color: var(--btn-tertiary-text);
+}
+.hiddenInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  overflow: hidden;
 }

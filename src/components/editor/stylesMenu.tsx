@@ -11,6 +11,8 @@ import { Align, getSelectionAlign, toggleTextAlign } from "../../core/editor/com
 import { toggleBulletList, toggleOrderedList } from "../../core/editor/command/Lists";
 import ColorPalette from "../colorPalette";
 
+const DEFAULT_TEXT_COLOR = "#ffffff";
+const DEFAULT_HIGHLIGHT_COLOR = "#ffff00";
 
 type ActiveState = {
   bold: boolean;
@@ -40,8 +42,8 @@ const StyleMenu = () => {
     inBullet: false,
     inOrdered: false,
     inCodeBlock: false,
-    textColor: "#ffffff",
-    highlight: "#ffff00",
+    textColor: DEFAULT_TEXT_COLOR,
+    highlight: DEFAULT_HIGHLIGHT_COLOR,
     fontSize: 12,
     align: "none"
   });
@@ -140,6 +142,35 @@ const StyleMenu = () => {
     view.focus();  
   };
 
+  const clearMark = (mark: any) => {
+    const view = getView();
+    if (!view || !mark) return;
+    const { state, dispatch } = view;
+    const { from, to, empty, $from } = state.selection as any;
+    if (empty) {
+      const stored = state.storedMarks || $from.marks();
+      const next = (stored || []).filter((m: any) => m.type !== mark);
+      if (dispatch) dispatch(state.tr.setStoredMarks(next));
+      return;
+    }
+    const tr = state.tr.removeMark(from, to, mark);
+    if (dispatch) dispatch(tr.scrollIntoView());
+  };
+
+  const clearTextColor = () => {
+    const view = getView();
+    const mark = view?.state.schema.marks.textColor;
+    clearMark(mark);
+    setActive(a => ({ ...a, textColor: DEFAULT_TEXT_COLOR }));
+  };
+
+  const clearHighlight = () => {
+    const view = getView();
+    const mark = view?.state.schema.marks.highlight;
+    clearMark(mark);
+    setActive(a => ({ ...a, highlight: DEFAULT_HIGHLIGHT_COLOR }));
+  };
+
   const setFontSize = (size: number) => {
     const view = getView();
     if (!view) return;
@@ -209,7 +240,7 @@ const StyleMenu = () => {
                 <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6h8m-8 6h8m-8 6h8M4 16a2 2 0 1 1 3.321 1.5L4 20h5M4 5l2-1v6m-2 0h4"/>
               </svg>
             </button>
-             <ColorPalette className={style.color} value={active.highlight} onChange={(c)=>{ setHighlight(c); setActive(a => ({ ...a, highlight: c })); }} />
+             <ColorPalette className={style.color} value={active.highlight} onChange={(c)=>{ setHighlight(c); setActive(a => ({ ...a, highlight: c })); }} showReset resetTo={DEFAULT_HIGHLIGHT_COLOR} onReset={clearHighlight} />
           </div>
           <div className={style.alignments}>
             <button className={`${style.button} ${active.align === "left" ? style.active : ""}`} onClick={() => applyAlign("left")} title="Align Left">
@@ -238,7 +269,7 @@ const StyleMenu = () => {
         <div className={style.bottom}>
           <HeadingPicker className={style.headers} value={active.headingLevel} options={[{value:0,label:'P'},{value:1,label:'H1'},{value:2,label:'H2'},{value:3,label:'H3'},{value:4,label:'H4'},{value:5,label:'H5'},{value:6,label:'H6'}]} onChange={(v)=>{setHeading(v)}} width="2.8rem" />
           <FontSizePicker className={style.fontSizes} value={active.fontSize} options={[{value:8,label:'8pt'},{value:10,label:'10pt'},{value:12,label:'12pt'},{value:14,label:'14pt'},{value:18,label:'18pt'},{value:24,label:'24pt'},{value:36,label:'36pt'}]} onChange={setFontSize} width="3.6rem" />
-          <ColorPalette className={style.color} value={active.textColor} onChange={(c)=>{ setColor(c); setActive(a => ({ ...a, textColor: c })); }} />
+          <ColorPalette className={style.color} value={active.textColor} onChange={(c)=>{ setColor(c); setActive(a => ({ ...a, textColor: c })); }} showReset resetTo={DEFAULT_TEXT_COLOR} onReset={clearTextColor} />
         </div>
       </div>
     )
