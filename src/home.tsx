@@ -21,6 +21,7 @@ import { useWorkspace } from './core/workspaceContext'
 import { invoke } from '@tauri-apps/api/core'
 import { useHandleFileOpen } from './hooks/useHandleFileOpen'
 import formattedChangeLog from './core/changelog'
+import { useToast } from './core/toast'
 
 setup()
 applyTheme()
@@ -41,6 +42,7 @@ function HomeShell() {
   const [folderPresetType, setFolderPresetType] = useState<'physical' | 'virtual'>('physical')
 
   const { reindex } = useWorkspace();
+  const pushToast = useToast()
 
   const { handleFileOpen, ensureWorkspace } = useHandleFileOpen()
   const importProject = async () => {
@@ -55,7 +57,13 @@ function HomeShell() {
         { name: 'All Files', extensions: ['*'] }
       ]
     })
-    if (p) await handleFileOpen(p as string)
+    if (!p) return
+    try {
+      await handleFileOpen(p as string)
+      pushToast({ message: 'Imported project', kind: 'success' })
+    } catch (err) {
+      pushToast({ message: `Import failed: ${err}`, kind: 'error' })
+    }
   }
 
   useEffect(() => {
@@ -151,30 +159,35 @@ function HomeShell() {
 
   const handleCreateProject = async (name: string, dest?: string) => {
     // Ensure we have a workspace root to work with
-    const root = await ensureWorkspace()
-    // If user picked a physical folder, use it; otherwise use workspace root
-    const dir = (dest && !dest.startsWith('vf:')) ? dest : root
+    try {
+      const root = await ensureWorkspace()
+      // If user picked a physical folder, use it; otherwise use workspace root
+      const dir = (dest && !dest.startsWith('vf:')) ? dest : root
 
-    const filePath = await createRpadFile(dir, name)
-    await rpc_project(name, filePath)
-    sessionStorage.setItem("name", name)
-    sessionStorage.setItem("projectName", name)
-    sessionStorage.setItem("path", filePath)
-    await addProject(name, filePath)
+      const filePath = await createRpadFile(dir, name)
+      await rpc_project(name, filePath)
+      sessionStorage.setItem("name", name)
+      sessionStorage.setItem("projectName", name)
+      sessionStorage.setItem("path", filePath)
+      await addProject(name, filePath)
 
-    // First reindex so the new project is in the DB
-    await reindex()
-    // If a virtual folder was selected, assign the newly created project to it
-    if (dest && dest.startsWith('vf:')) {
-      const vfId = dest.slice(3)
-      // Assign by path; relies on reindex to have populated the DB entry
-      const { assignProjectPathToVirtual } = await import('./core/db')
-      await assignProjectPathToVirtual(filePath, vfId)
-      // Reindex again so the assignment appears immediately in the UI
+      // First reindex so the new project is in the DB
       await reindex()
+      // If a virtual folder was selected, assign the newly created project to it
+      if (dest && dest.startsWith('vf:')) {
+        const vfId = dest.slice(3)
+        // Assign by path; relies on reindex to have populated the DB entry
+        const { assignProjectPathToVirtual } = await import('./core/db')
+        await assignProjectPathToVirtual(filePath, vfId)
+        // Reindex again so the assignment appears immediately in the UI
+        await reindex()
+      }
+      pushToast({ message: 'Project created', kind: 'success' })
+      setIsCreateProjectOpen(false)
+      navigator(`/editor/${name}`)
+    } catch (err) {
+      pushToast({ message: `Create failed: ${err}`, kind: 'error' })
     }
-    setIsCreateProjectOpen(false)
-    navigator(`/editor/${name}`)
   }
 
   return (
@@ -212,17 +225,23 @@ function HomeShell() {
       />
       <MultiModal type='createProject' isOpen={isCreateProjectOpen} onClose={() => setIsCreateProjectOpen(false)} onSubmit={(n, d) => handleCreateProject(n, d)}/>
       <MultiModal type='createFolder' initialType={folderPresetType} isOpen={isCreateFolderOpen} onClose={() => { setIsCreateFolderOpen(false), setFolderPresetType('physical')}} onSubmit={async (name, folderType, color) => {
-        const root = await ensureWorkspace()
-        if (folderType === 'physical') {
-          const p = await createPhysicalFolder(root, name)
-          if (color) await setPhysicalFolderColor(p, color)
-        } else {
-          const id = await addVirtualFolder(name, root)
-          if (color) await setVirtualFolderColor(id, color)
+        try {
+          const root = await ensureWorkspace()
+          if (folderType === 'physical') {
+            const p = await createPhysicalFolder(root, name)
+            if (color) await setPhysicalFolderColor(p, color)
+          } else {
+            const id = await addVirtualFolder(name, root)
+            if (color) await setVirtualFolderColor(id, color)
+          }
+          await reindex()
+          pushToast({ message: 'Folder created', kind: 'success' })
+        } catch (err) {
+          pushToast({ message: `Folder creation failed: ${err}`, kind: 'error' })
+        } finally {
+          setIsCreateFolderOpen(false)
+          setFolderPresetType('physical')
         }
-        await reindex()
-        setIsCreateFolderOpen(false)
-        setFolderPresetType('physical')
       }}/>
       <MultiModal type='changelog' isOpen={isChangeLogOpen} onClose={() => setIsChangeLogOpen(false)} content={changeLogContent}/>
       <div className={style.settings}>

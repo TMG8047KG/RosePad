@@ -47,6 +47,29 @@ pub struct AnalyzeResultDto {
     pub delete_physical_folders: Vec<String>,
 }
 
+fn canonicalize_allow_missing(p: &Path) -> Result<PathBuf, String> {
+    if p.exists() {
+        return p.canonicalize().map_err(|e| e.to_string());
+    }
+    let parent = p.parent().ok_or_else(|| "path has no parent".to_string())?;
+    let parent_canon = parent.canonicalize().map_err(|e| e.to_string())?;
+    let name = p
+        .file_name()
+        .ok_or_else(|| "path has no filename".to_string())?;
+    Ok(parent_canon.join(name))
+}
+
+fn ensure_inside_root(root: &str, target: &Path) -> Result<PathBuf, String> {
+    let root_canon = Path::new(root)
+        .canonicalize()
+        .map_err(|e| format!("workspace root invalid: {e}"))?;
+    let tgt = canonicalize_allow_missing(target)?;
+    if !tgt.starts_with(&root_canon) {
+        return Err("path is outside workspace root".into());
+    }
+    Ok(tgt)
+}
+
 fn mtime_ms(md: &fs::Metadata) -> i64 {
     use std::time::SystemTime;
     match md.modified() {
@@ -234,10 +257,12 @@ pub async fn scan_workspace(root: String) -> Result<ScanResultDto, String> {
 #[tauri::command]
 pub async fn rename_project(
     _app: AppHandle,
+    workspace_root: String,
     old_path: String,
     new_name: String,
 ) -> Result<String, String> {
     let p = PathBuf::from(&old_path);
+    let _ = ensure_inside_root(&workspace_root, &p)?;
     if !p.is_file() {
         return Err("not a file".into());
     }
@@ -248,12 +273,9 @@ pub async fn rename_project(
         .to_ascii_lowercase();
     // For .rpad, prefer updating the manifest title and keep the file name as-is (allows duplicate display names)
     if ext == "rpad" {
-        // Try to preserve HTML content if present
-        let html = match read_rpad_data(old_path.clone()).await {
-            Ok(s) => s,
-            Err(_) => String::new(),
-        };
-        // Overwrite the archive with the same path, updating title
+        // Preserve HTML content; fail fast if we cannot read
+        let html = read_rpad_data(old_path.clone()).await?;
+        // Overwrite the archive with the same path, updating title and keeping attachments
         write_rpad_html(old_path.clone(), html, Some(new_name.clone())).await?;
         return Ok(p.to_string_lossy().to_string());
     }
@@ -271,29 +293,33 @@ pub async fn rename_project(
 }
 
 #[tauri::command]
-pub async fn delete_project(_app: AppHandle, path: String) -> Result<(), String> {
-    let _ = fs::remove_file(&path);
-    Ok(())
+pub async fn delete_project(_app: AppHandle, workspace_root: String, path: String) -> Result<(), String> {
+    let p = PathBuf::from(&path);
+    let _ = ensure_inside_root(&workspace_root, &p)?;
+    fs::remove_file(&p).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub async fn move_project(
     _app: AppHandle,
+    workspace_root: String,
     old_path: String,
     dest_dir: String,
 ) -> Result<String, String> {
     let src = PathBuf::from(&old_path);
+    let _ = ensure_inside_root(&workspace_root, &src)?;
     if !src.is_file() {
         return Err("not a file".into());
     }
     let dest = PathBuf::from(&dest_dir);
+    let dest_checked = ensure_inside_root(&workspace_root, &dest)?;
     if !dest.is_dir() {
         return Err("destination is not a directory".into());
     }
     let file_name = src
         .file_name()
         .ok_or_else(|| "invalid source".to_string())?;
-    let candidate = dest.join(file_name);
+    let candidate = dest_checked.join(file_name);
     let new_path = unique_dest(candidate);
     fs::rename(&src, &new_path).map_err(|e| e.to_string())?;
     Ok(new_path.to_string_lossy().to_string())
@@ -302,10 +328,12 @@ pub async fn move_project(
 #[tauri::command]
 pub async fn rename_physical_folder(
     _app: AppHandle,
+    workspace_root: String,
     path: String,
     new_name: String,
 ) -> Result<String, String> {
     let p = PathBuf::from(&path);
+    let _ = ensure_inside_root(&workspace_root, &p)?;
     if !p.is_dir() {
         return Err("not a directory".into());
     }
@@ -316,8 +344,9 @@ pub async fn rename_physical_folder(
 }
 
 #[tauri::command]
-pub async fn delete_physical_folder(_app: AppHandle, path: String) -> Result<(), String> {
+pub async fn delete_physical_folder(_app: AppHandle, workspace_root: String, path: String) -> Result<(), String> {
     let p = PathBuf::from(&path);
+    let _ = ensure_inside_root(&workspace_root, &p)?;
     if !p.is_dir() {
         return Err("not a directory".into());
     }
@@ -332,10 +361,11 @@ pub async fn create_physical_folder(
     name: String,
 ) -> Result<String, String> {
     let r = PathBuf::from(&root);
-    if !r.is_dir() {
+    let root_checked = ensure_inside_root(&root, &r)?;
+    if !root_checked.is_dir() {
         return Err("root is not a directory".into());
     }
-    let new_path = r.join(&name);
+    let new_path = root_checked.join(&name);
     if new_path.exists() {
         return Ok(new_path.to_string_lossy().to_string());
     }
@@ -434,26 +464,110 @@ pub async fn write_rpad_html(
     title: Option<String>,
 ) -> Result<(), String> {
     let p = Path::new(&path);
-    let file = fs::File::create(p).map_err(|e| e.to_string())?;
-    let mut zip = ZipWriter::new(file);
-    let options = FileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+    let parent = p.parent().ok_or_else(|| "invalid path".to_string())?;
 
-    let manifest = serde_json::json!({
-      "title": title.unwrap_or_else(|| "Untitled".to_string()),
-      "version": 1
-    });
-    zip.start_file("manifest.json", options)
-        .map_err(|e| e.to_string())?;
-    zip.write(manifest.to_string().as_bytes())
-        .map_err(|e| e.to_string())?;
+    let temp_path = {
+        let mut i = 0usize;
+        let mut candidate = parent.join(format!(
+            ".{}.tmp",
+            p.file_name()
+                .and_then(|s| s.to_str())
+                .unwrap_or("rosepad")
+        ));
+        while candidate.exists() {
+            i += 1;
+            candidate = parent.join(format!(
+                ".{}.tmp{}",
+                p.file_name()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("rosepad"),
+                i
+            ));
+        }
+        candidate
+    };
 
-    let data = serde_json::json!({ "html": html });
-    zip.start_file("data.json", options)
-        .map_err(|e| e.to_string())?;
-    zip.write(data.to_string().as_bytes())
-        .map_err(|e| e.to_string())?;
+    let mut preserved: Vec<(String, Vec<u8>, zip::CompressionMethod)> = Vec::new();
+    let mut existing_title: Option<String> = None;
+    let mut existing_version: Option<i64> = None;
 
-    zip.finish().map_err(|e| e.to_string())?;
+    if p.exists() {
+        let file = fs::File::open(p).map_err(|e| e.to_string())?;
+        let mut archive = ZipArchive::new(file).map_err(|e| format!("failed to read existing archive: {e}"))?;
+        for i in 0..archive.len() {
+            let mut entry = archive.by_index(i).map_err(|e| e.to_string())?;
+            let name = entry.name().to_string();
+            if name == "manifest.json" {
+                let mut buf = String::new();
+                let _ = entry.read_to_string(&mut buf);
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&buf) {
+                    if existing_title.is_none() {
+                        existing_title = v.get("title").and_then(|x| x.as_str()).map(|s| s.to_string());
+                    }
+                    if existing_version.is_none() {
+                        existing_version = v.get("version").and_then(|x| x.as_i64());
+                    }
+                }
+                continue;
+            }
+            if name == "data.json" {
+                continue;
+            }
+            let mut buf = Vec::new();
+            entry
+                .read_to_end(&mut buf)
+                .map_err(|e| format!("failed to copy existing entry {name}: {e}"))?;
+            let method = entry.compression();
+            preserved.push((name, buf, method));
+        }
+    }
+
+    let chosen_title = title.or(existing_title).unwrap_or_else(|| "Untitled".to_string());
+    let version = existing_version.unwrap_or(1);
+
+    {
+        let file = fs::File::create(&temp_path).map_err(|e| e.to_string())?;
+        let mut zip = ZipWriter::new(file);
+
+        for (name, data, method) in preserved {
+            let opts = FileOptions::default().compression_method(method);
+            let entry_name = name;
+            zip.start_file(&entry_name, opts)
+                .map_err(|e| format!("failed to start preserved entry {entry_name}: {e}"))?;
+            zip.write_all(&data)
+                .map_err(|e| format!("failed to write preserved entry {entry_name}: {e}"))?;
+        }
+
+        let options = FileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+
+        let manifest = serde_json::json!({
+          "title": chosen_title,
+          "version": version
+        });
+        zip.start_file("manifest.json", options)
+            .map_err(|e| e.to_string())?;
+        zip.write(manifest.to_string().as_bytes())
+            .map_err(|e| e.to_string())?;
+
+        let data = serde_json::json!({ "html": html });
+        zip.start_file("data.json", options)
+            .map_err(|e| e.to_string())?;
+        zip.write(data.to_string().as_bytes())
+            .map_err(|e| e.to_string())?;
+
+        zip.finish().map_err(|e| e.to_string())?;
+    }
+
+    if let Err(e) = fs::rename(&temp_path, p) {
+        // Attempt replace if target exists
+        if p.exists() {
+            let _ = fs::remove_file(p);
+            fs::rename(&temp_path, p).map_err(|e2| format!("failed to replace file: {e2}"))?;
+        } else {
+            let _ = fs::remove_file(&temp_path);
+            return Err(e.to_string());
+        }
+    }
     Ok(())
 }
 
@@ -613,6 +727,34 @@ pub async fn create_rpad_project(dest_dir: String, name: String) -> Result<Strin
     // Write empty HTML with title; creates the archive file
     write_rpad_html(path_s.clone(), String::new(), Some(name)).await?;
     Ok(path_s)
+}
+
+/// Atomically write plain text to disk to avoid truncated files on crash.
+#[tauri::command]
+pub async fn write_text_atomic(path: String, contents: String) -> Result<(), String> {
+    let p = Path::new(&path);
+    let parent = p.parent().ok_or_else(|| "invalid path".to_string())?;
+    let mut tmp = parent.join(".rosepad.txt.tmp");
+    let mut i = 0usize;
+    while tmp.exists() {
+        i += 1;
+        tmp = parent.join(format!(".rosepad.txt.tmp{}", i));
+    }
+    {
+        let mut f = fs::File::create(&tmp).map_err(|e| e.to_string())?;
+        f.write_all(contents.as_bytes()).map_err(|e| e.to_string())?;
+        let _ = f.sync_all();
+    }
+    if let Err(e) = fs::rename(&tmp, p) {
+        if p.exists() {
+            let _ = fs::remove_file(p);
+            fs::rename(&tmp, p).map_err(|e2| e2.to_string())?;
+        } else {
+            let _ = fs::remove_file(&tmp);
+            return Err(e.to_string());
+        }
+    }
+    Ok(())
 }
 
 // Analyze a set of changed paths and produce targeted upserts/deletes.

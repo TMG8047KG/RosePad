@@ -201,20 +201,32 @@ function coerceProject(p: any): Project {
 }
 
 export async function renameProjectPath(oldPath:string, newName:string) {
-  return await invoke<string>('rename_project', { oldPath, newName })
+  const { getWorkspaceRoot } = await import('./cache')
+  const root = await getWorkspaceRoot()
+  if (!root) throw new Error('workspace root not set')
+  return await invoke<string>('rename_project', { workspaceRoot: root, oldPath, newName })
 }
 
 export async function deleteProjectPath(path:string) {
-  await invoke('delete_project', { path })
+  const { getWorkspaceRoot } = await import('./cache')
+  const root = await getWorkspaceRoot()
+  if (!root) throw new Error('workspace root not set')
+  await invoke('delete_project', { workspaceRoot: root, path })
 }
 
 export async function moveProjectPath(oldPath: string, destDir: string) {
-  return await invoke<string>('move_project', { oldPath, destDir })
+  const { getWorkspaceRoot } = await import('./cache')
+  const root = await getWorkspaceRoot()
+  if (!root) throw new Error('workspace root not set')
+  return await invoke<string>('move_project', { workspaceRoot: root, oldPath, destDir })
 }
 
 export async function renamePhysicalFolder(path: string, newName: string) {
   // Perform the physical rename via Tauri backend and receive the new path
-  const newPath = await invoke<string>('rename_physical_folder', { path, newName })
+  const { getWorkspaceRoot } = await import('./cache')
+  const root = await getWorkspaceRoot()
+  if (!root) throw new Error('workspace root not set')
+  const newPath = await invoke<string>('rename_physical_folder', { workspaceRoot: root, path, newName })
   try {
     // Preserve folder color (and any other metadata) by moving the row to the new path
     const d = await db()
@@ -224,7 +236,10 @@ export async function renamePhysicalFolder(path: string, newName: string) {
 }
 
 export async function deletePhysicalFolder(path: string) {
-  await invoke('delete_physical_folder', { path })
+  const { getWorkspaceRoot } = await import('./cache')
+  const root = await getWorkspaceRoot()
+  if (!root) throw new Error('workspace root not set')
+  await invoke('delete_physical_folder', { workspaceRoot: root, path })
 }
 
 export async function createPhysicalFolder(root: string, name: string) {

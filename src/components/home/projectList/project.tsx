@@ -8,6 +8,7 @@ import { deleteProjectPath, renameProjectPath, moveProjectPath, assignProjectPat
 import { useWorkspace } from '../../../core/workspaceContext'
 import { readableTextColor, withAlpha } from '../../../utils/color'
 import Select, { SelectOption } from '../../select'
+import { useToast } from '../../../core/toast'
 
 type DisplayNameInput = {
   name: string;
@@ -56,6 +57,7 @@ function Project({
   const [isMoveModalOpen, setIsMoveOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteOpen] = useState(false)
   const [targetDir, setTargetDir] = useState<string>('')
+  const pushToast = useToast()
 
   // Ensure unique menu and item IDs so duplicated names don't cross-wire actions
   const projectOptions = useMemo(() => Menu.new({
@@ -92,15 +94,27 @@ function Project({
 
   const handleRename = async (newName: string) => {
     if (!newName || newName === name) { setIsRenameOpen(false); return }
-    await renameProjectPath(path, newName)
-    setIsRenameOpen(false)
-    onRename()
+    try {
+      await renameProjectPath(path, newName)
+      pushToast({ message: `Renamed to ${newName}`, kind: "success" })
+      onRename()
+    } catch (err) {
+      pushToast({ message: `Rename failed: ${err}`, kind: "error" })
+    } finally {
+      setIsRenameOpen(false)
+    }
   }
 
   const handleDeletion = async () => {
-    await deleteProjectPath(path)
-    setIsDeleteOpen(false)
-    onDelete()
+    try {
+      await deleteProjectPath(path)
+      pushToast({ message: `Deleted ${displayName}`, kind: "info" })
+      onDelete()
+    } catch (err) {
+      pushToast({ message: `Delete failed: ${err}`, kind: "error" })
+    } finally {
+      setIsDeleteOpen(false)
+    }
   }
 
   const handleMove = async () => {
@@ -111,6 +125,7 @@ function Project({
       const vfId = dest.slice(3)
       try {
         await assignProjectPathToVirtual(path, vfId)
+        pushToast({ message: `Assigned to folder`, kind: "success" })
       } finally {
         setIsMoveOpen(false)
         onRename()
@@ -119,9 +134,15 @@ function Project({
     }
     // Otherwise, move physically if changed
     if (dest === currentDir) { setIsMoveOpen(false); return }
-    await moveProjectPath(path, dest)
-    setIsMoveOpen(false)
-    onRename()
+    try {
+      await moveProjectPath(path, dest)
+      pushToast({ message: `Moved ${displayName}`, kind: "success" })
+      onRename()
+    } catch (err) {
+      pushToast({ message: `Move failed: ${err}`, kind: "error" })
+    } finally {
+      setIsMoveOpen(false)
+    }
   }
 
   const bg = color ? withAlpha(color, 0.3) : undefined

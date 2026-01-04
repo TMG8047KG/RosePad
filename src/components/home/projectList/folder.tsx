@@ -6,6 +6,7 @@ import { Menu } from '@tauri-apps/api/menu';
 import MultiModal from '../../modal'
 import ColorPalette from '../../colorPalette'
 import { readableTextColor, withAlpha } from '../../../utils/color'
+import { useToast } from '../../../core/toast'
 
 export type FolderType = 'virtual' | 'physical'
 
@@ -41,6 +42,7 @@ export function Folder({
   const [isDeleteModalOpen, setIsDeleteOpen] = useState(false)
   const [isColorModalOpen, setIsColorOpen] = useState(false)
   const [selectedColor, setSelectedColor] = useState<string>(color ?? '#aabbcc')
+  const pushToast = useToast()
 
   const projectOptions = useMemo(() => Menu.new({
     id: `folderOptions_${type}_${id}`,
@@ -61,17 +63,29 @@ export function Folder({
 
   const handleRename = async (newName: string) => {
     if (!newName || newName === name) { setIsRenameOpen(false); return }
-    if (type === 'virtual') await renameVirtualFolder(id, newName)
-    else await renamePhysicalFolder(id, newName)
-    setIsRenameOpen(false)
-    onChanged()
+    try {
+      if (type === 'virtual') await renameVirtualFolder(id, newName)
+      else await renamePhysicalFolder(id, newName)
+      pushToast({ message: `Renamed folder to ${newName}`, kind: "success" })
+      onChanged()
+    } catch (err) {
+      pushToast({ message: `Rename failed: ${err}`, kind: "error" })
+    } finally {
+      setIsRenameOpen(false)
+    }
   }
 
   const handleDeletion = async () => {
-    if (type === 'virtual') await deleteVirtualFolder(id)
-    else await deletePhysicalFolder(id)
-    setIsDeleteOpen(false)
-    onChanged()
+    try {
+      if (type === 'virtual') await deleteVirtualFolder(id)
+      else await deletePhysicalFolder(id)
+      pushToast({ message: `Deleted folder ${name}`, kind: "info" })
+      onChanged()
+    } catch (err) {
+      pushToast({ message: `Delete failed: ${err}`, kind: "error" })
+    } finally {
+      setIsDeleteOpen(false)
+    }
   }
 
   const applyColor = async () => {
@@ -83,6 +97,7 @@ export function Folder({
       if (type === 'virtual') await setVirtualFolderColor(id, selectedColor)
       else await setPhysicalFolderColor(id, selectedColor) 
     }
+    pushToast({ message: 'Folder color updated', kind: "success" })
     setIsColorOpen(false)
     onChanged()
   }

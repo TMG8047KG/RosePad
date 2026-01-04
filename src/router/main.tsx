@@ -6,6 +6,7 @@ import Editor from "../editor";
 import Settings from "../settings";
 import { WorkspaceProvider } from "../core/workspaceContext";
 import { useHandleFileOpen } from "../hooks/useHandleFileOpen";
+import { ToastProvider } from "../core/toast";
 
 function ExternalOpenListener() {
   const { listenForExternalOpens } = useHandleFileOpen();
@@ -20,15 +21,17 @@ function ExternalOpenListener() {
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <WorkspaceProvider>
-      <Router>
-        <ExternalOpenListener/>
-        <Routes>
-          <Route path="/" element={<App/>}/>
-          <Route path="/editor/:file" element={<Editor/>}/>
-          <Route path="/settings" element={<Settings/>}/>
-        </Routes>
-      </Router>
-    </WorkspaceProvider>
+    <ToastProvider>
+      <WorkspaceProvider>
+        <Router>
+          <ExternalOpenListener/>
+          <Routes>
+            <Route path="/" element={<App/>}/>
+            <Route path="/editor/:file" element={<Editor/>}/>
+            <Route path="/settings" element={<Settings/>}/>
+          </Routes>
+        </Router>
+      </WorkspaceProvider>
+    </ToastProvider>
   </React.StrictMode>
 );

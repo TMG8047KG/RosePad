@@ -103,6 +103,7 @@ pub fn run() {
             workspace::watch_physical_folders,
             workspace::read_rpad_data,
             workspace::write_rpad_html,
+            workspace::write_text_atomic,
             workspace::import_project,
             workspace::create_rpad_project,
             discord_rpc::update_activity,

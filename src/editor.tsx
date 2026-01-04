@@ -5,7 +5,7 @@ import style from './styles/Editor.module.css'
 import { useNavigate } from "react-router-dom"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { save } from "@tauri-apps/plugin-dialog"
-import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs"
+import { readTextFile } from "@tauri-apps/plugin-fs"
 import { invoke } from "@tauri-apps/api/core"
 import { getCurrentWindow } from "@tauri-apps/api/window"
 import { rpc_project } from "./core/discord_rpc"
@@ -18,6 +18,7 @@ import { DOMSerializer, DOMParser as PMDOMParser, Node as PMNode } from "prosemi
 import { rSchema } from "./core/editor/rSchema"
 import ProjectPickerModal from "./components/editor/projectPickerModal"
 import { useWorkspace } from "./core/workspaceContext"
+import { useToast } from "./core/toast"
 
 const DOC_CACHE_TTL_MS = 5 * 60 * 1000
 
@@ -75,6 +76,7 @@ async function loadCurrentFile(path: string): Promise<string> {
 export default function Editor() {
   const navigator = useNavigate()
   const { tree } = useWorkspace()
+  const pushToast = useToast()
   const [characters, setCharacters] = useState(0)
   const [words, setWords] = useState(0)
   const [isSaved, setSaved] = useState(true)
@@ -149,7 +151,7 @@ export default function Editor() {
 
   const readDrafts = () => {
     try {
-      const raw = sessionStorage.getItem("drafts")
+      const raw = localStorage.getItem("drafts")
       if (!raw) return {} as Record<string, string>
       const parsed = JSON.parse(raw)
       if (!parsed || typeof parsed !== "object") return {} as Record<string, string>
@@ -198,7 +200,7 @@ export default function Editor() {
     const html = serializeHTML()
     const drafts = readDrafts()
     drafts[path] = html
-    sessionStorage.setItem("drafts", JSON.stringify(drafts))
+    localStorage.setItem("drafts", JSON.stringify(drafts))
     setUnsavedPaths(prev => {
       const next = new Set(prev)
       next.add(path)
@@ -210,7 +212,7 @@ export default function Editor() {
     const drafts = readDrafts()
     if (drafts[path]) {
       delete drafts[path]
-      sessionStorage.setItem("drafts", JSON.stringify(drafts))
+      localStorage.setItem("drafts", JSON.stringify(drafts))
     }
     setUnsavedPaths(prev => {
       const next = new Set(prev)
@@ -234,7 +236,11 @@ export default function Editor() {
     autoSaveTargetRef.current = null
   }
 
-  const isAutoSaveEnabled = () => localStorage.getItem("autoSave") === "true"
+  const isAutoSaveEnabled = () => {
+    const v = localStorage.getItem("autoSave")
+    if (v === null) return true
+    return v === "true"
+  }
 
   const readOpenProjects = (): OpenProject[] => {
     try {
@@ -371,14 +377,14 @@ export default function Editor() {
     const ext = extOf(path)
     if (ext === "txt") {
       const payload = v.state.doc.textContent
-      await writeTextFile(path, payload)
+      await invoke("write_text_atomic", { path, contents: payload })
     } else if (ext === "rpad") {
       const html = serializeHTML()
       await invoke("write_rpad_html", { path, html, title })
     } else {
       // fallback: write plain text
       const payload = v.state.doc.textContent
-      await writeTextFile(path, payload)
+      await invoke("write_text_atomic", { path, contents: payload })
     }
 
     setSaved(true)
@@ -444,7 +450,12 @@ export default function Editor() {
   }, [])
 
   const handleSaving = async () => {
-    await saveNow()
+    try {
+      await saveNow()
+      pushToast({ message: "Saved", kind: "success" })
+    } catch (err) {
+      pushToast({ message: `Save failed: ${err}`, kind: "error" })
+    }
   }
 
   useEffect(() => {
@@ -488,11 +499,17 @@ export default function Editor() {
     sessionStorage.setItem("projectName", nameFromPath(newPath))
     window.dispatchEvent(new Event("storage"))
 
-    if (isRpad) {
-      const title = sessionStorage.getItem("projectName") || "Untitled"
-      await invoke("write_rpad_html", { path: newPath, html: payload, title })
-    } else {
-      await writeTextFile(newPath, payload)
+    try {
+      if (isRpad) {
+        const title = sessionStorage.getItem("projectName") || "Untitled"
+        await invoke("write_rpad_html", { path: newPath, html: payload, title })
+      } else {
+        await invoke("write_text_atomic", { path: newPath, contents: payload })
+      }
+      pushToast({ message: `Saved to ${newPath}`, kind: "success" })
+    } catch (err) {
+      pushToast({ message: `Save as failed: ${err}`, kind: "error" })
+      throw err
     }
 
     setCurrentPath(newPath)
