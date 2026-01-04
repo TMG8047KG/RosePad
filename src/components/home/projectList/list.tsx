@@ -110,7 +110,7 @@ export const ProjectList = () => {
   }, [collapsedFolders])
 
   const itemCount = useMemo(() => {
-    if (!tree || loading) return 0
+    if (!tree) return 0
     const countFolderItems = (folders: typeof tree.physicalFolders | typeof tree.virtualFolders, type: 'physical' | 'virtual') => {
       let count = 0
       for (const f of folders) {
@@ -139,7 +139,6 @@ export const ProjectList = () => {
   }, [rows, itemCount])
 
   const isEmptyBody = useMemo(() => {
-    if (loading) return true
     if (!tree) return true
     if (listCurrentType === 'all') {
       return tree.physicalFolders.length === 0 && tree.virtualFolders.length === 0 && sortedRootProjectIds.length === 0
@@ -301,12 +300,13 @@ export const ProjectList = () => {
       </div>
 
       <div className={`${style.listBody} ${isEmptyBody ? style.listBodyEmpty : ''}`}>
-        {!loading && !tree && (
-          <div className={style.empty}>No workspace selected</div>
+        {!tree && (
+          <div className={style.empty}>
+            {loading ? 'Loading...' : 'No workspace selected'}
+          </div>
         )}
-        {loading && <div className={style.empty}>Loading...</div>}
 
-        {!loading && tree && listCurrentType === "all" && (
+        {tree && listCurrentType === "all" && (
           (tree.physicalFolders.length === 0 && tree.virtualFolders.length === 0 && sortedRootProjectIds.length === 0) ? (
             <div className={style.empty}>There are no projects or folders!</div>
           ) : (
@@ -331,7 +331,7 @@ export const ProjectList = () => {
           )
         )}
 
-        {!loading && tree && listCurrentType === "folders" && (
+        {tree && listCurrentType === "folders" && (
           (tree.physicalFolders.length <= 0 && tree.virtualFolders.length <= 0) ? (
             <div className={style.empty}>There are no folders!</div>
           ) : (
@@ -350,7 +350,7 @@ export const ProjectList = () => {
           )
         )}
 
-        {!loading && tree && listCurrentType === "projects" && (
+        {tree && listCurrentType === "projects" && (
           (sortedProjects.length <= 0) ? (
             <div className={style.empty}>There are no projects!</div>
           ) : (
