@@ -2,6 +2,7 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { db } from './db'
 import { invoke } from '@tauri-apps/api/core'
 import { join } from '@tauri-apps/api/path'
+import { exists } from '@tauri-apps/plugin-fs'
 import { getSettings, updateSettings } from './settings'
 
 export const settingsFile = 'settings.json'

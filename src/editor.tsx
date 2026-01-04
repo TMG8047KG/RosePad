@@ -9,6 +9,7 @@ import { readTextFile } from "@tauri-apps/plugin-fs"
 import { invoke } from "@tauri-apps/api/core"
 import { getCurrentWindow } from "@tauri-apps/api/window"
 import { rpc_project } from "./core/discord_rpc"
+import { listen, type UnlistenFn } from "@tauri-apps/api/event"
 
 import EditorPanel from "./core/editor/rPanel"
 import StyleMenu from "./components/editor/stylesMenu"
@@ -609,6 +610,23 @@ export default function Editor() {
     if (path) rememberProject(path, name)
     setCurrentPath(path)
   }, [])
+
+  useEffect(() => {
+    let unlisten: UnlistenFn | undefined
+
+    listen("open-changelog", () => {
+      sessionStorage.setItem("openChangelogRequested", "true")
+      navigator("/")
+    }).then((fn) => {
+      unlisten = fn
+    }).catch((err) => {
+      console.error("Failed to bind changelog listener", err)
+    })
+
+    return () => {
+      unlisten?.()
+    }
+  }, [navigator])
 
   useEffect(() => {
     charactersRef.current = characters

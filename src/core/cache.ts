@@ -2,11 +2,6 @@ import { themes } from './themeManager';
 import { setTheme } from "@tauri-apps/api/app";
 import { ensureSettingsPrimed, getSettings, updateSettings } from "./settings";
 
-type AutoSave = {
-    enabled: boolean;
-    interval: number;
-}
-
 export async function setup(){
     await ensureSettingsPrimed()
 }

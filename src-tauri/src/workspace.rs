@@ -835,10 +835,7 @@ pub async fn analyze_paths(root: String, paths: Vec<String>) -> Result<AnalyzeRe
             if p == rootp {
                 continue;
             }
-            let is_top_level = match p.parent() {
-                Some(pp) if pp == rootp => true,
-                _ => false,
-            };
+            let is_top_level = matches!(p.parent(), Some(pp) if pp == rootp);
             if is_top_level {
                 if p.exists() {
                     let name = p

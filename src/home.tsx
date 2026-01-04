@@ -15,7 +15,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { rpc_main_menu, rpc_project } from './core/discord_rpc'
 import { applyTheme, setup } from './core/cache'
 import { addProject, settings } from './core/projectHandler'
-import { addVirtualFolder, setVirtualFolderColor, setPhysicalFolderColor, createPhysicalFolder } from './core/db'
+import { addVirtualFolder, setVirtualFolderColor, setPhysicalFolderColor, createPhysicalFolder, assignProjectPathToVirtual } from './core/db'
 
 import { useWorkspace } from './core/workspaceContext'
 import { invoke } from '@tauri-apps/api/core'
@@ -139,6 +139,16 @@ function HomeShell() {
   }, [isChangeLogOpen])
 
   useEffect(() => {
+    if (sessionStorage.getItem('openChangelogRequested') === 'true') {
+      sessionStorage.removeItem('openChangelogRequested')
+      setIsChangeLogOpen(true)
+      setIsChooseOpen(false)
+      setIsCreateFolderOpen(false)
+      setIsCreateProjectOpen(false)
+    }
+  }, [])
+
+  useEffect(() => {
     let unlisten: UnlistenFn | undefined
 
     listen('open-changelog', () => {
@@ -177,12 +187,10 @@ function HomeShell() {
       if (dest && dest.startsWith('vf:')) {
         const vfId = dest.slice(3)
         // Assign by path; relies on reindex to have populated the DB entry
-        const { assignProjectPathToVirtual } = await import('./core/db')
         await assignProjectPathToVirtual(filePath, vfId)
         // Reindex again so the assignment appears immediately in the UI
         await reindex()
       }
-      pushToast({ message: 'Project created', kind: 'success' })
       setIsCreateProjectOpen(false)
       navigator(`/editor/${name}`)
     } catch (err) {

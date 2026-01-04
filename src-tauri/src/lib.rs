@@ -25,7 +25,12 @@ fn enqueue_open_paths(args: &[String]) {
         Err(poisoned) => poisoned.into_inner(),
     };
     // Skip the executable path and only keep meaningful payload
-    guard.extend(args.iter().skip(1).cloned().filter(|s| !s.is_empty()));
+    guard.extend(
+        args.iter()
+            .skip(1)
+            .filter(|s| !s.is_empty())
+            .cloned(),
+    );
 }
 
 #[tauri::command]
@@ -39,8 +44,8 @@ async fn get_args() -> Vec<String> {
 
 #[tauri::command]
 fn is_hyprland() -> bool {
-    std::env::var("XDG_CURRENT_DESKTOP").map_or(false, |v| v == "Hyprland")
-        || std::env::var("XDG_SESSION_DESKTOP").map_or(false, |v| v == "Hyprland")
+    std::env::var("XDG_CURRENT_DESKTOP").is_ok_and(|v| v == "Hyprland")
+        || std::env::var("XDG_SESSION_DESKTOP").is_ok_and(|v| v == "Hyprland")
 }
 
 #[tauri::command]
