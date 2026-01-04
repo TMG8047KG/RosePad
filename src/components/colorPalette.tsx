@@ -85,6 +85,18 @@ export default function ColorPalette({ value, onChange, className, disabled, col
     return () => document.removeEventListener('mousedown', onDoc);
   }, [open, isPopover]);
 
+  useEffect(() => {
+    if (!open || !isPopover) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false); setCustomOpen(false);
+        requestAnimationFrame(() => btnRef.current?.focus());
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, isPopover]);
+
   // Ensure position is calculated before paint to avoid flicker/teleport (floating mode only).
   useLayoutEffect(() => {
     if (!open || !isPopover) return;
@@ -271,9 +283,10 @@ export default function ColorPalette({ value, onChange, className, disabled, col
         syncFromHex(result.sRGBHex);
         setCustomOpen(true);
       }
-    } catch {
-      // Fallback to native input if EyeDropper is unavailable (e.g., HTTP context)
-      triggerNativePicker();
+    } catch (err: any) {
+      // Ignore user cancellation; fallback only for actual failures
+      const aborted = err?.name === 'AbortError' || err?.code === DOMException.ABORT_ERR;
+      if (!aborted) triggerNativePicker();
     } finally {
       setIsPicking(false);
     }
@@ -285,18 +298,22 @@ export default function ColorPalette({ value, onChange, className, disabled, col
         {palette.map(c => (
           <button
             key={c}
+            type="button"
+            role="option"
+            aria-selected={currentHex6 === c}
             className={`${style.cell} ${currentHex6 === c ? style.cellSelected : ''}`}
             style={{ background: c }}
             title={c}
-            aria-pressed={currentHex6 === c}
-            onMouseDown={(e) => { e.preventDefault(); syncFromHex(c); setOpen(false); setCustomOpen(false); }}
+            onClick={(e) => { e.preventDefault(); syncFromHex(c); setOpen(false); setCustomOpen(false); btnRef.current?.focus(); }}
           />
         ))}
         <button
+          type="button"
+          role="option"
+          aria-selected={isCustomColor}
           className={`${style.customBtn} ${isCustomColor ? style.customBtnSelected : ''}`}
           aria-expanded={customOpen}
-          aria-pressed={isCustomColor}
-          onMouseDown={(e) => { e.preventDefault(); setCustomOpen(o => !o); }}
+          onClick={(e) => { e.preventDefault(); setCustomOpen(o => !o); }}
           title="Custom color"
           style={isCustomColor ? { color: currentHex6 } : undefined}
         >
@@ -322,8 +339,9 @@ export default function ColorPalette({ value, onChange, className, disabled, col
           <div
             className={style.sv}
             style={{ backgroundColor: hsvToHex(hsv.h, 1, 1) }}
-            onMouseDown={(e) => {
+            onPointerDown={(e) => {
               isDraggingRef.current = true;
+              e.preventDefault();
               const el = e.currentTarget as HTMLDivElement; const rect = el.getBoundingClientRect();
               const update = (cx:number, cy:number) => {
                 const s = clamp((cx - rect.left) / rect.width, 0, 1);
@@ -333,18 +351,19 @@ export default function ColorPalette({ value, onChange, className, disabled, col
                 onChange(hex);
               };
               update(e.clientX, e.clientY);
-              const move = (ev: MouseEvent) => update(ev.clientX, ev.clientY);
-              const up = () => { isDraggingRef.current = false; document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
-              document.addEventListener('mousemove', move);
-              document.addEventListener('mouseup', up);
+              const move = (ev: PointerEvent) => update(ev.clientX, ev.clientY);
+              const up = () => { isDraggingRef.current = false; document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); };
+              document.addEventListener('pointermove', move);
+              document.addEventListener('pointerup', up);
             }}
           >
             <div className={style.svHandle} style={{ left: `${hsv.s * 100}%`, top: `${(1 - hsv.v) * 100}%` }} />
           </div>
           <div
             className={style.hue}
-            onMouseDown={(e) => {
+            onPointerDown={(e) => {
               isDraggingRef.current = true;
+              e.preventDefault();
               const el = e.currentTarget as HTMLDivElement; const rect = el.getBoundingClientRect();
               const update = (cx:number) => {
                 const h = clamp(((cx - rect.left) / rect.width) * 360, 0, 360);
@@ -353,10 +372,10 @@ export default function ColorPalette({ value, onChange, className, disabled, col
                 onChange(hsvToHex(h, hsv.s, hsv.v));
               };
               update(e.clientX);
-              const move = (ev: MouseEvent) => update(ev.clientX);
-              const up = () => { isDraggingRef.current = false; document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
-              document.addEventListener('mousemove', move);
-              document.addEventListener('mouseup', up);
+              const move = (ev: PointerEvent) => update(ev.clientX);
+              const up = () => { isDraggingRef.current = false; document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); };
+              document.addEventListener('pointermove', move);
+              document.addEventListener('pointerup', up);
             }}
           >
             <div className={style.hueHandle} style={{ left: `${(hsv.h / 360) * 100}%` }} />
@@ -430,9 +449,17 @@ export default function ColorPalette({ value, onChange, className, disabled, col
             <div
               ref={panelRef}
               className={`${style.panel} ${!panelPos.ready ? style.panelHidden : ''}`}
-            role="listbox"
-            tabIndex={-1}
-            style={panelPos.ready ? { left: panelPos.left, top: panelPos.top } : undefined}
+              role="listbox"
+              tabIndex={-1}
+              style={panelPos.ready ? { left: panelPos.left, top: panelPos.top } : undefined}
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  e.stopPropagation();
+                  setOpen(false);
+                  setCustomOpen(false);
+                  requestAnimationFrame(() => btnRef.current?.focus());
+                }
+              }}
           >
               {renderPanelContent()}
             </div>

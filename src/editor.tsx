@@ -7,16 +7,19 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { save } from "@tauri-apps/plugin-dialog"
 import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs"
 import { invoke } from "@tauri-apps/api/core"
+import { getCurrentWindow } from "@tauri-apps/api/window"
 import { rpc_project } from "./core/discord_rpc"
 
 import EditorPanel from "./core/editor/rPanel"
 import StyleMenu from "./components/editor/stylesMenu"
 import EditorTabs, { type OpenProject } from "./components/editor/editorTabs"
 import { getView, onDocChange } from "./core/editor/editorBridge"
-import { DOMSerializer, DOMParser as PMDOMParser } from "prosemirror-model"
+import { DOMSerializer, DOMParser as PMDOMParser, Node as PMNode } from "prosemirror-model"
 import { rSchema } from "./core/editor/rSchema"
 import ProjectPickerModal from "./components/editor/projectPickerModal"
 import { useWorkspace } from "./core/workspaceContext"
+
+const DOC_CACHE_TTL_MS = 5 * 60 * 1000
 
 function escapeHtml(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -98,6 +101,9 @@ export default function Editor() {
   const openProjectsRef = useRef(openProjects)
   const currentPathRef = useRef(currentPath)
   const switchProjectRef = useRef<(project: OpenProject) => Promise<void> | undefined>(undefined)
+  const isSwitchingRef = useRef(false)
+  const pendingSwitchRef = useRef<OpenProject | null>(null)
+  const loadRequestIdRef = useRef(0)
   const [unsavedPaths, setUnsavedPaths] = useState<Set<string>>(() => {
     try {
       const raw = sessionStorage.getItem("unsavedPaths")
@@ -109,6 +115,7 @@ export default function Editor() {
       return new Set<string>()
     }
   })
+  const unsavedPathsRef = useRef<Set<string>>(new Set(unsavedPaths))
   const projectOptions = useMemo(() => {
     if (!tree) return []
     return tree.projects.map(p => ({
@@ -135,8 +142,10 @@ export default function Editor() {
   )
   const charactersRef = useRef(0)
   const autoSaveTimer = useRef<number | undefined>(undefined)
+  const autoSaveTargetRef = useRef<string | null>(null)
   const hasSyncedOpenProjects = useRef(false)
   const isRestoring = useRef(false)
+  const docCacheRef = useRef<Map<string, { doc: PMNode; fromDraft: boolean; updatedAt: number }>>(new Map())
 
   const readDrafts = () => {
     try {
@@ -148,6 +157,36 @@ export default function Editor() {
     } catch {
       return {} as Record<string, string>
     }
+  }
+
+  const cacheDoc = (path: string, doc: PMNode, fromDraft: boolean) => {
+    if (!path || !doc) return
+    docCacheRef.current.set(path, { doc, fromDraft, updatedAt: Date.now() })
+  }
+
+  const applyDocToEditor = (doc: PMNode, path: string, fromDraft: boolean) => {
+    const activePath = currentPathRef.current || sessionStorage.getItem("path") || currentPath
+    if (path !== activePath) return
+    const v = getView()
+    if (!v) return
+
+    isRestoring.current = true
+    const tr = v.state.tr.replaceWith(0, v.state.doc.content.size, doc.content).setMeta("addToHistory", false)
+    v.dispatch(tr)
+    setTimeout(() => { isRestoring.current = false }, 0)
+
+    const text = extractDocText(doc)
+    setCharacters(text.replace(/\n/g, "").length)
+    setWords(countWords(text))
+    setSaved(!fromDraft)
+    setUnsavedPaths(prev => {
+      const next = new Set(prev)
+      if (fromDraft) next.add(path)
+      else next.delete(path)
+      return next
+    })
+
+    cacheDoc(path, doc, fromDraft)
   }
 
   const persistDraft = (targetPath?: string) => {
@@ -185,6 +224,14 @@ export default function Editor() {
     const n = raw ? parseInt(raw, 10) : 2
     const safe = Number.isFinite(n) ? n : 2
     return Math.max(1, safe) * 1000
+  }
+
+  const cancelAutoSaveTimer = () => {
+    if (autoSaveTimer.current) {
+      window.clearTimeout(autoSaveTimer.current)
+      autoSaveTimer.current = undefined
+    }
+    autoSaveTargetRef.current = null
   }
 
   const isAutoSaveEnabled = () => localStorage.getItem("autoSave") === "true"
@@ -240,6 +287,7 @@ export default function Editor() {
     } catch {
       // ignore storage failures
     }
+    unsavedPathsRef.current = unsavedPaths
   }, [unsavedPaths])
 
   useEffect(() => {
@@ -271,13 +319,27 @@ export default function Editor() {
   }, [sanitizeSelection])
 
   const scheduleAutoSave = () => {
-    if (autoSaveTimer.current) window.clearTimeout(autoSaveTimer.current)
+    cancelAutoSaveTimer()
     if (!isAutoSaveEnabled()) return
+    const targetPath = currentPathRef.current || sessionStorage.getItem("path") || currentPath
+    if (!targetPath) return
+    autoSaveTargetRef.current = targetPath
 
     const delay = getIntervalMs()
     autoSaveTimer.current = window.setTimeout(() => {
       autoSaveTimer.current = undefined
-      void saveNow()
+      const path = autoSaveTargetRef.current
+      autoSaveTargetRef.current = null
+      if (!path) return
+      // If user has switched tabs, skip this save to avoid writing the wrong doc to a new path
+      const activePath = currentPathRef.current || sessionStorage.getItem("path") || currentPath
+      if (path !== activePath) return
+      const name =
+        openProjectsRef.current.find(p => p.path === path)?.name ||
+        sessionStorage.getItem("projectName") ||
+        sessionStorage.getItem("name") ||
+        "Untitled"
+      void saveNow({ path, name })
     }, delay)
   }
 
@@ -327,11 +389,31 @@ export default function Editor() {
       next.delete(path)
       return next
     })
+    cacheDoc(path, v.state.doc, false)
+  }
+
+  const saveAllUnsaved = async () => {
+    cancelAutoSaveTimer()
+    const targets = Array.from(unsavedPathsRef.current)
+    if (!targets.length) return
+    const tasks = targets.map(async (path) => {
+      const name =
+        openProjectsRef.current.find(p => p.path === path)?.name ||
+        sessionStorage.getItem("projectName") ||
+        sessionStorage.getItem("name") ||
+        "Untitled"
+      try {
+        await saveNow({ path, name })
+      } catch (err) {
+        console.error("Failed to save on exit for", path, err)
+      }
+    })
+    await Promise.all(tasks)
   }
 
   useEffect(() => {
     return () => {
-      if (autoSaveTimer.current) window.clearTimeout(autoSaveTimer.current)
+      cancelAutoSaveTimer()
     }
   }, [])
 
@@ -344,13 +426,14 @@ export default function Editor() {
       const v = getView()
       if (!v) return
       setSaved(false)
-      const path = sessionStorage.getItem("path") || currentPath
+      const path = currentPathRef.current || sessionStorage.getItem("path") || currentPath
       if (path) {
         setUnsavedPaths(prev => {
           const next = new Set(prev)
           next.add(path)
           return next
         })
+        cacheDoc(path, v.state.doc, true)
       }
       const text = extractDocText(v.state.doc)
       setCharacters(text.replace(/\n/g, "").length)
@@ -415,30 +498,32 @@ export default function Editor() {
     setCurrentPath(newPath)
     rememberProject(newPath, nameFromPath(newPath))
     setSaved(true)
-  }
-
-  const clearEditorContent = () => {
-    const v = getView()
-    if (!v) return
-    const emptyParagraph = v.state.schema.nodes.paragraph?.createAndFill()
-    if (!emptyParagraph) return
-    isRestoring.current = true
-    const tr = v.state.tr.replaceWith(0, v.state.doc.content.size, emptyParagraph).setMeta("addToHistory", false)
-    v.dispatch(tr)
+    cacheDoc(newPath, v.state.doc, false)
   }
 
   const loadProject = async (pathOverride?: string) => {
+    const requestId = ++loadRequestIdRef.current
     const path = pathOverride || sessionStorage.getItem("path")
     if (!path) return
-    setIsLoadingDoc(true)
-    clearEditorContent()
+    cancelAutoSaveTimer()
+    currentPathRef.current = path
     setCurrentPath(path)
+    const cached = docCacheRef.current.get(path)
+    if (cached?.doc && Date.now() - cached.updatedAt <= DOC_CACHE_TTL_MS) {
+      const activePath = currentPathRef.current || sessionStorage.getItem("path") || currentPath
+      if (path !== activePath) return
+      if (requestId !== loadRequestIdRef.current) return
+      applyDocToEditor(cached.doc, path, cached.fromDraft)
+      return
+    } else if (cached) {
+      docCacheRef.current.delete(path)
+    }
+
+    setIsLoadingDoc(true)
     try {
       const drafts = readDrafts()
       const draft = drafts[path]
       const content = draft ?? await loadCurrentFile(path)
-      const v = getView()
-      if (!v) return
 
       const looksHtml = !!draft || /\.rpad$/i.test(path) || /<\/?[a-z][\s\S]*>/i.test(content.trim())
       const html = looksHtml ? content : `<p>${escapeHtml(content)}</p>`
@@ -446,21 +531,10 @@ export default function Editor() {
       const dom = new window.DOMParser().parseFromString(html, "text/html")
       const pmDoc = PMDOMParser.fromSchema(rSchema).parse(dom.body)
 
-      isRestoring.current = true
-      const tr = v.state.tr.replaceWith(0, v.state.doc.content.size, pmDoc.content).setMeta("addToHistory", false)
-      v.dispatch(tr)
-      setTimeout(() => { isRestoring.current = false }, 0)
-
-      const text = extractDocText(v.state.doc)
-      setCharacters(text.replace(/\n/g, "").length)
-      setWords(countWords(text))
-      setSaved(!draft)
-      setUnsavedPaths(prev => {
-        const next = new Set(prev)
-        if (draft) next.add(path)
-        else next.delete(path)
-        return next
-      })
+      const activePath = currentPathRef.current || sessionStorage.getItem("path") || currentPath
+      if (path !== activePath) return
+      if (requestId !== loadRequestIdRef.current) return
+      applyDocToEditor(pmDoc, path, !!draft)
       const name =
         sessionStorage.getItem("projectName") ||
         sessionStorage.getItem("name") ||
@@ -474,6 +548,39 @@ export default function Editor() {
   useEffect(() => {
     const id = requestAnimationFrame(() => loadProject())
     return () => cancelAnimationFrame(id)
+  }, [])
+
+  useEffect(() => {
+    let unlisten: (() => void) | undefined
+    ;(async () => {
+      try {
+        const win = getCurrentWindow()
+        unlisten = await win.onCloseRequested(async (event) => {
+          if (!unsavedPathsRef.current.size) return
+          event.preventDefault()
+          await saveAllUnsaved()
+          await win.close()
+        })
+      } catch (err) {
+        console.error("Failed to register close handler", err)
+      }
+    })()
+    return () => {
+      unlisten?.()
+    }
+  }, [])
+
+  useEffect(() => {
+    const trimCache = () => {
+      const now = Date.now()
+      docCacheRef.current.forEach((value, key) => {
+        if (now - value.updatedAt > DOC_CACHE_TTL_MS) {
+          docCacheRef.current.delete(key)
+        }
+      })
+    }
+    const id = window.setInterval(trimCache, DOC_CACHE_TTL_MS)
+    return () => window.clearInterval(id)
   }, [])
 
   useEffect(() => {
@@ -523,6 +630,7 @@ export default function Editor() {
       sessionStorage.getItem("projectName") ||
       sessionStorage.getItem("name") ||
       "Untitled"
+    cancelAutoSaveTimer()
     if (isAutoSaveEnabled()) {
       await saveNow({ path: activePath, name: activeName })
     } else {
@@ -537,8 +645,14 @@ export default function Editor() {
       prev.forEach(p => { if (allowed.has(p)) next.add(p) })
       return next
     })
+    const allowedPaths = new Set(projects.map(p => p.path))
+    docCacheRef.current.forEach((_, key) => {
+      if (!allowedPaths.has(key)) docCacheRef.current.delete(key)
+    })
 
     if (projects.length === 0) {
+      currentPathRef.current = ""
+      docCacheRef.current.clear()
       setCurrentPath("")
       sessionStorage.removeItem("path")
       sessionStorage.removeItem("projectName")
@@ -557,6 +671,7 @@ export default function Editor() {
     sessionStorage.setItem("projectName", nextActive.name)
     sessionStorage.setItem("name", nextActive.name)
     window.dispatchEvent(new Event("storage"))
+    currentPathRef.current = nextActive.path
     setCurrentPath(nextActive.path)
 
     if (!staysOnCurrent) {
@@ -565,14 +680,20 @@ export default function Editor() {
   }
 
   const switchProject = async (project: OpenProject) => {
+    if (isSwitchingRef.current) {
+      pendingSwitchRef.current = project
+      return
+    }
     if (!project.path) return
     if (project.path === currentPath) return
+    isSwitchingRef.current = true
     const prevPath = currentPathRef.current || sessionStorage.getItem("path") || ""
     const prevName =
       openProjectsRef.current.find(p => p.path === prevPath)?.name ||
       sessionStorage.getItem("projectName") ||
       sessionStorage.getItem("name") ||
       "Untitled"
+    cancelAutoSaveTimer()
     if (prevPath) {
       if (isAutoSaveEnabled()) {
         await saveNow({ path: prevPath, name: prevName })
@@ -584,9 +705,19 @@ export default function Editor() {
     sessionStorage.setItem("projectName", project.name)
     sessionStorage.setItem("name", project.name)
     window.dispatchEvent(new Event("storage"))
+    currentPathRef.current = project.path
     setCurrentPath(project.path)
-    await loadProject(project.path)
-    rememberProject(project.path, project.name)
+    try {
+      await loadProject(project.path)
+      rememberProject(project.path, project.name)
+    } finally {
+      isSwitchingRef.current = false
+      const pending = pendingSwitchRef.current
+      pendingSwitchRef.current = null
+      if (pending && pending.path !== currentPathRef.current) {
+        void switchProject(pending)
+      }
+    }
   }
   switchProjectRef.current = switchProject
 

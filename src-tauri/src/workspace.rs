@@ -80,12 +80,12 @@ fn detect_kind_ext(ext: &str) -> (&'static str, Option<String>) {
         // Treat common text/code formats as text while preserving the extension for display
         "md" | "mdx" | "json" | "log" | "js" | "jsx" | "ts" | "tsx" | "html" | "htm" | "css"
         | "scss" | "sass" | "less" | "xml" | "yaml" | "yml" | "ini" | "cfg" | "conf" | "env"
-        | "properties" | "toml" | "csv" | "tsv" | "sql" | "sh" | "bash" | "zsh" | "ksh"
-        | "bat" | "cmd" | "ps1" | "psm1" | "py" | "rs" | "go" | "java" | "kt" | "kts"
-        | "c" | "cpp" | "cxx" | "h" | "hpp" | "hh" | "m" | "mm" | "swift" | "scala"
-        | "rb" | "php" | "pl" | "lua" | "r" | "tex" | "groovy" | "gradle" | "dart"
-        | "erl" | "ex" | "exs" | "elm" | "clj" | "cljs" | "coffee" | "hx" | "vb"
-        | "vbs" | "f90" | "f95" | "f03" | "make" | "mk" | "cmake" => ("txt", Some(ext.into())),
+        | "properties" | "toml" | "csv" | "tsv" | "sql" | "sh" | "bash" | "zsh" | "ksh" | "bat"
+        | "cmd" | "ps1" | "psm1" | "py" | "rs" | "go" | "java" | "kt" | "kts" | "c" | "cpp"
+        | "cxx" | "h" | "hpp" | "hh" | "m" | "mm" | "swift" | "scala" | "rb" | "php" | "pl"
+        | "lua" | "r" | "tex" | "groovy" | "gradle" | "dart" | "erl" | "ex" | "exs" | "elm"
+        | "clj" | "cljs" | "coffee" | "hx" | "vb" | "vbs" | "f90" | "f95" | "f03" | "make"
+        | "mk" | "cmake" => ("txt", Some(ext.into())),
         _ => ("txt", Some(ext.into())),
     }
 }
@@ -469,11 +469,10 @@ fn allowed_ext(p: &Path) -> bool {
 
     // Skip clearly binary/heavy formats to avoid junk in the workspace tree
     const BLOCKED: &[&str] = &[
-        "exe", "dll", "so", "dylib", "bin", "apk", "msi", "dmg", "iso", "img", "jar", "war",
-        "zip", "tar", "tgz", "gz", "bz2", "xz", "7z", "rar",
-        "jpg", "jpeg", "png", "gif", "bmp", "webp", "ico", "psd", "ai", "sketch",
-        "mp3", "wav", "flac", "ogg", "mp4", "mkv", "avi", "mov", "wmv",
-        "woff", "woff2", "ttf", "otf",
+        "exe", "dll", "so", "dylib", "bin", "apk", "msi", "dmg", "iso", "img", "jar", "war", "zip",
+        "tar", "tgz", "gz", "bz2", "xz", "7z", "rar", "jpg", "jpeg", "png", "gif", "bmp", "webp",
+        "ico", "psd", "ai", "sketch", "mp3", "wav", "flac", "ogg", "mp4", "mkv", "avi", "mov",
+        "wmv", "woff", "woff2", "ttf", "otf",
     ];
     if BLOCKED.contains(&ext.as_str()) {
         return false;
@@ -556,7 +555,11 @@ fn files_equal(a: &Path, b: &Path) -> bool {
 }
 
 #[tauri::command]
-pub async fn import_project(root: String, src: String, copy: Option<bool>) -> Result<String, String> {
+pub async fn import_project(
+    root: String,
+    src: String,
+    copy: Option<bool>,
+) -> Result<String, String> {
     let rootp = PathBuf::from(&root);
     let srcp = PathBuf::from(&src);
 

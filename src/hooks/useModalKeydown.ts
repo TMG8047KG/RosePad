@@ -6,10 +6,6 @@ type ModalKeys = {
   onEnter?: () => void;
 };
 
-/**
- * One lightweight key listener for modal interactions.
- * Uses refs to avoid re-subscribing on every render.
- */
 export function useModalKeydown({ onClose, onEnter }: ModalKeys) {
   const latestClose = useLatest(onClose);
   const latestEnter = useLatest(onEnter);

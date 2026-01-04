@@ -11,12 +11,13 @@
     "tauri:msi": "node scripts/tauri-msi-build.mjs"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.9.0",
+    "@tauri-apps/api": "^2.9.1",
     "@tauri-apps/plugin-dialog": "~2.4.2",
     "@tauri-apps/plugin-fs": "~2.4.4",
-    "@tauri-apps/plugin-opener": "~2",
+    "@tauri-apps/plugin-opener": "~2.5.2",
     "@tauri-apps/plugin-os": "~2.3.2",
     "@tauri-apps/plugin-sql": "~2.3.1",
+    "@tauri-apps/plugin-store": "~2",
     "@tauri-apps/plugin-updater": "~2.9.0",
     "prosemirror-commands": "^1.7.1",
     "prosemirror-history": "^1.5.0",
@@ -27,19 +28,18 @@
     "prosemirror-schema-list": "^1.5.1",
     "prosemirror-state": "^1.4.4",
     "prosemirror-transform": "^1.10.5",
-    "prosemirror-view": "^1.41.3",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "react-router-dom": "^7.9.6",
-    "tauri-plugin-cache-api": "^0.1.5",
+    "prosemirror-view": "^1.41.4",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-router-dom": "^7.11.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.9.4",
-    "@types/react": "^19.2.6",
+    "@tauri-apps/cli": "^2.9.6",
+    "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
+    "@vitejs/plugin-react": "^5.1.2",
     "typescript": "^5.9.3",
-    "vite": "^7.2.4"
+    "vite": "^7.3.0"
   }
 }

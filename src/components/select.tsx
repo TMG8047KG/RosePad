@@ -25,7 +25,9 @@ const Select: React.FC<SelectProps> = ({
   onChange,
 }) => {
   const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
   const selectRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -38,10 +40,61 @@ const Select: React.FC<SelectProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const timer = requestAnimationFrame(() => listRef.current?.focus());
+    return () => cancelAnimationFrame(timer);
+  }, [open]);
+
   const selectedOption = useMemo(
     () => options.find((opt): opt is OptionItem => opt.kind === "option" && opt.value === value),
     [options, value]
   );
+  const optionItems = useMemo(() => options.filter((opt): opt is OptionItem => opt.kind === "option"), [options]);
+  const activeOption = activeIndex >= 0 ? optionItems[activeIndex] : undefined;
+
+  useEffect(() => {
+    if (!open) return;
+    const current = optionItems.findIndex((o) => o.value === value);
+    setActiveIndex(current >= 0 ? current : 0);
+  }, [open, optionItems, value]);
+
+  const moveActive = (delta: number) => {
+    if (!optionItems.length) return;
+    setActiveIndex((idx) => {
+      const next = idx < 0 ? 0 : (idx + delta + optionItems.length) % optionItems.length;
+      return next;
+    });
+  };
+
+  const handleListKey = (e: React.KeyboardEvent) => {
+    if (!open) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      moveActive(1);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      moveActive(-1);
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      if (optionItems.length) setActiveIndex(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      if (optionItems.length) setActiveIndex(optionItems.length - 1);
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (activeOption) {
+        onChange(activeOption.value);
+        setOpen(false);
+      }
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setOpen(false);
+      (selectRef.current?.querySelector("button") as HTMLButtonElement | null)?.focus();
+    } else if (e.key === "Tab") {
+      setOpen(false);
+    }
+  };
 
   const containerClass = [style.selectBody, className].filter(Boolean).join(" ");
 
@@ -52,6 +105,12 @@ const Select: React.FC<SelectProps> = ({
         id={id}
         className={`${style.select} ${open ? style.selectOpen : ""}`}
         onClick={() => setOpen((prev) => !prev)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpen(true);
+          }
+        }}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
@@ -74,7 +133,15 @@ const Select: React.FC<SelectProps> = ({
         </span>
       </button>
       {open ? (
-        <div className={style.selectMenu} role="listbox" aria-labelledby={id}>
+        <div
+          className={style.selectMenu}
+          role="listbox"
+          aria-labelledby={id}
+          tabIndex={-1}
+          ref={listRef}
+          onKeyDown={handleListKey}
+          aria-activedescendant={activeOption ? `${id}-opt-${activeIndex}` : undefined}
+        >
           {options.map((option, index) =>
             option.kind === "section" ? (
               <div key={`section-${option.label}-${index}`} className={style.selectSection}>
@@ -86,11 +153,13 @@ const Select: React.FC<SelectProps> = ({
                 type="button"
                 role="option"
                 aria-selected={value === option.value}
+                id={`${id}-opt-${optionItems.indexOf(option)}`}
                 className={`${style.selectOption} ${value === option.value ? style.selectOptionActive : ""}`}
                 onClick={() => {
                   onChange(option.value);
                   setOpen(false);
                 }}
+                onMouseEnter={() => setActiveIndex(optionItems.indexOf(option))}
               >
                 {option.label}
               </button>

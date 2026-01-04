@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { getWorkspaceRoot, setWatchedFolders, setWorkspaceRoot as persistWorkspaceRoot } from "./cache"
-import { startWatching } from "./bridge"
+import { startWatching, stopWatching } from "./bridge"
 import { getWorkspaceTree, reconcileFromScan, scanWorkspace, analyzePaths, reconcileFromAnalyze } from "./db"
 import { setWorkspaceRoot as clearPersistedRoot } from "./cache"
 import type { WorkspaceTree } from "./db"
@@ -24,47 +24,44 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false)
   const busy = useRef(false)
   const pending = useRef(false)
+  const pendingPaths = useRef<Set<string>>(new Set())
   const didAutoInit = useRef(false)
   const rootRef = useRef<string|null>(null)
 
   useEffect(() => { rootRef.current = rootPath }, [rootPath])
 
-  const reload = useCallback(async (rootOverride?: string) => {
+  const resolveRoot = useCallback(async (rootOverride?: string) => {
     let effectiveRoot = rootOverride ?? rootRef.current
     if (!effectiveRoot) {
-      // Fallback to persisted settings if state is stale on first-run
       effectiveRoot = await getWorkspaceRoot()
-      if (effectiveRoot) {
-        if (rootRef.current !== effectiveRoot) setRootPath(effectiveRoot)
-      } else {
-        return
-      }
+      if (effectiveRoot && rootRef.current !== effectiveRoot) setRootPath(effectiveRoot)
     }
+    return effectiveRoot
+  }, [])
+
+  const reload = useCallback(async (rootOverride?: string) => {
+    const effectiveRoot = await resolveRoot(rootOverride)
+    if (!effectiveRoot) return
     setLoading(true)
     const t = await getWorkspaceTree(effectiveRoot)
     setTree(t)
     setLoading(false)
-  }, [])
+  }, [resolveRoot])
 
   const reindex = useCallback(async (rootOverride?: string) => {
-    let effectiveRoot = rootOverride ?? rootRef.current
-    if (!effectiveRoot) {
-      // Fallback to persisted settings if state is stale on first-run
-      effectiveRoot = await getWorkspaceRoot()
-      if (effectiveRoot) {
-        if (rootRef.current !== effectiveRoot) setRootPath(effectiveRoot)
-      } else {
-        return
-      }
-    }
+    const effectiveRoot = await resolveRoot(rootOverride)
+    if (!effectiveRoot) return
     if (busy.current) { pending.current = true; return }
     busy.current = true
     setLoading(true)
     try {
-      const scan = await scanWorkspace(effectiveRoot)
-      await reconcileFromScan(effectiveRoot, scan)
-      const t = await getWorkspaceTree(effectiveRoot)
-      setTree(t)
+      do {
+        pending.current = false
+        const scan = await scanWorkspace(effectiveRoot)
+        await reconcileFromScan(effectiveRoot, scan)
+        const t = await getWorkspaceTree(effectiveRoot)
+        setTree(t)
+      } while (pending.current)
     } catch (e) {
       console.error('reindex failed', e)
       const msg = String(e || '')
@@ -79,13 +76,8 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false)
       busy.current = false
-      if (pending.current) {
-        pending.current = false
-        // Run one more time to pick up any missed changes
-        reindex(effectiveRoot)
-      }
     }
-  }, [])
+  }, [resolveRoot])
 
   const init = useCallback(async () => {
     const root = await getWorkspaceRoot()
@@ -111,26 +103,30 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
     init()
   }, [init])
 
-  // Start FS watcher when rootPath becomes available; avoid duplicate start for same root
-  const watchStartedFor = useRef<string | null>(null)
   useEffect(() => {
     if (!rootPath) return
-    if (watchStartedFor.current === rootPath) return
-    watchStartedFor.current = rootPath
+    stopWatching().catch(()=>{})
     startWatching([rootPath]).catch(err => console.error('watch start failed', err))
   }, [rootPath])
 
   const applyFsChanges = useCallback(async (paths: string[]) => {
-    let effectiveRoot = rootRef.current ?? await getWorkspaceRoot()
+    const effectiveRoot = await resolveRoot()
     if (!effectiveRoot) return
+    paths.forEach(p => pendingPaths.current.add(p))
     if (busy.current) { pending.current = true; return }
     busy.current = true
     setLoading(true)
     try {
-      const diff = await analyzePaths(effectiveRoot, paths)
-      await reconcileFromAnalyze(effectiveRoot, diff)
-      const t = await getWorkspaceTree(effectiveRoot)
-      setTree(t)
+      do {
+        pending.current = false
+        const batch = Array.from(pendingPaths.current)
+        pendingPaths.current.clear()
+        if (batch.length === 0) break
+        const diff = await analyzePaths(effectiveRoot, batch)
+        await reconcileFromAnalyze(effectiveRoot, diff)
+        const t = await getWorkspaceTree(effectiveRoot)
+        setTree(t)
+      } while (pending.current || pendingPaths.current.size > 0)
     } catch (e) {
       console.error('applyFsChanges failed', e)
     } finally {
@@ -141,7 +137,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
         reindex(effectiveRoot)
       }
     }
-  }, [])
+  }, [resolveRoot, reindex])
 
   const value = useMemo(() => ({ rootPath, tree, loading, init, setRoot, reload, reindex, applyFsChanges }), [rootPath, tree, loading, init, setRoot, reload, reindex, applyFsChanges])
 

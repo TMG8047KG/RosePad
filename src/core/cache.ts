@@ -1,38 +1,6 @@
-import { get, set } from "tauri-plugin-cache-api";
-import { readTextFile, writeTextFile, exists, BaseDirectory } from '@tauri-apps/plugin-fs'
 import { themes } from './themeManager';
 import { setTheme } from "@tauri-apps/api/app";
-
-type Settings = { projectPath: string | null; watched?: string[] }
-const SETTINGS_FILE = 'settings.json'
-
-async function baseDir() {
-  return BaseDirectory.AppConfig
-}
-
-async function readSettings(): Promise<Settings> {
-  const b = await baseDir()
-  const ok = await exists(SETTINGS_FILE, { baseDir: b })
-  if (!ok) {
-    const def: Settings = { projectPath: null, watched: [] }
-    await writeTextFile(SETTINGS_FILE, JSON.stringify(def, null, 2), { baseDir: b })
-    return def
-  }
-  try {
-    const raw = await readTextFile(SETTINGS_FILE, { baseDir: b })
-    const parsed = JSON.parse(raw) as Partial<Settings> | null
-    return { projectPath: parsed?.projectPath ?? null, watched: parsed?.watched ?? [] }
-  } catch {
-    const def: Settings = { projectPath: null, watched: [] }
-    await writeTextFile(SETTINGS_FILE, JSON.stringify(def, null, 2), { baseDir: b })
-    return def
-  }
-}
-
-async function writeSettings(s: Settings) {
-  const b = await baseDir()
-  await writeTextFile(SETTINGS_FILE, JSON.stringify(s, null, 2), { baseDir: b })
-}
+import { ensureSettingsPrimed, getSettings, updateSettings } from "./settings";
 
 type AutoSave = {
     enabled: boolean;
@@ -40,45 +8,36 @@ type AutoSave = {
 }
 
 export async function setup(){
-    const init = await get('initialized');
-    if(init !== null || init) return;
-    await set('theme', 'dark');
-    await set('autosave', { enabled: true, interval: 2 } as AutoSave);
-    await set('watchedFolders', { folders: [] });
-    await set('initialized', true);
+    await ensureSettingsPrimed()
 }
 
 export async function getTheme(): Promise<themes> {
-    return await get<themes>('theme');
+    return (await getSettings()).theme ?? 'dark';
 }
 
 export async function applyTheme(){
-    await setTheme(await get<themes>('theme'));
+    await setTheme(await getTheme());
 }
 
 export async function setThemeCache(theme:themes) {
-    await set('theme', theme);
+    await updateSettings(s => ({ ...s, theme }))
 }
 
 export async function getWorkspaceRoot(): Promise<string | null> {
-  const s = await readSettings()
+  const s = await getSettings()
   return s.projectPath ?? null
 }
 
 export async function setWorkspaceRoot(path: string | null): Promise<void> {
-  const s = await readSettings()
-  s.projectPath = path
-  await writeSettings(s)
+  await updateSettings(s => ({ ...s, projectPath: path }))
 }
 
 export async function getWatchedFolders(): Promise<string[]> {
-  const s = await readSettings()
+  const s = await getSettings()
   if (s.watched && s.watched.length) return s.watched
   return s.projectPath ? [s.projectPath] : []
 }
 
 export async function setWatchedFolders(folders: string[]): Promise<void> {
-  const s = await readSettings()
-  s.watched = folders
-  await writeSettings(s)
+  await updateSettings(s => ({ ...s, watched: folders }))
 }

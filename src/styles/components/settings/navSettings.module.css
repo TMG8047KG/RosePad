@@ -6,6 +6,7 @@
     align-items: center;
     box-shadow: var(--accent-secondary) -90vw -5px 45px 0px;
     background: var(--bg-secondary);
+    -webkit-app-region: drag;
 }
 
 .title{
@@ -57,4 +58,8 @@
     align-items: center;
     gap: 5px;
     margin-left: 5px;
+}
+
+[data-tauri-drag-region="false"] {
+    -webkit-app-region: no-drag;
 }

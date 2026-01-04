@@ -122,7 +122,6 @@ function HomeShell() {
         const content = await formattedChangeLog()
         if (!cancelled) setChangeLogContent(content)
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error'
         if (!cancelled) setChangeLogContent(`Loading of the changelog failed! Try again later!`)
       }
     }

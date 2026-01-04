@@ -1,8 +1,8 @@
 import { open } from '@tauri-apps/plugin-dialog'
-import { readTextFile, writeTextFile, exists, BaseDirectory, mkdir } from '@tauri-apps/plugin-fs'
 import { db } from './db'
 import { invoke } from '@tauri-apps/api/core'
 import { join } from '@tauri-apps/api/path'
+import { getSettings, updateSettings } from './settings'
 
 export const settingsFile = 'settings.json'
 
@@ -11,34 +11,25 @@ type SettingsShape = {
   recent?: { name: string; path: string; ts: number }[]
 }
 
-async function baseDir() {
-  return BaseDirectory.AppConfig
-}
-
 async function ensureSettings(): Promise<SettingsShape> {
-  const b = await baseDir()
-  const ok = await exists(settingsFile, { baseDir: b })
-  if (!ok) {
-    const def: SettingsShape = { projectPath: null, recent: [] }
-    await writeTextFile(settingsFile, JSON.stringify(def, null, 2), { baseDir: b })
-    return def
-  }
-  const raw = await readTextFile(settingsFile, { baseDir: b })
-  try {
-    const parsed = JSON.parse(raw) as SettingsShape
-    if (!Object.prototype.hasOwnProperty.call(parsed, 'projectPath')) parsed.projectPath = null
-    if (!Object.prototype.hasOwnProperty.call(parsed, 'recent')) parsed.recent = []
-    return parsed
-  } catch {
-    const def: SettingsShape = { projectPath: null, recent: [] }
-    await writeTextFile(settingsFile, JSON.stringify(def, null, 2), { baseDir: b })
-    return def
+  const base = await getSettings()
+  return {
+    projectPath: base.projectPath ?? null,
+    recent: Array.isArray(base.recent) ? base.recent : []
   }
 }
 
+let writeChain: Promise<void> = Promise.resolve()
 async function saveSettings(s: SettingsShape) {
-  const b = await baseDir()
-  await writeTextFile(settingsFile, JSON.stringify(s, null, 2), { baseDir: b })
+  // Serialize writes and merge with other settings consumers
+  writeChain = writeChain.then(async () => {
+    await updateSettings(curr => ({
+      ...curr,
+      projectPath: s.projectPath,
+      recent: s.recent ?? curr.recent ?? []
+    }))
+  }).catch(() => {}) // Swallow to keep chain alive
+  return writeChain
 }
 
 export async function settings() {
@@ -53,15 +44,14 @@ async function ensureWorkspaceFolder(baseDir: string): Promise<string> {
   if (candidates.some(c => c.toLowerCase() === last.toLowerCase())) {
     return baseDir
   }
-  // Otherwise, prefer an existing candidate within the selected folder; if none, create one
+  // If there is already a known workspace-style folder inside, use it; otherwise, use the chosen folder directly
   for (const name of candidates) {
     const p = await join(baseDir, name)
-    if (!(await exists(p))) {
-      await mkdir(p, { recursive: true })
+    if (await exists(p)) {
       return p
     }
   }
-  return await join(baseDir, candidates[0])
+  return baseDir
 }
 
 export async function selectDir(): Promise<string | null> {

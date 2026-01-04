@@ -13,6 +13,7 @@
     "core:window:allow-unmaximize",
     "core:window:allow-minimize",
     "core:window:allow-is-maximized",
+    "core:window:allow-destroy",
     "core:resources:allow-close",
     "fs:default",
     "fs:allow-appconfig-read",
@@ -27,7 +28,7 @@
     "core:app:allow-version",
     "core:window:allow-get-all-windows",
     "os:default",
-    "cache:default",
+    "store:default",
     "sql:default",
     "sql:allow-execute",
     {

@@ -268,16 +268,17 @@ export async function reconcileFromScan(root:string, scanIn: ScanCamel | ScanSna
     }
 
     const normRoot = root.replace(/\\/g,'/').toLowerCase()
+    const normRootWithSlash = normRoot.endsWith('/') ? normRoot : `${normRoot}/`
     const projPlace = seenProj.map(()=>'?').join(',')
     await d.execute(
-      `DELETE FROM projects WHERE REPLACE(LOWER(path),'\\','/') LIKE ? ${seenProj.length ? `AND path NOT IN (${projPlace})` : ''}`,
-      [normRoot + '%', ...seenProj]
+      `DELETE FROM projects WHERE (REPLACE(LOWER(path),'\\','/') = ? OR REPLACE(LOWER(path),'\\','/') LIKE ?) ${seenProj.length ? `AND path NOT IN (${projPlace})` : ''}`,
+      [normRoot, normRootWithSlash + '%', ...seenProj]
     )
 
     const foldPlace = seenFold.map(()=>'?').join(',')
     await d.execute(
-      `DELETE FROM physical_folders WHERE REPLACE(LOWER(path),'\\','/') LIKE ? ${seenFold.length ? `AND path NOT IN (${foldPlace})` : ''}`,
-      [normRoot + '%', ...seenFold]
+      `DELETE FROM physical_folders WHERE (REPLACE(LOWER(path),'\\','/') = ? OR REPLACE(LOWER(path),'\\','/') LIKE ?) ${seenFold.length ? `AND path NOT IN (${foldPlace})` : ''}`,
+      [normRoot, normRootWithSlash + '%', ...seenFold]
     )
 
     await d.execute('COMMIT')
@@ -290,10 +291,11 @@ export async function reconcileFromScan(root:string, scanIn: ScanCamel | ScanSna
 export async function getWorkspaceTree(root:string): Promise<WorkspaceTree> {
   const d = await db()
   const normRoot = root.replace(/\\/g,'/').toLowerCase()
+  const normRootWithSlash = normRoot.endsWith('/') ? normRoot : `${normRoot}/`
   const projects = await d.select(
     `SELECT id,kind,name,path,ext,title,last_modified_ms as lastModifiedMs,parent_physical_folder as parentPhysicalFolder,size
-     FROM projects WHERE REPLACE(LOWER(path),'\\','/') LIKE ?`,
-    [normRoot + '%']
+     FROM projects WHERE REPLACE(LOWER(path),'\\','/') = ? OR REPLACE(LOWER(path),'\\','/') LIKE ?`,
+    [normRoot, normRootWithSlash + '%']
   )
 
   // Exclude projects assigned to a virtual folder in this workspace from the root list
@@ -301,15 +303,15 @@ export async function getWorkspaceTree(root:string): Promise<WorkspaceTree> {
     `SELECT vfp.project_id as projectId
      FROM virtual_folder_projects vfp
      JOIN virtual_folders vf ON vf.id = vfp.vf_id
-     WHERE vf.root IS NULL OR vf.root = ?`,
-    [root]
+     WHERE vf.root = ? OR (vf.root IS NULL AND ? = '')`,
+    [root, root]
   )
   const assignedSet = new Set<string>(assignedRows.map((r:any)=>r.projectId))
   const rootProjects = projects
     .filter((p:any)=>!p.parentPhysicalFolder && !assignedSet.has(p.id))
     .map((p:any)=>p.id)
 
-  const pf = await d.select(`SELECT path,name,color FROM physical_folders WHERE REPLACE(LOWER(path),'\\','/') LIKE ?`, [normRoot + '%'])
+  const pf = await d.select(`SELECT path,name,color FROM physical_folders WHERE REPLACE(LOWER(path),'\\','/') = ? OR REPLACE(LOWER(path),'\\','/') LIKE ?`, [normRoot, normRootWithSlash + '%'])
   const physicalFolders: PhysicalFolder[] = []
   for (const row of pf) {
     const ids = await d.select(`SELECT id FROM projects WHERE parent_physical_folder=? ORDER BY name COLLATE NOCASE`, [row.path])
