@@ -167,6 +167,47 @@ export default function Editor() {
     docCacheRef.current.set(path, { doc, fromDraft, updatedAt: Date.now() })
   }
 
+  const htmlToDoc = (html: string) => {
+    const dom = new window.DOMParser().parseFromString(html, "text/html")
+    return PMDOMParser.fromSchema(rSchema).parse(dom.body)
+  }
+
+  const getDocSnapshot = async (path: string): Promise<PMNode | null> => {
+    if (!path) return null
+    // If this is the active document, read directly from the view to avoid stale cache
+    const activePath = currentPathRef.current || sessionStorage.getItem("path") || currentPath
+    if (path === activePath) {
+      const v = getView()
+      if (v?.state.doc) return v.state.doc
+    }
+
+    // Prefer draft over cache, since drafts reflect unsaved edits when auto-save is off
+    const drafts = readDrafts()
+    if (typeof drafts[path] === "string") {
+      try {
+        const doc = htmlToDoc(drafts[path])
+        cacheDoc(path, doc, true)
+        return doc
+      } catch {
+        // continue to other fallbacks
+      }
+    }
+
+    const cached = docCacheRef.current.get(path)
+    if (cached?.doc) return cached.doc
+
+    try {
+      const content = await loadCurrentFile(path)
+      const looksHtml = /\.rpad$/i.test(path) || /<\/?[a-z][\s\S]*>/i.test(content.trim())
+      const html = looksHtml ? content : `<p>${escapeHtml(content)}</p>`
+      const doc = htmlToDoc(html)
+      cacheDoc(path, doc, false)
+      return doc
+    } catch {
+      return null
+    }
+  }
+
   const applyDocToEditor = (doc: PMNode, path: string, fromDraft: boolean) => {
     const activePath = currentPathRef.current || sessionStorage.getItem("path") || currentPath
     if (path !== activePath) return
@@ -350,18 +391,17 @@ export default function Editor() {
     }, delay)
   }
 
-  const serializeHTML = () => {
-    const v = getView()
-    if (!v) return ""
-    const frag = DOMSerializer.fromSchema(v.state.schema).serializeFragment(v.state.doc.content)
+  const serializeHTML = (docOverride?: PMNode) => {
+    const target = docOverride ?? getView()?.state.doc
+    if (!target) return ""
+    const frag = DOMSerializer.fromSchema(rSchema).serializeFragment(target.content)
     const div = document.createElement("div")
     div.appendChild(frag)
     return div.innerHTML
   }
 
-  const saveNow = async (target?: { path?: string; name?: string }) => {
+  const saveNow = async (target?: { path?: string; name?: string; doc?: PMNode }) => {
     const v = getView()
-    if (!v) return
     const path =
       target?.path ||
       currentPathRef.current ||
@@ -375,47 +415,57 @@ export default function Editor() {
       sessionStorage.getItem("name") ||
       "Untitled"
 
+    const doc = target?.doc ?? v?.state.doc
+    if (!doc) return
+
     const ext = extOf(path)
     if (ext === "txt") {
-      const payload = v.state.doc.textContent
+      const payload = doc.textContent
       await invoke("write_text_atomic", { path, contents: payload })
     } else if (ext === "rpad") {
-      const html = serializeHTML()
+      const html = serializeHTML(doc)
       await invoke("write_rpad_html", { path, html, title })
     } else {
       // fallback: write plain text
-      const payload = v.state.doc.textContent
+      const payload = doc.textContent
       await invoke("write_text_atomic", { path, contents: payload })
     }
 
-    setSaved(true)
-    sessionStorage.setItem("fileStatus", "Saved")
+    const activePath = currentPathRef.current || sessionStorage.getItem("path") || currentPath
+    if (path === activePath) {
+      setSaved(true)
+      sessionStorage.setItem("fileStatus", "Saved")
+    }
     clearDraft(path)
     setUnsavedPaths(prev => {
       const next = new Set(prev)
       next.delete(path)
       return next
     })
-    cacheDoc(path, v.state.doc, false)
+    cacheDoc(path, doc, false)
   }
 
   const saveAllUnsaved = async () => {
     cancelAutoSaveTimer()
     const targets = Array.from(unsavedPathsRef.current)
     if (!targets.length) return
-    const tasks = targets.map(async (path) => {
+    for (const path of targets) {
       const name =
         openProjectsRef.current.find(p => p.path === path)?.name ||
         sessionStorage.getItem("projectName") ||
         sessionStorage.getItem("name") ||
         "Untitled"
       try {
-        await saveNow({ path, name })
+        const doc = await getDocSnapshot(path)
+        if (!doc) {
+          console.error("No snapshot available for", path)
+          continue
+        }
+        await saveNow({ path, name, doc })
       } catch (err) {
         console.error("Failed to save on exit for", path, err)
       }
-    })
-    await Promise.all(tasks)
+    }
   }
 
   useEffect(() => {
@@ -592,6 +642,7 @@ export default function Editor() {
     const trimCache = () => {
       const now = Date.now()
       docCacheRef.current.forEach((value, key) => {
+        if (unsavedPathsRef.current.has(key)) return
         if (now - value.updatedAt > DOC_CACHE_TTL_MS) {
           docCacheRef.current.delete(key)
         }
