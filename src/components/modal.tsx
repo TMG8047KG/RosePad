@@ -1,4 +1,4 @@
-import React, { Component, ReactElement, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import style from "../styles/components/modal.module.css";
 import ColorPalette from "./colorPalette";
