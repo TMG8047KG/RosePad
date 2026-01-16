@@ -15,7 +15,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { rpc_main_menu, rpc_project } from './core/discord_rpc'
 import { applyTheme, setup } from './core/cache'
 import { addProject, settings } from './core/projectHandler'
-import { addVirtualFolder, setVirtualFolderColor, setPhysicalFolderColor, createPhysicalFolder, assignProjectPathToVirtual } from './core/db'
+import { setPhysicalFolderColor, createPhysicalFolder } from './core/db'
 
 import { useWorkspace } from './core/workspaceContext'
 import { invoke } from '@tauri-apps/api/core'
@@ -39,8 +39,6 @@ function HomeShell() {
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false)
   const [isChangeLogOpen, setIsChangeLogOpen] = useState(false)
   const [changeLogContent, setChangeLogContent] = useState<ReactNode>('Loading changelog...')
-  const [folderPresetType, setFolderPresetType] = useState<'physical' | 'virtual'>('physical')
-
   const { reindex } = useWorkspace();
   const pushToast = useToast()
 
@@ -101,7 +99,6 @@ function HomeShell() {
       if (isCreateProjectOpen || isCreateFolderOpen || isChooseOpen) return
 
       const key = e.key.toLowerCase()
-      const isShift = e.shiftKey
       if (key === 'p') {
         e.preventDefault()
         setIsCreateProjectOpen(true)
@@ -110,7 +107,6 @@ function HomeShell() {
       }
       if (key === 'f') {
         e.preventDefault()
-        setFolderPresetType(isShift ? 'virtual' : 'physical')
         setIsCreateFolderOpen(true)
         setIsChooseOpen(false)
       }
@@ -171,8 +167,8 @@ function HomeShell() {
     // Ensure we have a workspace root to work with
     try {
       const root = await ensureWorkspace()
-      // If user picked a physical folder, use it; otherwise use workspace root
-      const dir = (dest && !dest.startsWith('vf:')) ? dest : root
+      // If user picked a folder, use it; otherwise use workspace root
+      const dir = dest || root
 
       const filePath = await createRpadFile(dir, name)
       await rpc_project(name, filePath)
@@ -183,14 +179,6 @@ function HomeShell() {
 
       // First reindex so the new project is in the DB
       await reindex()
-      // If a virtual folder was selected, assign the newly created project to it
-      if (dest && dest.startsWith('vf:')) {
-        const vfId = dest.slice(3)
-        // Assign by path; relies on reindex to have populated the DB entry
-        await assignProjectPathToVirtual(filePath, vfId)
-        // Reindex again so the assignment appears immediately in the UI
-        await reindex()
-      }
       setIsCreateProjectOpen(false)
       navigator(`/editor/${name}`)
     } catch (err) {
@@ -226,29 +214,22 @@ function HomeShell() {
           setIsChooseOpen(false)
           if (choice === 'project') setIsCreateProjectOpen(true)
           else {
-            setFolderPresetType('physical')
             setIsCreateFolderOpen(true)
           }
         }}
       />
       <MultiModal type='createProject' isOpen={isCreateProjectOpen} onClose={() => setIsCreateProjectOpen(false)} onSubmit={(n, d) => handleCreateProject(n, d)}/>
-      <MultiModal type='createFolder' initialType={folderPresetType} isOpen={isCreateFolderOpen} onClose={() => { setIsCreateFolderOpen(false), setFolderPresetType('physical')}} onSubmit={async (name, folderType, color) => {
+      <MultiModal type='createFolder' isOpen={isCreateFolderOpen} onClose={() => { setIsCreateFolderOpen(false)}} onSubmit={async (name, color) => {
         try {
           const root = await ensureWorkspace()
-          if (folderType === 'physical') {
-            const p = await createPhysicalFolder(root, name)
-            if (color) await setPhysicalFolderColor(p, color)
-          } else {
-            const id = await addVirtualFolder(name, root)
-            if (color) await setVirtualFolderColor(id, color)
-          }
+          const p = await createPhysicalFolder(root, name)
+          if (color) await setPhysicalFolderColor(p, color)
           await reindex()
           pushToast({ message: 'Folder created', kind: 'success' })
         } catch (err) {
           pushToast({ message: `Folder creation failed: ${err}`, kind: 'error' })
         } finally {
           setIsCreateFolderOpen(false)
-          setFolderPresetType('physical')
         }
       }}/>
       <MultiModal type='changelog' isOpen={isChangeLogOpen} onClose={() => setIsChangeLogOpen(false)} content={changeLogContent}/>

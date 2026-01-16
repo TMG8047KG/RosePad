@@ -17,21 +17,6 @@ CREATE TABLE IF NOT EXISTS physical_folders (
   color TEXT
 );
 
-CREATE TABLE IF NOT EXISTS virtual_folders (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  collapsed INTEGER NOT NULL DEFAULT 0,
-  color TEXT
-);
-
-CREATE TABLE IF NOT EXISTS virtual_folder_projects (
-  vf_id TEXT NOT NULL,
-  project_id TEXT NOT NULL,
-  PRIMARY KEY (vf_id, project_id),
-  FOREIGN KEY (vf_id) REFERENCES virtual_folders(id) ON DELETE CASCADE,
-  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS tags ( name TEXT PRIMARY KEY );
 
 CREATE TABLE IF NOT EXISTS project_tags (

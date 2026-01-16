@@ -50,8 +50,7 @@ type CreateFolderProps = BaseProps &
   TextModalCommon & {
     type: "createFolder";
     initialName?: string;
-    initialType?: "physical" | "virtual";
-    onSubmit: (name: string, folderType: "physical" | "virtual", color?: string) => void;
+    onSubmit: (name: string, color?: string) => void;
   };
 
 type ChangelogProps = BaseProps & {
@@ -187,12 +186,6 @@ const CreateProjectView: React.FC<{
     tree?.physicalFolders.forEach((f) => {
       options.push({ kind: "option", value: f.path, label: f.name });
     });
-    if (tree?.virtualFolders.length) {
-      options.push({ kind: "section", label: "Virtual folders" });
-      tree.virtualFolders.forEach((v) => {
-        options.push({ kind: "option", value: `vf:${v.id}`, label: `${v.name}` });
-      });
-    }
     return options;
   }, [hasWorkspace, rootPath, tree]);
 
@@ -273,28 +266,15 @@ const CreateFolderView: React.FC<{
   initial: string;
   placeholder: string;
   buttonLabel: string;
-  initialType?: "physical" | "virtual";
-  onSubmit: (name: string, folderType: "physical" | "virtual", color?: string) => void;
+  onSubmit: (name: string, color?: string) => void;
   onClose: () => void;
-}> = ({ title, initial, placeholder, buttonLabel, initialType, onSubmit, onClose }) => {
+}> = ({ title, initial, placeholder, buttonLabel, onSubmit, onClose }) => {
   const { tree } = useWorkspace();
   const [name, setName] = useState(initial);
   const [error, setError] = useState("");
-  const [folderType, setFolderType] = useState<"physical" | "virtual">(initialType ?? "physical");
   const [color, setColor] = useState<string>(randomPaletteColor());
 
   useEffect(() => setName(initial), [initial]);
-  useEffect(() => {
-    if (initialType) setFolderType(initialType);
-  }, [initialType]);
-
-  const folderTypeOptions = React.useMemo<SelectOption[]>(
-    () => [
-      { kind: "option", value: "physical", label: "Physical" },
-      { kind: "option", value: "virtual", label: "Virtual" },
-    ],
-    []
-  );
 
   const submit = () => {
     const value = name.trim();
@@ -303,25 +283,15 @@ const CreateFolderView: React.FC<{
       return;
     }
     if (tree) {
-      if (folderType === "physical") {
-        const exists = tree.physicalFolders.some(
-          (f) => (f.name || "").toLowerCase() === value.toLowerCase()
-        );
-        if (exists) {
-          setError("A physical folder with this name already exists.");
-          return;
-        }
-      } else {
-        const exists = tree.virtualFolders.some(
-          (f) => (f.name || "").toLowerCase() === value.toLowerCase()
-        );
-        if (exists) {
-          setError("A virtual folder with this name already exists.");
-          return;
-        }
+      const exists = tree.physicalFolders.some(
+        (f) => (f.name || "").toLowerCase() === value.toLowerCase()
+      );
+      if (exists) {
+        setError("A physical folder with this name already exists.");
+        return;
       }
     }
-    onSubmit(value, folderType, color);
+    onSubmit(value, color);
     setError("");
   };
 
@@ -337,16 +307,6 @@ const CreateFolderView: React.FC<{
         placeholder={placeholder}
         className={style.input}
         autoFocus
-      />
-      <label className={style.label} htmlFor="folderType">
-        Folder Type
-      </label>
-      <Select 
-        id="folderType"
-        value={folderType}
-        options={folderTypeOptions}
-        placeholder="Select folder type"
-        onChange={(value) => setFolderType(value as "physical" | "virtual")}
       />
       <label className={style.label} htmlFor="folderColor">
         Color
@@ -555,7 +515,6 @@ const MultiModal: React.FC<MultiModalProps> = (props) => {
           initial={props.initialName ?? ""}
           placeholder={props.placeholder ?? "Enter folder name"}
           buttonLabel={props.buttonLabel ?? "Create"}
-          initialType={props.initialType}
           onSubmit={props.onSubmit}
           onClose={onClose}
         />

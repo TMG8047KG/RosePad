@@ -17,12 +17,10 @@ export type Project = {
 }
 
 export type PhysicalFolder = { id:string; name:string; path:string; projectIds:string[]; collapsed:boolean; color?:string|null }
-export type VirtualFolder = { id:string; name:string; projectIds:string[]; collapsed:boolean; color?:string|null }
 
 export type WorkspaceTree = {
   rootProjects: string[]
   physicalFolders: PhysicalFolder[]
-  virtualFolders: VirtualFolder[]
   projects: Project[]
 }
 
@@ -78,22 +76,10 @@ async function ensureSchema(conn: any) {
     );
   `)
   await conn.execute(`
-    CREATE TABLE IF NOT EXISTS virtual_folders (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      collapsed INTEGER NOT NULL DEFAULT 0,
-      color TEXT,
-      root TEXT
-    );
+    DROP TABLE IF EXISTS virtual_folder_projects;
   `)
-  // Add missing columns for forward compatibility
-  try { await conn.execute(`ALTER TABLE virtual_folders ADD COLUMN root TEXT`) } catch {}
   await conn.execute(`
-    CREATE TABLE IF NOT EXISTS virtual_folder_projects (
-      vf_id TEXT NOT NULL,
-      project_id TEXT NOT NULL,
-      PRIMARY KEY (vf_id, project_id)
-    );
+    DROP TABLE IF EXISTS virtual_folders;
   `)
   await conn.execute(`CREATE TABLE IF NOT EXISTS tags (name TEXT PRIMARY KEY);`)
   await conn.execute(`
@@ -309,17 +295,8 @@ export async function getWorkspaceTree(root:string): Promise<WorkspaceTree> {
     [normRoot, normRootWithSlash + '%']
   )
 
-  // Exclude projects assigned to a virtual folder in this workspace from the root list
-  const assignedRows = await d.select(
-    `SELECT vfp.project_id as projectId
-     FROM virtual_folder_projects vfp
-     JOIN virtual_folders vf ON vf.id = vfp.vf_id
-     WHERE vf.root = ? OR (vf.root IS NULL AND ? = '')`,
-    [root, root]
-  )
-  const assignedSet = new Set<string>(assignedRows.map((r:any)=>r.projectId))
   const rootProjects = projects
-    .filter((p:any)=>!p.parentPhysicalFolder && !assignedSet.has(p.id))
+    .filter((p:any)=>!p.parentPhysicalFolder)
     .map((p:any)=>p.id)
 
   const pf = await d.select(`SELECT path,name,color FROM physical_folders WHERE REPLACE(LOWER(path),'\\','/') = ? OR REPLACE(LOWER(path),'\\','/') LIKE ?`, [normRoot, normRootWithSlash + '%'])
@@ -335,21 +312,7 @@ export async function getWorkspaceTree(root:string): Promise<WorkspaceTree> {
       color: row.color ?? null
     })
   }
-
-  const vf = await d.select(`SELECT id,name,collapsed,color FROM virtual_folders WHERE root IS NULL OR root = ?`, [root])
-  const virtualFolders: VirtualFolder[] = []
-  for (const row of vf) {
-    const pids = await d.select(`SELECT project_id FROM virtual_folder_projects WHERE vf_id=?`, [row.id])
-    virtualFolders.push({
-      id: row.id,
-      name: row.name,
-      projectIds: pids.map((x:any)=>x.project_id),
-      collapsed: !!row.collapsed,
-      color: row.color ?? null
-    })
-  }
-
-  return { rootProjects, physicalFolders, virtualFolders, projects }
+  return { rootProjects, physicalFolders, projects }
 }
 
 export async function searchProjects(q:string, limit=50) {
@@ -361,13 +324,6 @@ export async function searchProjects(q:string, limit=50) {
     [q, limit]
   )
   return rows as Project[]
-}
-
-export async function addVirtualFolder(name:string, root?:string) {
-  const d = await db()
-  const id = (globalThis.crypto && 'randomUUID' in globalThis.crypto) ? crypto.randomUUID() : Math.random().toString(36).slice(2)
-  await d.execute(`INSERT INTO virtual_folders(id,name,collapsed,root) VALUES(?,?,0,?)`, [id, name, root ?? null])
-  return id
 }
 
 export async function reconcileFromAnalyze(_root:string, diff: AnalyzeResult) {
@@ -412,21 +368,6 @@ export async function reconcileFromAnalyze(_root:string, diff: AnalyzeResult) {
   }
 }
 
-export async function assignProjectToVirtual(projectId:string, vfId:string) {
-  const d = await db()
-  await d.execute(`INSERT OR IGNORE INTO virtual_folder_projects(vf_id,project_id) VALUES(?,?)`, [vfId, projectId])
-}
-
-// Convenience: assign by file path after reconciliation
-export async function assignProjectPathToVirtual(path:string, vfId:string) {
-  const d = await db()
-  await d.execute(
-    `INSERT OR IGNORE INTO virtual_folder_projects(vf_id,project_id)
-     SELECT ?, id FROM projects WHERE path = ?`,
-    [vfId, path]
-  )
-}
-
 export async function setPhysicalFolderColor(path:string, color?:string|null) {
   const d = await db()
   const name = (path.split(/[/\\]/).filter(Boolean).pop()) || path
@@ -438,23 +379,3 @@ export async function setPhysicalFolderColor(path:string, color?:string|null) {
   )
 }
 
-export async function setVirtualFolderColor(id:string, color?:string|null) {
-  const d = await db()
-  await d.execute(`UPDATE virtual_folders SET color=? WHERE id=?`, [color ?? null, id])
-}
-
-export async function renameVirtualFolder(id: string, newName: string) {
-  const d = await db()
-  await d.execute(`UPDATE virtual_folders SET name=? WHERE id=?`, [newName, id])
-}
-
-export async function deleteVirtualFolder(id: string) {
-  const d = await db()
-  await d.execute(`DELETE FROM virtual_folders WHERE id=?`, [id])
-}
-
-export async function clearVirtualFolders() {
-  const d = await db()
-  await d.execute(`DELETE FROM virtual_folder_projects`)
-  await d.execute(`DELETE FROM virtual_folders`)
-}

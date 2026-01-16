@@ -4,7 +4,7 @@ import { rpc_project } from '../../../core/discord_rpc'
 import { useMemo, useState } from 'react'
 import { Menu } from '@tauri-apps/api/menu'
 import MultiModal from '../../modal'
-import { deleteProjectPath, renameProjectPath, moveProjectPath, assignProjectPathToVirtual } from '../../../core/db'
+import { deleteProjectPath, renameProjectPath, moveProjectPath } from '../../../core/db'
 import { useWorkspace } from '../../../core/workspaceContext'
 import { readableTextColor, withAlpha } from '../../../utils/color'
 import Select, { SelectOption } from '../../select'
@@ -120,18 +120,6 @@ function Project({
   const handleMove = async () => {
     const dest = targetDir || rootPath || ''
     if (!dest) { setIsMoveOpen(false); return }
-    // Assign to virtual folder if selected
-    if (dest.startsWith('vf:')) {
-      const vfId = dest.slice(3)
-      try {
-        await assignProjectPathToVirtual(path, vfId)
-        pushToast({ message: `Assigned to folder`, kind: "success" })
-      } finally {
-        setIsMoveOpen(false)
-        onRename()
-      }
-      return
-    }
     // Otherwise, move physically if changed
     if (dest === currentDir) { setIsMoveOpen(false); return }
     try {
@@ -154,12 +142,6 @@ function Project({
     tree?.physicalFolders.forEach((f) => {
       options.push({ kind: "option", value: f.path, label: f.name })
     })
-    if (tree?.virtualFolders.length) {
-      options.push({ kind: "section", label: "Virtual folders" })
-      tree.virtualFolders.forEach((v) => {
-        options.push({ kind: "option", value: `vf:${v.id}`, label: `${v.name}` })
-      })
-    }
     return options
   }, [rootPath, tree])
 

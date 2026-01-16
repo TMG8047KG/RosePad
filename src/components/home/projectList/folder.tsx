@@ -1,18 +1,15 @@
 import { useMemo, useState } from 'react'
 import ProjectCard from './project'
 import style from '../../../styles/components/home/projectList/folder.module.css'
-import { Project, setPhysicalFolderColor, setVirtualFolderColor, renameVirtualFolder, deleteVirtualFolder, renamePhysicalFolder, deletePhysicalFolder } from '../../../core/db';
+import { Project, setPhysicalFolderColor, renamePhysicalFolder, deletePhysicalFolder } from '../../../core/db';
 import { Menu } from '@tauri-apps/api/menu';
 import MultiModal from '../../modal'
 import ColorPalette from '../../colorPalette'
 import { readableTextColor, withAlpha } from '../../../utils/color'
 import { useToast } from '../../../core/toast'
 
-export type FolderType = 'virtual' | 'physical'
-
 export function Folder({
   id,
-  type,
   name,
   projectIds,
   projectMap,
@@ -25,7 +22,6 @@ export function Folder({
   onToggleSelect,
 }: {
   id:string;
-  type:FolderType;
   name:string;
   projectIds:string[];
   projectMap:Record<string,Project>;
@@ -45,13 +41,13 @@ export function Folder({
   const pushToast = useToast()
 
   const projectOptions = useMemo(() => Menu.new({
-    id: `folderOptions_${type}_${id}`,
+    id: `folderOptions_${id}`,
     items: [
-      { id: `${type}:${id}:rename`, text: "Rename", action: () => { setIsRenameOpen(true) }},
-      { id: `${type}:${id}:color`, text: "Change color", action: () => { setSelectedColor(color ?? '#aabbcc'); setIsColorOpen(true) }},
-      { id: `${type}:${id}:delete`, text: "Delete", action: () => { setIsDeleteOpen(true) }},
+      { id: `physical:${id}:rename`, text: "Rename", action: () => { setIsRenameOpen(true) }},
+      { id: `physical:${id}:color`, text: "Change color", action: () => { setSelectedColor(color ?? '#aabbcc'); setIsColorOpen(true) }},
+      { id: `physical:${id}:delete`, text: "Delete", action: () => { setIsDeleteOpen(true) }},
     ],
-  }), [color, id, type])
+  }), [color, id])
 
   const handleOptionsMenu = async (event: { stopPropagation: () => void }) => {
     event.stopPropagation()
@@ -64,8 +60,7 @@ export function Folder({
   const handleRename = async (newName: string) => {
     if (!newName || newName === name) { setIsRenameOpen(false); return }
     try {
-      if (type === 'virtual') await renameVirtualFolder(id, newName)
-      else await renamePhysicalFolder(id, newName)
+      await renamePhysicalFolder(id, newName)
       pushToast({ message: `Renamed folder to ${newName}`, kind: "success" })
       onChanged()
     } catch (err) {
@@ -77,8 +72,7 @@ export function Folder({
 
   const handleDeletion = async () => {
     try {
-      if (type === 'virtual') await deleteVirtualFolder(id)
-      else await deletePhysicalFolder(id)
+      await deletePhysicalFolder(id)
       pushToast({ message: `Deleted folder ${name}`, kind: "info" })
       onChanged()
     } catch (err) {
@@ -91,11 +85,9 @@ export function Folder({
   const applyColor = async () => {
     if (!selectedColor) {
       // clear color
-      if (type === 'virtual') await setVirtualFolderColor(id, null)
-      else await setPhysicalFolderColor(id, null)
+      await setPhysicalFolderColor(id, null)
     } else {
-      if (type === 'virtual') await setVirtualFolderColor(id, selectedColor)
-      else await setPhysicalFolderColor(id, selectedColor) 
+      await setPhysicalFolderColor(id, selectedColor) 
     }
     pushToast({ message: 'Folder color updated', kind: "success" })
     setIsColorOpen(false)
@@ -114,7 +106,7 @@ export function Folder({
           <ColorPalette value={selectedColor} onChange={setSelectedColor} renderAs="panel" />
         </div>
       </MultiModal>
-      <div className={style.container} data-type={type}>
+      <div className={style.container} data-type="physical">
         <div className={style.head} style={(bg || titleColor) ? ({ background: bg, ['--project-title' as any]: titleColor } as any) : undefined}>
           <h3>{name}</h3>
           <div className={style.right}>

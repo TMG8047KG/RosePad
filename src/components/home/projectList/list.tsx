@@ -91,10 +91,10 @@ export const ProjectList = () => {
     })
   }, [tree, projectsMap])
 
-  const folderKey = (type: 'physical' | 'virtual', id: string) => `${type}:${id}`
-  const toggleFolder = (type: 'physical' | 'virtual', id: string) => {
+  const folderKey = (id: string) => `physical:${id}`
+  const toggleFolder = (id: string) => {
     setCollapsedFolders(prev => {
-      const key = folderKey(type, id)
+      const key = folderKey(id)
       const next = !prev[key]
       return { ...prev, [key]: next }
     })
@@ -111,10 +111,10 @@ export const ProjectList = () => {
 
   const itemCount = useMemo(() => {
     if (!tree) return 0
-    const countFolderItems = (folders: typeof tree.physicalFolders | typeof tree.virtualFolders, type: 'physical' | 'virtual') => {
+    const countFolderItems = (folders: typeof tree.physicalFolders) => {
       let count = 0
       for (const f of folders) {
-        const key = folderKey(type, f.id)
+        const key = folderKey(f.id)
         const isCollapsed = collapsedFolders[key] ?? false
         count += 1 // folder header itself
         if (!isCollapsed) count += f.projectIds.length
@@ -123,13 +123,12 @@ export const ProjectList = () => {
     }
 
     const totalProjects = tree.projects.length
-    const physicalCount = countFolderItems(tree.physicalFolders, 'physical')
-    const virtualCount = countFolderItems(tree.virtualFolders, 'virtual')
+    const physicalCount = countFolderItems(tree.physicalFolders)
     const rootProjectsCount = tree.rootProjects.length
 
     if (listCurrentType === 'projects') return totalProjects
-    if (listCurrentType === 'folders') return physicalCount + virtualCount
-    return physicalCount + virtualCount + rootProjectsCount
+    if (listCurrentType === 'folders') return physicalCount
+    return physicalCount + rootProjectsCount
   }, [tree, loading, listCurrentType, collapsedFolders])
 
   const visibleRows = useMemo(() => {
@@ -141,10 +140,10 @@ export const ProjectList = () => {
   const isEmptyBody = useMemo(() => {
     if (!tree) return true
     if (listCurrentType === 'all') {
-      return tree.physicalFolders.length === 0 && tree.virtualFolders.length === 0 && sortedRootProjectIds.length === 0
+      return tree.physicalFolders.length === 0 && sortedRootProjectIds.length === 0
     }
     if (listCurrentType === 'folders') {
-      return tree.physicalFolders.length === 0 && tree.virtualFolders.length === 0
+      return tree.physicalFolders.length === 0
     }
     return sortedProjects.length === 0
   }, [loading, tree, listCurrentType, sortedRootProjectIds, sortedProjects])
@@ -307,19 +306,14 @@ export const ProjectList = () => {
         )}
 
         {tree && listCurrentType === "all" && (
-          (tree.physicalFolders.length === 0 && tree.virtualFolders.length === 0 && sortedRootProjectIds.length === 0) ? (
+          (tree.physicalFolders.length === 0 && sortedRootProjectIds.length === 0) ? (
             <div className={style.empty}>There are no projects or folders!</div>
           ) : (
             <>
               {tree.physicalFolders.map(f => {
                 const sortedIds = [...f.projectIds].sort((a, b) => ((projectsMap[b]?.lastModifiedMs ?? 0) - (projectsMap[a]?.lastModifiedMs ?? 0)))
-                const collapsed = collapsedFolders[folderKey('physical', f.id)] ?? false
-                return <Folder key={f.id} id={f.id} type="physical" name={f.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={f.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('physical', f.id)} selectionMode={isSelectionMode} selectedPaths={selectedPaths} onToggleSelect={toggleSelection} />
-              })}
-              {tree.virtualFolders.map(v => {
-                const sortedIds = [...v.projectIds].sort((a, b) => ((projectsMap[b]?.lastModifiedMs ?? 0) - (projectsMap[a]?.lastModifiedMs ?? 0)))
-                const collapsed = collapsedFolders[folderKey('virtual', v.id)] ?? false
-                return <Folder key={v.id} id={v.id} type="virtual" name={v.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={v.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('virtual', v.id)} selectionMode={isSelectionMode} selectedPaths={selectedPaths} onToggleSelect={toggleSelection} />
+                const collapsed = collapsedFolders[folderKey(f.id)] ?? false
+                return <Folder key={f.id} id={f.id} name={f.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={f.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder(f.id)} selectionMode={isSelectionMode} selectedPaths={selectedPaths} onToggleSelect={toggleSelection} />
               })}
               {sortedRootProjectIds.map(pid => {
                 const p = projectsMap[pid]
@@ -332,19 +326,14 @@ export const ProjectList = () => {
         )}
 
         {tree && listCurrentType === "folders" && (
-          (tree.physicalFolders.length <= 0 && tree.virtualFolders.length <= 0) ? (
+          (tree.physicalFolders.length <= 0) ? (
             <div className={style.empty}>There are no folders!</div>
           ) : (
             <>
               {tree.physicalFolders.map(f => {
                 const sortedIds = [...f.projectIds].sort((a, b) => ((projectsMap[b]?.lastModifiedMs ?? 0) - (projectsMap[a]?.lastModifiedMs ?? 0)))
-                const collapsed = collapsedFolders[folderKey('physical', f.id)] ?? false
-                return <Folder key={f.id} id={f.id} type="physical" name={f.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={f.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('physical', f.id)} selectionMode={isSelectionMode} selectedPaths={selectedPaths} onToggleSelect={toggleSelection} />
-              })}
-              {tree.virtualFolders.map(v => {
-                const sortedIds = [...v.projectIds].sort((a, b) => ((projectsMap[b]?.lastModifiedMs ?? 0) - (projectsMap[a]?.lastModifiedMs ?? 0)))
-                const collapsed = collapsedFolders[folderKey('virtual', v.id)] ?? false
-                return <Folder key={v.id} id={v.id} type="virtual" name={v.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={v.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder('virtual', v.id)} selectionMode={isSelectionMode} selectedPaths={selectedPaths} onToggleSelect={toggleSelection} />
+                const collapsed = collapsedFolders[folderKey(f.id)] ?? false
+                return <Folder key={f.id} id={f.id} name={f.name} projectIds={sortedIds} projectMap={projectsMap} onChanged={reindex} color={f.color ?? undefined} collapsed={collapsed} onToggle={() => toggleFolder(f.id)} selectionMode={isSelectionMode} selectedPaths={selectedPaths} onToggleSelect={toggleSelection} />
               })}
             </>
           )
