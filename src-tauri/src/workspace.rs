@@ -734,11 +734,11 @@ pub async fn create_rpad_project(dest_dir: String, name: String) -> Result<Strin
 pub async fn write_text_atomic(path: String, contents: String) -> Result<(), String> {
     let p = Path::new(&path);
     let parent = p.parent().ok_or_else(|| "invalid path".to_string())?;
-    let mut tmp = parent.join(".rosepad.txt.tmp");
+    let mut tmp = parent.join("rosepad.txt.tmp");
     let mut i = 0usize;
     while tmp.exists() {
         i += 1;
-        tmp = parent.join(format!(".rosepad.txt.tmp{}", i));
+        tmp = parent.join(format!("rosepad.txt.tmp{}", i));
     }
     {
         let mut f = fs::File::create(&tmp).map_err(|e| e.to_string())?;

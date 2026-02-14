@@ -38,7 +38,7 @@ export async function settings() {
 }
 
 async function ensureWorkspaceFolder(baseDir: string): Promise<string> {
-  const candidates = ['RosePad Workspace', '.rosepad', 'RosePadWorkspace']
+  const candidates = ['RosePad Workspace', 'RosePadWorkspace']
   // If the selected folder already looks like a workspace folder, use it as-is
   const parts = baseDir.split(/\\|\//).filter(Boolean)
   const last = parts.length ? parts[parts.length - 1] : ''

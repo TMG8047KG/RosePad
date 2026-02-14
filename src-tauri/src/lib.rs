@@ -5,6 +5,8 @@ use lazy_static::lazy_static;
 use tauri::{Emitter, Manager};
 
 use tauri_plugin_sql::{Migration, MigrationKind};
+
+#[cfg(not(debug_assertions))]
 use tauri_plugin_updater::UpdaterExt;
 
 mod discord_rpc;
@@ -115,12 +117,14 @@ pub fn run() {
             discord_rpc::clear_activity,
             settings::settings,
             take_pending_open_paths
-        ])
+        ])/*  */
         .setup(|app| {
-            let handle = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                update(handle).await.unwrap();
-            });
+            #[cfg(not(debug_assertions))] {
+                let handle = app.handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    let _ = update(handle).await;
+                });
+            }
             Ok(())
         });
 
@@ -129,6 +133,7 @@ pub fn run() {
         .expect("RosePad is kaput while trying to run!");
 }
 
+#[cfg(not(debug_assertions))]
 async fn update(app: tauri::AppHandle) -> tauri_plugin_updater::Result<()> {
     if let Some(update) = app.updater()?.check().await? {
         let mut downloaded = 0;
