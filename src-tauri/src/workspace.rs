@@ -10,6 +10,11 @@ use std::{
 use tauri::{AppHandle, Emitter};
 use zip::{write::FileOptions, ZipArchive, ZipWriter};
 
+// ====================
+// Seperator
+// ==No======Idea======
+
+
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ProjectDto {
@@ -293,7 +298,11 @@ pub async fn rename_project(
 }
 
 #[tauri::command]
-pub async fn delete_project(_app: AppHandle, workspace_root: String, path: String) -> Result<(), String> {
+pub async fn delete_project(
+    _app: AppHandle,
+    workspace_root: String,
+    path: String,
+) -> Result<(), String> {
     let p = PathBuf::from(&path);
     let _ = ensure_inside_root(&workspace_root, &p)?;
     fs::remove_file(&p).map_err(|e| e.to_string())
@@ -344,7 +353,11 @@ pub async fn rename_physical_folder(
 }
 
 #[tauri::command]
-pub async fn delete_physical_folder(_app: AppHandle, workspace_root: String, path: String) -> Result<(), String> {
+pub async fn delete_physical_folder(
+    _app: AppHandle,
+    workspace_root: String,
+    path: String,
+) -> Result<(), String> {
     let p = PathBuf::from(&path);
     let _ = ensure_inside_root(&workspace_root, &p)?;
     if !p.is_dir() {
@@ -470,17 +483,13 @@ pub async fn write_rpad_html(
         let mut i = 0usize;
         let mut candidate = parent.join(format!(
             ".{}.tmp",
-            p.file_name()
-                .and_then(|s| s.to_str())
-                .unwrap_or("rosepad")
+            p.file_name().and_then(|s| s.to_str()).unwrap_or("rosepad")
         ));
         while candidate.exists() {
             i += 1;
             candidate = parent.join(format!(
                 ".{}.tmp{}",
-                p.file_name()
-                    .and_then(|s| s.to_str())
-                    .unwrap_or("rosepad"),
+                p.file_name().and_then(|s| s.to_str()).unwrap_or("rosepad"),
                 i
             ));
         }
@@ -493,7 +502,8 @@ pub async fn write_rpad_html(
 
     if p.exists() {
         let file = fs::File::open(p).map_err(|e| e.to_string())?;
-        let mut archive = ZipArchive::new(file).map_err(|e| format!("failed to read existing archive: {e}"))?;
+        let mut archive =
+            ZipArchive::new(file).map_err(|e| format!("failed to read existing archive: {e}"))?;
         for i in 0..archive.len() {
             let mut entry = archive.by_index(i).map_err(|e| e.to_string())?;
             let name = entry.name().to_string();
@@ -502,7 +512,10 @@ pub async fn write_rpad_html(
                 let _ = entry.read_to_string(&mut buf);
                 if let Ok(v) = serde_json::from_str::<serde_json::Value>(&buf) {
                     if existing_title.is_none() {
-                        existing_title = v.get("title").and_then(|x| x.as_str()).map(|s| s.to_string());
+                        existing_title = v
+                            .get("title")
+                            .and_then(|x| x.as_str())
+                            .map(|s| s.to_string());
                     }
                     if existing_version.is_none() {
                         existing_version = v.get("version").and_then(|x| x.as_i64());
@@ -522,7 +535,9 @@ pub async fn write_rpad_html(
         }
     }
 
-    let chosen_title = title.or(existing_title).unwrap_or_else(|| "Untitled".to_string());
+    let chosen_title = title
+        .or(existing_title)
+        .unwrap_or_else(|| "Untitled".to_string());
     let version = existing_version.unwrap_or(1);
 
     {
@@ -742,7 +757,8 @@ pub async fn write_text_atomic(path: String, contents: String) -> Result<(), Str
     }
     {
         let mut f = fs::File::create(&tmp).map_err(|e| e.to_string())?;
-        f.write_all(contents.as_bytes()).map_err(|e| e.to_string())?;
+        f.write_all(contents.as_bytes())
+            .map_err(|e| e.to_string())?;
         let _ = f.sync_all();
     }
     if let Err(e) = fs::rename(&tmp, p) {

@@ -38,7 +38,7 @@ export async function settings() {
 }
 
 async function ensureWorkspaceFolder(baseDir: string): Promise<string> {
-  const candidates = ['RosePad Workspace', 'RosePadWorkspace']
+  const candidates = ['RosePad Workspace', 'rosepad_workspace', 'RosePadWorkspace', 'rosepadworkspace']
   // If the selected folder already looks like a workspace folder, use it as-is
   const parts = baseDir.split(/\\|\//).filter(Boolean)
   const last = parts.length ? parts[parts.length - 1] : ''
@@ -52,7 +52,10 @@ async function ensureWorkspaceFolder(baseDir: string): Promise<string> {
       return p
     }
   }
-  return baseDir
+  // Otherwise, create a new workspace subfolder inside the selected folder
+  const newWorkspace = await join(baseDir, candidates[0])
+  await invoke('create_physical_folder', { root: baseDir, name: candidates[0] })
+  return newWorkspace
 }
 
 export async function selectDir(): Promise<string | null> {

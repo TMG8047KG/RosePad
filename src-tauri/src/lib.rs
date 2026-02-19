@@ -1,4 +1,6 @@
-use std::env;
+use directories::UserDirs;
+use std::fs;
+use std::{env, path::Path};
 use std::sync::Mutex;
 
 use lazy_static::lazy_static;
@@ -27,12 +29,7 @@ fn enqueue_open_paths(args: &[String]) {
         Err(poisoned) => poisoned.into_inner(),
     };
     // Skip the executable path and only keep meaningful payload
-    guard.extend(
-        args.iter()
-            .skip(1)
-            .filter(|s| !s.is_empty())
-            .cloned(),
-    );
+    guard.extend(args.iter().skip(1).filter(|s| !s.is_empty()).cloned());
 }
 
 #[tauri::command]
@@ -70,6 +67,7 @@ pub fn run() {
     }];
     let _ = discord_rpc::connect_rpc();
     let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .plugin(
@@ -117,9 +115,19 @@ pub fn run() {
             discord_rpc::clear_activity,
             settings::settings,
             take_pending_open_paths
-        ])/*  */
+        ]) /*  */
         .setup(|app| {
-            #[cfg(not(debug_assertions))] {
+            if let Some(user_dirs) = UserDirs::new() {
+                let doc_dir = user_dirs.document_dir().unwrap();
+                let new_folder_path = doc_dir.join("RosePad Workspace");
+
+                match fs::create_dir_all(&new_folder_path) {
+                    Ok(_) => println!("Successfully created workspace: {:?} ", new_folder_path),
+                    Err(e) => println!("Error: {}", e),
+                }
+            }
+            #[cfg(not(debug_assertions))]
+            {
                 let handle = app.handle().clone();
                 tauri::async_runtime::spawn(async move {
                     let _ = update(handle).await;
