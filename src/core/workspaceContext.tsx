@@ -4,6 +4,7 @@ import { startWatching, stopWatching } from "./bridge"
 import { getWorkspaceTree, reconcileFromScan, scanWorkspace, analyzePaths, reconcileFromAnalyze } from "./db"
 import { setWorkspaceRoot as clearPersistedRoot } from "./cache"
 import type { WorkspaceTree } from "./db"
+import { invoke } from "@tauri-apps/api/core"
 
 type Ctx = {
   rootPath: string|null
@@ -80,11 +81,17 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   }, [resolveRoot])
 
   const init = useCallback(async () => {
-    const root = await getWorkspaceRoot()
+    let root = await getWorkspaceRoot()
+    if (!root) {
+        // First launch — use the folder Rust already created in Documents
+        try {
+            root = await invoke<string | null>('get_default_workspace')
+            if (root) await persistWorkspaceRoot(root)  // save so next launch skips this
+        } catch {}
+    }
     if (root) {
-      // Only set state and reindex; watcher is managed by a separate effect on rootPath
-      setRootPath(root)
-      await reindex(root)
+        setRootPath(root)
+        await reindex(root)
     }
   }, [reindex])
 

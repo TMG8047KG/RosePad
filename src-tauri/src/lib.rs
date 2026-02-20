@@ -18,6 +18,7 @@ mod workspace;
 
 lazy_static! {
     static ref PENDING_OPEN_PATHS: Mutex<Vec<String>> = Mutex::new(Vec::new());
+    static ref DEFAULT_WORKSPACE: Mutex<Option<String>> = Mutex::new(None);
 }
 
 fn enqueue_open_paths(args: &[String]) {
@@ -30,6 +31,11 @@ fn enqueue_open_paths(args: &[String]) {
     };
     // Skip the executable path and only keep meaningful payload
     guard.extend(args.iter().skip(1).filter(|s| !s.is_empty()).cloned());
+}
+
+#[tauri::command]
+fn get_default_workspace() -> Option<String> {
+    DEFAULT_WORKSPACE.lock().ok()?.clone()
 }
 
 #[tauri::command]
@@ -97,6 +103,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_args,
             is_hyprland,
+            get_default_workspace,
+            take_pending_open_paths,
             workspace::scan_workspace,
             workspace::analyze_paths,
             workspace::rename_project,
@@ -113,17 +121,16 @@ pub fn run() {
             workspace::create_rpad_project,
             discord_rpc::update_activity,
             discord_rpc::clear_activity,
-            settings::settings,
-            take_pending_open_paths
+            settings::settings
         ]) /*  */
         .setup(|app| {
-            if let Some(user_dirs) = UserDirs::new() {
-                let doc_dir = user_dirs.document_dir().unwrap();
-                let new_folder_path = doc_dir.join("RosePad Workspace");
-
-                match fs::create_dir_all(&new_folder_path) {
-                    Ok(_) => println!("Successfully created workspace: {:?} ", new_folder_path),
-                    Err(e) => println!("Error: {}", e),
+             if let Some(user_dirs) = UserDirs::new() {
+                if let Some(doc_dir) = user_dirs.document_dir() {
+                    let new_folder_path = doc_dir.join("RosePad Workspace");
+                    if fs::create_dir_all(&new_folder_path).is_ok() {
+                        let mut guard = DEFAULT_WORKSPACE.lock().unwrap();
+                        *guard = Some(new_folder_path.to_string_lossy().to_string());
+                    }
                 }
             }
             #[cfg(not(debug_assertions))]

@@ -36,17 +36,29 @@ export function useHandleFileOpen() {
   const { rootPath, setRoot, reindex, applyFsChanges } = useWorkspace();
 
   const ensureWorkspace = useCallback(async () => {
-    if (rootPath) return rootPath;
-    const persisted = await getWorkspaceRoot();
+    if (rootPath) return rootPath
+    
+    const persisted = await getWorkspaceRoot()
     if (persisted) {
-      await setRoot(persisted);
-      return persisted;
+        await setRoot(persisted)
+        return persisted
     }
-    const dir = await selectDir();
-    if (!dir) throw new Error("No workspace selected");
-    await setRoot(dir);
-    return dir;
-  }, [rootPath, setRoot]);
+    
+    // Try the OS default before bothering the user
+    try {
+        const defaultPath = await invoke<string | null>('get_default_workspace')
+        if (defaultPath) {
+            await setRoot(defaultPath)
+            return defaultPath
+        }
+    } catch {}
+    
+    // Last resort: ask
+    const dir = await selectDir()
+    if (!dir) throw new Error('No workspace selected')
+    await setRoot(dir)
+    return dir
+}, [rootPath, setRoot])
 
   const importIntoWorkspace = useCallback(
     async (filePath: string) => {
