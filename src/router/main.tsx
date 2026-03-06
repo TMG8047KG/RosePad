@@ -7,6 +7,21 @@ import Settings from "../settings";
 import { WorkspaceProvider } from "../core/workspaceContext";
 import { useHandleFileOpen } from "../hooks/useHandleFileOpen";
 import { ToastProvider } from "../core/toast";
+import { setTheme } from "@tauri-apps/api/app";
+import { applyThemeToDocument } from "../core/cache";
+import { listen } from "@tauri-apps/api/event";
+import { themes } from "../core/themeManager";
+
+function ThemeListener() {
+  useEffect(() => {
+    const unlisten = listen<themes>('theme-changed', (event) => {
+      setTheme(event.payload);
+      applyThemeToDocument(event.payload);
+    });
+    return () => { unlisten.then(f => f()); };
+  }, []);
+  return null;
+}
 
 function ExternalOpenListener() {
   const { listenForExternalOpens } = useHandleFileOpen();
@@ -25,6 +40,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
       <WorkspaceProvider>
         <Router>
           <ExternalOpenListener/>
+          <ThemeListener/>
           <Routes>
             <Route path="/" element={<App/>}/>
             <Route path="/editor/:file" element={<Editor/>}/>

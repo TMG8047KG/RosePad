@@ -4,7 +4,7 @@ import { selectDir } from './core/projectHandler';
 import { useEffect, useState } from 'react';
 import NavSettings from './components/settings/navSettings';
 import { getVersion, setTheme } from '@tauri-apps/api/app';
-import { getTheme, setThemeCache } from './core/cache';
+import { applyThemeToDocument, getTheme, setThemeCache } from './core/cache';
 import { themes } from './core/themeManager';
 import { useWorkspace } from './core/workspaceContext';
 import { isRpcEnabled, rpc_from_last_page, rpc_settings, setRpcEnabled } from './core/discord_rpc';
@@ -52,10 +52,13 @@ function Settings() {
         if(tooltip) tooltip.innerHTML = "Copy tmg8047kg";
     }
 
+
     const changeTheme = async (theme: themes) => {
         await setTheme(theme);
         await setThemeCache(theme);
         setThemeButton(theme);
+        applyThemeToDocument(theme);
+        await emit('theme-changed', theme);
     }
 
     useEffect(() => {
