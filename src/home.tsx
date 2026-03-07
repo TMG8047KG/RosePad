@@ -14,7 +14,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
 import { rpc_main_menu, rpc_project } from './core/discord_rpc'
 import { applyTheme, setup } from './core/cache'
-import { addProject, settings } from './core/projectHandler'
+import { addProject } from './core/projectHandler'
 import { setPhysicalFolderColor, createPhysicalFolder } from './core/db'
 
 import { useWorkspace } from './core/workspaceContext'
@@ -25,7 +25,6 @@ import { useToast } from './core/toast'
 
 setup()
 applyTheme()
-settings()
 
 async function createRpadFile(dir: string, name: string) {
   const filePath = await invoke<string>('create_rpad_project', { destDir: dir, name })

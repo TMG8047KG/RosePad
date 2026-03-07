@@ -1,6 +1,6 @@
 [package]
 name = "rosepad"
-version = "1.0.0-beta-7"
+version = "1.0.0-beta-8"
 description = "Simple and Beautiful Text Editor"
 authors = ["Alexandar Goranov"]
 license = "GNU GPL-3"
@@ -38,3 +38,4 @@ tauri-plugin-single-instance = "2.3.4"
 tauri-plugin-updater = "2"
 discord-ipc-rp = "0.1.1"
 lazy_static = "1.4"
+directories = "6.0.0"

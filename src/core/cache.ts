@@ -10,8 +10,18 @@ export async function getTheme(): Promise<themes> {
     return (await getSettings()).theme ?? 'dark';
 }
 
-export async function applyTheme(){
-    await setTheme(await getTheme());
+export async function applyTheme() {
+    const theme = await getTheme();
+    await setTheme(theme);
+    applyThemeToDocument(theme);
+}
+
+export function applyThemeToDocument(theme: themes) {
+    if (theme === null) {
+        delete document.documentElement.dataset.theme;
+    } else {
+        document.documentElement.dataset.theme = theme;
+    }
 }
 
 export async function setThemeCache(theme:themes) {
