@@ -11,6 +11,7 @@ import { setTheme } from "@tauri-apps/api/app";
 import { applyThemeToDocument } from "../core/cache";
 import { listen } from "@tauri-apps/api/event";
 import { themes } from "../core/themeManager";
+import { SettingsProvider } from "../core/settingsContext";
 
 function ThemeListener() {
   useEffect(() => {
@@ -37,17 +38,19 @@ function ExternalOpenListener() {
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ToastProvider>
-      <WorkspaceProvider>
-        <Router>
-          <ExternalOpenListener/>
-          <ThemeListener/>
-          <Routes>
-            <Route path="/" element={<App/>}/>
-            <Route path="/editor/:file" element={<Editor/>}/>
-            <Route path="/settings" element={<Settings/>}/>
-          </Routes>
-        </Router>
-      </WorkspaceProvider>
+    <SettingsProvider>
+    <WorkspaceProvider>
+      <Router>
+        <ExternalOpenListener/>
+        <ThemeListener/>
+        <Routes>
+          <Route path="/" element={<App/>}/>
+          <Route path="/editor/:file" element={<Editor/>}/>
+          <Route path="/settings" element={<Settings/>}/>
+        </Routes>
+      </Router>
+    </WorkspaceProvider>
+    </SettingsProvider>
     </ToastProvider>
   </React.StrictMode>
 );

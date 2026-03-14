@@ -7,38 +7,27 @@ import { getVersion, setTheme } from '@tauri-apps/api/app';
 import { applyThemeToDocument, getTheme, setThemeCache } from './core/cache';
 import { themes } from './core/themeManager';
 import { useWorkspace } from './core/workspaceContext';
-import { isRpcEnabled, rpc_from_last_page, rpc_settings, setRpcEnabled } from './core/discord_rpc';
+import { rpc_from_last_page, rpc_settings, setRpcEnabled } from './core/discord_rpc';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { Window } from '@tauri-apps/api/window';
 import { emit } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/core';
-
-type bSettings = {
-    workspaceDir: string | null;
-    autosave: {
-        enabled: boolean;
-        interval: number;
-    };
-    discordRpc: boolean;
-}
+import { useSettings } from './core/settingsContext';
 
 function Settings() {
     const [version, setVersion] = useState<string>();
     const [autoSave, setAutoSaveActive] = useState(false);
     const [autoSaveInterval, setAutoSaveInterval] = useState(2);
     const [theme, setThemeButton] = useState<themes>(null);
-    const [richPresenceEnabled, setRichPresenceEnabled] = useState<boolean>(isRpcEnabled());
+    const [richPresenceEnabled, setRichPresenceEnabled] = useState<boolean>(false);
     const { setRoot, rootPath } = useWorkspace();
-    
+    const { settings, update } = useSettings();
 
     const handleAutoSaveChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         const checked = event.target.checked;
         setAutoSaveActive(checked);
-        void invoke("update_settings", {
-            patch: {
-                autosave: {
-                    enabled: checked,
-                },
+        void update({
+            autosave: {
+                enabled: checked,
             },
         });
     }
@@ -48,11 +37,9 @@ function Settings() {
         if(value < 1) value = 1;
         if(value > 60) value = 60;
         setAutoSaveInterval(value);
-        void invoke("update_settings", {
-            patch: {
-                autosave: {
-                    interval: value,
-                },
+        void update({
+            autosave: {
+                interval: value,
             },
         });
     }
@@ -61,10 +48,8 @@ function Settings() {
         const enabled = event.target.checked;
         setRichPresenceEnabled(enabled);
         await setRpcEnabled(enabled);
-        await invoke("update_settings", {
-            patch: {
-                discordRpc: enabled,
-            },
+        await update({
+            discordRpc: enabled,
         });
         if(enabled) await rpc_settings();
     }
@@ -90,32 +75,27 @@ function Settings() {
     }
 
     useEffect(() => {
-        const getSettings = async () =>{
-            let fetchedSettings = await invoke<bSettings>("get_settings");
-            setAutoSaveActive(fetchedSettings.autosave.enabled);
-            setAutoSaveInterval(fetchedSettings.autosave.interval);
-            setRichPresenceEnabled(fetchedSettings.discordRpc);
-
-            if (fetchedSettings.workspaceDir && fetchedSettings.workspaceDir !== rootPath) {
-                await setRoot(fetchedSettings.workspaceDir);
-            }
-        }
-        void getSettings();
         const handleVersion = async () => {
             setVersion(`${await getVersion()}`);
         };
-        handleVersion();
+        void handleVersion();
+
         const loadThemeState = async () => {
             setThemeButton(await getTheme());
         }
-        loadThemeState();
-        const loadRpcState = () => {
-            setRichPresenceEnabled(isRpcEnabled());
+        void loadThemeState();
+    }, []);
+
+    useEffect(() => {
+        if (!settings) return;
+        setAutoSaveActive(settings.autosave.enabled);
+        setAutoSaveInterval(settings.autosave.interval);
+        setRichPresenceEnabled(settings.discordRpc);
+
+        if (settings.workspaceDir && settings.workspaceDir !== rootPath) {
+            void setRoot(settings.workspaceDir);
         }
-        loadRpcState();
-
-
-    }, [rootPath, setRoot]);
+    }, [rootPath, setRoot, settings]);
 
     useEffect(() => {
         const updateActivity = () => rpc_settings();
@@ -135,10 +115,8 @@ function Settings() {
         const newDir = await selectDir()
         if(newDir) {
             await setRoot(newDir)
-            await invoke("update_settings", {
-                patch: {
-                    workspaceDir: newDir,
-                },
+            await update({
+                workspaceDir: newDir,
             });
         }
     }
