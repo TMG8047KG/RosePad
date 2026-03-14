@@ -11,6 +11,7 @@ import { isRpcEnabled, rpc_from_last_page, rpc_settings, setRpcEnabled } from '.
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { Window } from '@tauri-apps/api/window';
 import { emit } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
 
 function Settings() {
     const [version, setVersion] = useState<string>();
@@ -19,6 +20,8 @@ function Settings() {
     const [theme, setThemeButton] = useState<themes>(null);
     const [richPresenceEnabled, setRichPresenceEnabled] = useState<boolean>(isRpcEnabled());
     const { setRoot, rootPath } = useWorkspace();
+    
+    const [settings, setSettings] = useState<object>();
 
     const handleAutoSaveChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         const checked = event.target.checked;
@@ -62,6 +65,12 @@ function Settings() {
     }
 
     useEffect(() => {
+        const getSettings = async () =>{
+            let fetchedSettings = await invoke("get_settings");
+            console.log(fetchedSettings);
+            setSettings(fetchedSettings);
+        }
+        getSettings();
         const handleVersion = async () => {
             setVersion(`${await getVersion()}`);
         };
@@ -84,6 +93,9 @@ function Settings() {
             setRichPresenceEnabled(isRpcEnabled());
         }
         loadRpcState();
+
+        console.log(settings.autosave);
+        
     }, []);
 
     useEffect(() => {
@@ -104,7 +116,7 @@ function Settings() {
         const newDir = await selectDir()
         if(newDir) {
             await setRoot(newDir)
-         }
+        }
     }
 
     const fetchChangeLog = async () => {
