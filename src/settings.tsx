@@ -13,20 +13,34 @@ import { Window } from '@tauri-apps/api/window';
 import { emit } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 
+type bSettings = {
+    workspaceDir: string | null;
+    autosave: {
+        enabled: boolean;
+        interval: number;
+    };
+    discordRpc: boolean;
+}
+
 function Settings() {
     const [version, setVersion] = useState<string>();
-    const [autoSave, setAutoSaveActive] = useState(localStorage.getItem("autoSave")==="true");
+    const [autoSave, setAutoSaveActive] = useState(false);
     const [autoSaveInterval, setAutoSaveInterval] = useState(2);
     const [theme, setThemeButton] = useState<themes>(null);
     const [richPresenceEnabled, setRichPresenceEnabled] = useState<boolean>(isRpcEnabled());
     const { setRoot, rootPath } = useWorkspace();
     
-    const [settings, setSettings] = useState<object>();
 
     const handleAutoSaveChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         const checked = event.target.checked;
         setAutoSaveActive(checked);
-        localStorage.setItem("autoSave", checked.toString());
+        void invoke("update_settings", {
+            patch: {
+                autosave: {
+                    enabled: checked,
+                },
+            },
+        });
     }
 
     const handleAutoSaveIntervalChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,13 +48,24 @@ function Settings() {
         if(value < 1) value = 1;
         if(value > 60) value = 60;
         setAutoSaveInterval(value);
-        localStorage.setItem("autoSaveInterval", value.toString());
+        void invoke("update_settings", {
+            patch: {
+                autosave: {
+                    interval: value,
+                },
+            },
+        });
     }
 
     const handleRichPresenceChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const enabled = event.target.checked;
         setRichPresenceEnabled(enabled);
         await setRpcEnabled(enabled);
+        await invoke("update_settings", {
+            patch: {
+                discordRpc: enabled,
+            },
+        });
         if(enabled) await rpc_settings();
     }
 
@@ -66,25 +91,20 @@ function Settings() {
 
     useEffect(() => {
         const getSettings = async () =>{
-            let fetchedSettings = await invoke("get_settings");
-            console.log(fetchedSettings);
-            setSettings(fetchedSettings);
+            let fetchedSettings = await invoke<bSettings>("get_settings");
+            setAutoSaveActive(fetchedSettings.autosave.enabled);
+            setAutoSaveInterval(fetchedSettings.autosave.interval);
+            setRichPresenceEnabled(fetchedSettings.discordRpc);
+
+            if (fetchedSettings.workspaceDir && fetchedSettings.workspaceDir !== rootPath) {
+                await setRoot(fetchedSettings.workspaceDir);
+            }
         }
-        getSettings();
+        void getSettings();
         const handleVersion = async () => {
             setVersion(`${await getVersion()}`);
         };
         handleVersion();
-        const loadAutoSave = () => {
-            const savedAutoSave = localStorage.getItem("autoSave");
-            setAutoSaveActive(savedAutoSave === "true")
-        }
-        loadAutoSave();
-        const loadAutoSaveInterval = () => {
-            const value = localStorage.getItem("autoSaveInterval");
-            if(value) setAutoSaveInterval(parseInt(value));
-        }
-        loadAutoSaveInterval();
         const loadThemeState = async () => {
             setThemeButton(await getTheme());
         }
@@ -94,9 +114,8 @@ function Settings() {
         }
         loadRpcState();
 
-        console.log(settings.autosave);
-        
-    }, []);
+
+    }, [rootPath, setRoot]);
 
     useEffect(() => {
         const updateActivity = () => rpc_settings();
@@ -116,6 +135,11 @@ function Settings() {
         const newDir = await selectDir()
         if(newDir) {
             await setRoot(newDir)
+            await invoke("update_settings", {
+                patch: {
+                    workspaceDir: newDir,
+                },
+            });
         }
     }
 
