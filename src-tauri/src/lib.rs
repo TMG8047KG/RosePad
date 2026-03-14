@@ -121,6 +121,9 @@ pub fn run() {
             workspace::create_rpad_project,
             discord_rpc::update_activity,
             discord_rpc::clear_activity,
+            settings::get_settings,
+            settings::update_settings,
+            settings::reset_settings,
             settings::settings
         ]) /*  */
         .setup(|app| {
