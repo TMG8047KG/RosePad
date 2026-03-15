@@ -7,7 +7,7 @@ import { getVersion, setTheme } from '@tauri-apps/api/app';
 import { applyThemeToDocument, getTheme, setThemeCache } from './core/cache';
 import { themes } from './core/themeManager';
 import { useWorkspace } from './core/workspaceContext';
-import { rpc_from_last_page, rpc_settings, setRpcEnabled } from './core/discord_rpc';
+import { rpc_from_last_page, rpc_settings, setRpcEnabled, syncRpcEnabled } from './core/discord_rpc';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { Window } from '@tauri-apps/api/window';
 import { emit } from '@tauri-apps/api/event';
@@ -15,16 +15,12 @@ import { useSettings } from './core/settingsContext';
 
 function Settings() {
     const [version, setVersion] = useState<string>();
-    const [autoSave, setAutoSaveActive] = useState(false);
-    const [autoSaveInterval, setAutoSaveInterval] = useState(2);
     const [theme, setThemeButton] = useState<themes>(null);
-    const [richPresenceEnabled, setRichPresenceEnabled] = useState<boolean>(false);
     const { setRoot, rootPath } = useWorkspace();
     const { settings, update } = useSettings();
 
     const handleAutoSaveChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         const checked = event.target.checked;
-        setAutoSaveActive(checked);
         void update({
             autosave: {
                 enabled: checked,
@@ -36,7 +32,6 @@ function Settings() {
         let value = parseInt(event.target.value);
         if(value < 1) value = 1;
         if(value > 60) value = 60;
-        setAutoSaveInterval(value);
         void update({
             autosave: {
                 interval: value,
@@ -46,7 +41,6 @@ function Settings() {
 
     const handleRichPresenceChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const enabled = event.target.checked;
-        setRichPresenceEnabled(enabled);
         await setRpcEnabled(enabled);
         await update({
             discordRpc: enabled,
@@ -88,9 +82,8 @@ function Settings() {
 
     useEffect(() => {
         if (!settings) return;
-        setAutoSaveActive(settings.autosave.enabled);
-        setAutoSaveInterval(settings.autosave.interval);
-        setRichPresenceEnabled(settings.discordRpc);
+
+        syncRpcEnabled(settings.discordRpc);
 
         if (settings.workspaceDir && settings.workspaceDir !== rootPath) {
             void setRoot(settings.workspaceDir);
@@ -152,11 +145,11 @@ function Settings() {
                     <div className={style.option}>
                         <p>Auto-Save</p>
                         <label className={style.switch}>
-                            <input type="checkbox" checked={autoSave} onChange={handleAutoSaveChange}/>
+                            <input type="checkbox" checked={settings?.autosave.enabled ?? false} onChange={handleAutoSaveChange}/>
                             <span className={style.slider}></span>
                         </label>
                         <p>Auto-Save interval <span>(in seconds)</span></p>
-                        <input className={style.inputNumber} type="number" min={1} max={60} value={autoSaveInterval} onChange={handleAutoSaveIntervalChange} placeholder='s' />
+                        <input className={style.inputNumber} type="number" min={1} max={60} value={settings?.autosave.interval ?? 2} onChange={handleAutoSaveIntervalChange} placeholder='s' />
                     </div>
                 </div>
                  <div>
@@ -164,7 +157,7 @@ function Settings() {
                     <div className={style.option}>
                         <p>Rich Presence</p>
                         <label className={style.switch}>
-                            <input type="checkbox" checked={richPresenceEnabled} onChange={handleRichPresenceChange}/>
+                            <input type="checkbox" checked={settings?.discordRpc ?? false} onChange={handleRichPresenceChange}/>
                             <span className={style.slider}></span>
                         </label>
                     </div>
