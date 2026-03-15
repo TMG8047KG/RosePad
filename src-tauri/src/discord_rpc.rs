@@ -1,9 +1,24 @@
 use discord_ipc_rp::activity::{Button, Timestamps};
 use discord_ipc_rp::{activity, DiscordIpc, DiscordIpcClient};
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
 use std::env;
 use std::sync::Mutex;
 use std::thread;
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscordCustomRPC {
+    pub details: Option<String>,
+    pub state: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscordCustomRPCPatch {
+    pub details: Option<Option<String>>,
+    pub state: Option<Option<String>>,
+}
 
 lazy_static! {
     static ref DRPC_CLIENT: Mutex<Option<DiscordIpcClient>> =
