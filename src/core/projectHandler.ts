@@ -3,9 +3,8 @@ import { db } from './db'
 import { invoke } from '@tauri-apps/api/core'
 import { join } from '@tauri-apps/api/path'
 import { exists } from '@tauri-apps/plugin-fs'
-import { updateSettings } from './settings'
+import { updateSettings } from './settingsApi'
 
-export const settingsFile = 'settings.json'
 
 async function ensureWorkspaceFolder(baseDir: string): Promise<string> {
   const candidates = ['RosePad Workspace', 'rosepad_workspace', 'RosePadWorkspace', 'rosepadworkspace']
@@ -32,7 +31,7 @@ export async function selectDir(): Promise<string | null> {
     const base = await open({ directory: true, multiple: false, title: 'Select workspace directory' })
     if (!base || Array.isArray(base)) return null
     const workspace = await ensureWorkspaceFolder(base)
-    await updateSettings(s => ({ ...s, projectPath: workspace }))
+    await updateSettings({ workspaceDir: workspace })
     return workspace
 }
 
@@ -44,13 +43,6 @@ export async function projectExists(filePath: string): Promise<boolean> {
   } catch {
     return false
   }
-}
-
-export async function addProject(name: string, filePath: string) {
-  await updateSettings(s => {
-      const recent = (s.recent ?? []).filter(r => r.path !== filePath)
-      return { ...s, recent: [{ name, path: filePath, ts: Date.now() }, ...recent].slice(0, 20) }
-  })
 }
 
 export async function pathFromOpenedFile(): Promise<string | null> {

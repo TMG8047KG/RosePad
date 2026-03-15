@@ -1,37 +1,6 @@
-//Settings bridge between the backend and the frontend
-//Handles settings data and behaves like a global value
 import { createContext, createElement, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
-import { invoke } from "@tauri-apps/api/core"
+import { getSettings, updateSettings, type AppSettings, type SettingsPatch } from "./settingsApi"
 import { listen } from "@tauri-apps/api/event"
-
-type AutoSaveSettings = {
-  enabled: boolean
-  interval: number
-}
-
-type DiscordCustomRpcSettings = {
-  details: string | null
-  state: string | null
-}
-
-export type AppSettings = {
-  workspaceDir: string | null
-  watched: string[]
-  autosave: AutoSaveSettings
-  theme: string
-  discordRpc: boolean
-  discordCtmRpc: DiscordCustomRpcSettings
-  initialized: boolean
-}
-
-type SettingsPatch = Partial<{
-  workspaceDir: string | null
-  watched: string[]
-  autosave: Partial<AutoSaveSettings>
-  theme: string
-  discordRpc: boolean
-  initialized: boolean
-}>
 
 type SettingsContextValue = {
   settings: AppSettings | null
@@ -47,12 +16,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const refresh = async () => {
-    const next = await invoke<AppSettings>("get_settings")
+    const next = await getSettings()
     setSettings(next)
   }
 
   const update = async (patch: SettingsPatch) => {
-    const next = await invoke<AppSettings>("update_settings", { patch })
+    const next = await updateSettings(patch)
     setSettings(next)
     return next
   }
