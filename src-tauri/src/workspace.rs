@@ -1,7 +1,10 @@
+use anyhow::Ok;
 use lazy_static::lazy_static;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
-use std::sync::Mutex;
+use tauri_plugin_dialog::DialogExt;
+use std::fmt::format;
+use std::sync::{Arc, Mutex};
 use std::{
     fs,
     io::{Read, Write},
@@ -14,44 +17,81 @@ use zip::{write::FileOptions, ZipArchive, ZipWriter};
 // Seperator
 // ==No======Idea======
 
-
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ProjectDto {
+pub struct ProjectStructure {
     pub id: String,
-    pub kind: String,
     pub name: String,
     pub path: String,
     pub ext: Option<String>,
     pub title: Option<String>,
     pub last_modified_ms: i64,
     pub size: i64,
-    pub parent_physical_folder: Option<String>,
+    pub parent_folder: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct PhysicalFolderScanDto {
+pub struct FolderScanStructure {
     pub path: String,
     pub name: String,
+    pub color: String,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ScanResultDto {
-    pub root_projects: Vec<ProjectDto>,
-    pub physical_folders: Vec<(PhysicalFolderScanDto, Vec<ProjectDto>)>,
+pub struct ScanResult {
+    pub root_projects: Vec<ProjectStructure>,
+    pub folders: Vec<(FolderScanStructure, Vec<ProjectStructure>)>,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AnalyzeResultDto {
-    pub projects: Vec<ProjectDto>,
+    pub projects: Vec<ProjectStructure>,
     pub delete_project_paths: Vec<String>,
-    pub physical_folders: Vec<PhysicalFolderScanDto>,
-    pub delete_physical_folders: Vec<String>,
+    pub folders: Vec<FolderScanStructure>,
+    pub delete_folders: Vec<String>,
 }
 
+//================================================
+// FUCK AI
+// IMMA DO IT MYSELF AS I HAD BEFORE THAT
+//================================================
+
+pub fn find_or_create_workspace(app: &AppHandle)g {
+    let user_dirs = directories::UserDirs::new();
+
+    if let Some(user_dirs) = user_dirs {
+        if let Some(doc_dir) = user_dirs.document_dir() {
+            let wp_dir = doc_dir.join("RosePad Workspace");
+
+            if !wp_dir.exists() {
+                fs::create_dir_all(&wp_dir).unwrap();
+            }
+
+            println!("Workspace: {}", wp_dir.display());
+            return;
+        }
+    }
+
+    app.dialog().file().pick_folder(|folder| {
+        if let Some(file_path) = folder {
+            if let Some(path) = file_path.as_path() {
+                let wp_dir = path.join("RosePad Workspace");
+
+                fs::create_dir_all(&wp_dir).unwrap();
+
+                println!("Workspace created: {}", wp_dir.display());
+            }
+        }
+    });
+}
+
+
+//AI SLOP (Works, but I don't understand it and It doesn't work the way I want it)
+
+//Not sure why do we have this extra check except maybe prevent some path problems?
 fn canonicalize_allow_missing(p: &Path) -> Result<PathBuf, String> {
     if p.exists() {
         return p.canonicalize().map_err(|e| e.to_string());
@@ -96,26 +136,6 @@ fn read_rpad_title(path: &Path) -> Option<String> {
     v.get("title")
         .and_then(|t| t.as_str())
         .map(|s| s.to_string())
-}
-
-fn detect_kind_ext(ext: &str) -> (&'static str, Option<String>) {
-    match ext {
-        "rpad" => ("rpad", None),
-        "doc" | "docx" => ("doc", Some("doc".into())),
-        "pdf" => ("pdf", Some("pdf".into())),
-        "txt" => ("txt", Some("txt".into())),
-        "" => ("txt", None),
-        // Treat common text/code formats as text while preserving the extension for display
-        "md" | "mdx" | "json" | "log" | "js" | "jsx" | "ts" | "tsx" | "html" | "htm" | "css"
-        | "scss" | "sass" | "less" | "xml" | "yaml" | "yml" | "ini" | "cfg" | "conf" | "env"
-        | "properties" | "toml" | "csv" | "tsv" | "sql" | "sh" | "bash" | "zsh" | "ksh" | "bat"
-        | "cmd" | "ps1" | "psm1" | "py" | "rs" | "go" | "java" | "kt" | "kts" | "c" | "cpp"
-        | "cxx" | "h" | "hpp" | "hh" | "m" | "mm" | "swift" | "scala" | "rb" | "php" | "pl"
-        | "lua" | "r" | "tex" | "groovy" | "gradle" | "dart" | "erl" | "ex" | "exs" | "elm"
-        | "clj" | "cljs" | "coffee" | "hx" | "vb" | "vbs" | "f90" | "f95" | "f03" | "make"
-        | "mk" | "cmake" => ("txt", Some(ext.into())),
-        _ => ("txt", Some(ext.into())),
-    }
 }
 
 fn stable_id(path: &str) -> String {
