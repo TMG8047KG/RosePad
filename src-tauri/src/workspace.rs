@@ -1,9 +1,11 @@
 use anyhow::Ok;
+use directories::{BaseDirs, UserDirs};
 use lazy_static::lazy_static;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
+use notify_rust::Notification;
 use serde::{Deserialize, Serialize};
-use tauri_plugin_dialog::DialogExt;
 use std::fmt::format;
+use std::fs::exists;
 use std::sync::{Arc, Mutex};
 use std::{
     fs,
@@ -11,6 +13,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use tauri::{AppHandle, Emitter};
+use tauri_plugin_dialog::DialogExt;
 use zip::{write::FileOptions, ZipArchive, ZipWriter};
 
 // ====================
@@ -20,24 +23,28 @@ use zip::{write::FileOptions, ZipArchive, ZipWriter};
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ProjectStructure {
-    pub id: String,
-    pub name: String,
-    pub path: String,
-    pub ext: Option<String>,
-    pub title: Option<String>,
+    pub id: String,            //Indentify
+    pub name: String,          //File name
+    pub path: String,          //File Path
+    pub ext: Option<String>,   //File extension, becаuse... file rasicm
+    pub title: Option<String>, //UI name of the file (aka file name: "gosho_pedala" = UI name = "gosho pedala")
     pub last_modified_ms: i64,
-    pub size: i64,
-    pub parent_folder: Option<String>,
+    //TODO: Find out why the AI added this shit
+    pub size: i64,                     //Can't seem to remember why we have you
+    pub parent_folder: Option<String>, //Is project in a folder or not (root doesn't count)
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct FolderScanStructure {
-    pub path: String,
+    pub path: String, //where the hell is the folder
     pub name: String,
-    pub color: String,
+    pub color: String, //What gay color it has
 }
 
+//TODO: Add a rescan and reseed when root changes
+
+//Startup Scan
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ScanResult {
@@ -45,49 +52,47 @@ pub struct ScanResult {
     pub folders: Vec<(FolderScanStructure, Vec<ProjectStructure>)>,
 }
 
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AnalyzeResultDto {
-    pub projects: Vec<ProjectStructure>,
-    pub delete_project_paths: Vec<String>,
-    pub folders: Vec<FolderScanStructure>,
-    pub delete_folders: Vec<String>,
+pub struct WorkspaceStructure {
+    pub path: String,
+    pub alias: String, //name
 }
+
+//TODO:
+//Projects:
+//- rename
+//- create
+//- move
+//- delete
+//Folders:
+//- create
+//- delete
+//- rename
+//Workspaces:
+//- create
+//- switch
+//- delete
+//- "rename"
 
 //================================================
 // FUCK AI
 // IMMA DO IT MYSELF AS I HAD BEFORE THAT
 //================================================
 
-pub fn find_or_create_workspace(app: &AppHandle)g {
-    let user_dirs = directories::UserDirs::new();
-
-    if let Some(user_dirs) = user_dirs {
-        if let Some(doc_dir) = user_dirs.document_dir() {
-            let wp_dir = doc_dir.join("RosePad Workspace");
-
-            if !wp_dir.exists() {
-                fs::create_dir_all(&wp_dir).unwrap();
-            }
-
-            println!("Workspace: {}", wp_dir.display());
+pub fn init(app: tauri::AppHandle) {
+    //TODO: Check for backup files too (for settings only)
+    if let Some(user_dirs) = UserDirs::new() {
+        if !fs::exists(user_dirs.document_dir()) {
+            Notification::new()
+                .summary("RosePad Issue")
+                .body("Unable to find OS's default document or home directory!")
+                .icon("../../public/images/Rose.png");
             return;
         }
-    }
-
-    app.dialog().file().pick_folder(|folder| {
-        if let Some(file_path) = folder {
-            if let Some(path) = file_path.as_path() {
-                let wp_dir = path.join("RosePad Workspace");
-
-                fs::create_dir_all(&wp_dir).unwrap();
-
-                println!("Workspace created: {}", wp_dir.display());
-            }
+        if !fs::exists(Some(user_dirs.document_dir()) + "/RosePad Workspace") {
+            //TODO: function for creating a workspace
         }
-    });
+    }
 }
-
 
 //AI SLOP (Works, but I don't understand it and It doesn't work the way I want it)
 
