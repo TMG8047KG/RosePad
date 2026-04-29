@@ -1,7 +1,7 @@
 use directories::UserDirs;
 use std::fs;
-use std::{env, path::Path};
 use std::sync::Mutex;
+use std::{env, path::Path};
 
 use lazy_static::lazy_static;
 use tauri::{Emitter, Manager};
@@ -105,20 +105,6 @@ pub fn run() {
             is_hyprland,
             get_default_workspace,
             take_pending_open_paths,
-            workspace::scan_workspace,
-            workspace::analyze_paths,
-            workspace::rename_project,
-            workspace::delete_project,
-            workspace::move_project,
-            workspace::rename_physical_folder,
-            workspace::delete_physical_folder,
-            workspace::create_physical_folder,
-            workspace::watch_physical_folders,
-            workspace::read_rpad_data,
-            workspace::write_rpad_html,
-            workspace::write_text_atomic,
-            workspace::import_project,
-            workspace::create_rpad_project,
             discord_rpc::update_activity,
             discord_rpc::clear_activity,
             settings::get_settings,
@@ -127,15 +113,7 @@ pub fn run() {
             settings::settings
         ]) /*  */
         .setup(|app| {
-             if let Some(user_dirs) = UserDirs::new() {
-                if let Some(doc_dir) = user_dirs.document_dir() {
-                    let new_folder_path = doc_dir.join("RosePad Workspace");
-                    if fs::create_dir_all(&new_folder_path).is_ok() {
-                        let mut guard = DEFAULT_WORKSPACE.lock().unwrap();
-                        *guard = Some(new_folder_path.to_string_lossy().to_string());
-                    }
-                }
-            }
+            workspace::init(app.handle().clone());
             #[cfg(not(debug_assertions))]
             {
                 let handle = app.handle().clone();
