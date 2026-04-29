@@ -1,5 +1,7 @@
-use std::env;
+use directories::UserDirs;
+use std::fs;
 use std::sync::Mutex;
+use std::{env, path::Path};
 
 use lazy_static::lazy_static;
 use tauri::{Emitter, Manager};
@@ -16,6 +18,7 @@ mod workspace;
 
 lazy_static! {
     static ref PENDING_OPEN_PATHS: Mutex<Vec<String>> = Mutex::new(Vec::new());
+    static ref DEFAULT_WORKSPACE: Mutex<Option<String>> = Mutex::new(None);
 }
 
 fn enqueue_open_paths(args: &[String]) {
@@ -27,12 +30,12 @@ fn enqueue_open_paths(args: &[String]) {
         Err(poisoned) => poisoned.into_inner(),
     };
     // Skip the executable path and only keep meaningful payload
-    guard.extend(
-        args.iter()
-            .skip(1)
-            .filter(|s| !s.is_empty())
-            .cloned(),
-    );
+    guard.extend(args.iter().skip(1).filter(|s| !s.is_empty()).cloned());
+}
+
+#[tauri::command]
+fn get_default_workspace() -> Option<String> {
+    DEFAULT_WORKSPACE.lock().ok()?.clone()
 }
 
 #[tauri::command]
@@ -70,6 +73,7 @@ pub fn run() {
     }];
     let _ = discord_rpc::connect_rpc();
     let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .plugin(
@@ -99,27 +103,19 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_args,
             is_hyprland,
-            workspace::scan_workspace,
-            workspace::analyze_paths,
-            workspace::rename_project,
-            workspace::delete_project,
-            workspace::move_project,
-            workspace::rename_physical_folder,
-            workspace::delete_physical_folder,
-            workspace::create_physical_folder,
-            workspace::watch_physical_folders,
-            workspace::read_rpad_data,
-            workspace::write_rpad_html,
-            workspace::write_text_atomic,
-            workspace::import_project,
-            workspace::create_rpad_project,
+            get_default_workspace,
+            take_pending_open_paths,
             discord_rpc::update_activity,
             discord_rpc::clear_activity,
-            settings::settings,
-            take_pending_open_paths
-        ])/*  */
+            settings::get_settings,
+            settings::update_settings,
+            settings::reset_settings,
+            settings::settings
+        ]) /*  */
         .setup(|app| {
-            #[cfg(not(debug_assertions))] {
+            workspace::init(app.handle().clone());
+            #[cfg(not(debug_assertions))]
+            {
                 let handle = app.handle().clone();
                 tauri::async_runtime::spawn(async move {
                     let _ = update(handle).await;

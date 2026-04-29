@@ -3,42 +3,11 @@ import { db } from './db'
 import { invoke } from '@tauri-apps/api/core'
 import { join } from '@tauri-apps/api/path'
 import { exists } from '@tauri-apps/plugin-fs'
-import { getSettings, updateSettings } from './settings'
+import { updateSettings } from './settingsApi'
 
-export const settingsFile = 'settings.json'
-
-type SettingsShape = {
-  projectPath: string | null
-  recent?: { name: string; path: string; ts: number }[]
-}
-
-async function ensureSettings(): Promise<SettingsShape> {
-  const base = await getSettings()
-  return {
-    projectPath: base.projectPath ?? null,
-    recent: Array.isArray(base.recent) ? base.recent : []
-  }
-}
-
-let writeChain: Promise<void> = Promise.resolve()
-async function saveSettings(s: SettingsShape) {
-  // Serialize writes and merge with other settings consumers
-  writeChain = writeChain.then(async () => {
-    await updateSettings(curr => ({
-      ...curr,
-      projectPath: s.projectPath,
-      recent: s.recent ?? curr.recent ?? []
-    }))
-  }).catch(() => {}) // Swallow to keep chain alive
-  return writeChain
-}
-
-export async function settings() {
-  await ensureSettings()
-}
 
 async function ensureWorkspaceFolder(baseDir: string): Promise<string> {
-  const candidates = ['RosePad Workspace', 'RosePadWorkspace']
+  const candidates = ['RosePad Workspace', 'rosepad_workspace', 'RosePadWorkspace', 'rosepadworkspace']
   // If the selected folder already looks like a workspace folder, use it as-is
   const parts = baseDir.split(/\\|\//).filter(Boolean)
   const last = parts.length ? parts[parts.length - 1] : ''
@@ -52,17 +21,18 @@ async function ensureWorkspaceFolder(baseDir: string): Promise<string> {
       return p
     }
   }
-  return baseDir
+  // Otherwise, create a new workspace subfolder inside the selected folder
+  const newWorkspace = await join(baseDir, candidates[0])
+  await invoke('create_physical_folder', { root: baseDir, name: candidates[0] })
+  return newWorkspace
 }
 
 export async function selectDir(): Promise<string | null> {
-  const base = await open({ directory: true, multiple: false, title: 'Select a directory for the RosePad workspace' })
-  if (!base || Array.isArray(base)) return null
-  const workspace = await ensureWorkspaceFolder(base)
-  const s = await ensureSettings()
-  s.projectPath = workspace
-  await saveSettings(s)
-  return workspace
+    const base = await open({ directory: true, multiple: false, title: 'Select workspace directory' })
+    if (!base || Array.isArray(base)) return null
+    const workspace = await ensureWorkspaceFolder(base)
+    await updateSettings({ workspaceDir: workspace })
+    return workspace
 }
 
 export async function projectExists(filePath: string): Promise<boolean> {
@@ -73,15 +43,6 @@ export async function projectExists(filePath: string): Promise<boolean> {
   } catch {
     return false
   }
-}
-
-export async function addProject(name: string, filePath: string) {
-  const s = await ensureSettings()
-  const recent = s.recent || []
-  const withoutDup = recent.filter(r => r.path !== filePath)
-  withoutDup.unshift({ name, path: filePath, ts: Date.now() })
-  s.recent = withoutDup.slice(0, 20)
-  await saveSettings(s)
 }
 
 export async function pathFromOpenedFile(): Promise<string | null> {
