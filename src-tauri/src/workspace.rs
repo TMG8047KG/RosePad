@@ -1,8 +1,11 @@
+use anyhow::Ok;
 use directories::UserDirs;
 use notify_rust::Notification;
 use serde::{Deserialize, Serialize};
 use std::str;
 use std::{fs, path::PathBuf};
+
+use crate::{settings, workspace};
 
 // ====================
 // Seperator
@@ -66,31 +69,52 @@ pub struct WorkspaceStructure {
 // IMMA DO IT MYSELF AS I HAD BEFORE THAT
 //================================================
 
-pub fn init(_app: tauri::AppHandle) {
+//TODO: Don't hardcode the workspace names
+pub fn init(app: tauri::AppHandle) {
+    let settings = settings::read_settings(&app).unwrap_or_default();
+    if settings.current_workspace.is_none() {
+        return;
+    };
     let doc_dir: PathBuf;
-    //TODO: Check for backup files too (for settings only)
-    //TODO: Don't hardcode the workspace name!
     if let Some(user_dirs) = UserDirs::new() {
         doc_dir = user_dirs.document_dir().unwrap().to_path_buf();
-        fs::create_dir_all(&doc_dir);
+        let _ = fs::create_dir_all(&doc_dir);
     } else {
-        Notification::new()
+        let _ = Notification::new()
             .summary("RosePad Issue")
-            .body("Unable to find or create a documents folder!")
-            .icon("../../public/images/Rose.png");
+            .body("Unable to find an OS's documents folder!")
+            .icon("rosepad")
+            .show()
+            .map_err(|e| e.to_string());
         return;
     }
-    if fs::create_dir(&doc_dir.join("RosePad Workspace")).is_err() {
-        Notification::new()
+    //Default workspace name (mainly used on first launch)
+    if fs::create_dir_all(doc_dir.join("RosePad Workspace")).is_err() {
+        let _ = Notification::new()
             .summary("RosePad Issue")
             .body("Unable to create workspace folder!")
-            .icon("../../public/images/Rose.png");
+            .icon("rosepad")
+            .show();
     }
-}
+    doc_dir.canonicalize().map_err(|e| e.to_string());
 
+    settings::update_settings(
+        app,
+        settings::SettingsPatch {
+            current_workspace: Some(Some(doc_dir)),
+            workspaces: Some(settings.workspaces.push(doc_dir).clone()),
+            watched: None,
+            autosave: None,
+            theme: None,
+            discord_rpc: None,
+            discord_ctm_rpc: None,
+            initialized: None,
+        },
+    );
+}
 //AI SLOP (Works, but I don't understand it and It doesn't work the way I want it)
 
-//Not sure why do we have this extra check except maybe prevent some path problems?
+//Not sure why do we have this extra check except maybe prevent some path problems?c
 // fn canonicalize_allow_missing(p: &Path) -> Result<PathBuf, String> {
 //     if p.exists() {
 //         return p.canonicalize().map_err(|e| e.to_string());

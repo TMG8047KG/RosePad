@@ -14,7 +14,6 @@ const SETTINGS_EVENT: &str = "settings:changed";
 
 static SETTINGS_IO_LOCK: Mutex<()> = Mutex::new(());
 
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AutoSaveSettings {
@@ -25,7 +24,8 @@ pub struct AutoSaveSettings {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
-    pub workspace_dir: Option<String>,
+    pub current_workspace: Option<PathBuf>,
+    pub workspaces: Vec<PathBuf>,
     pub watched: Vec<String>,
     pub autosave: AutoSaveSettings,
     pub theme: String,
@@ -44,7 +44,8 @@ pub struct AutoSaveSettingsPatch {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SettingsPatch {
-    pub workspace_dir: Option<Option<String>>,
+    pub current_workspace: Option<Option<PathBuf>>,
+    pub workspaces: Option<Vec<PathBuf>>,
     pub watched: Option<Vec<String>>,
     pub autosave: Option<AutoSaveSettingsPatch>,
     pub theme: Option<String>,
@@ -56,7 +57,8 @@ pub struct SettingsPatch {
 impl Default for Settings {
     fn default() -> Self {
         Self {
-            workspace_dir: None,
+            current_workspace: None,
+            workspaces: vec![],
             watched: vec![],
             theme: "dark".to_string(),
             autosave: AutoSaveSettings {
@@ -84,8 +86,11 @@ fn normalize(mut s: Settings) -> Settings {
 }
 
 fn merge_patch(mut current: Settings, patch: SettingsPatch) -> Settings {
-    if let Some(workspace_dir) = patch.workspace_dir {
-        current.workspace_dir = workspace_dir;
+    if let Some(current_workspace) = patch.current_workspace {
+        current.current_workspace = current_workspace;
+    }
+    if let Some(workspaces) = patch.workspaces {
+        current.workspaces = workspaces;
     }
     if let Some(watched) = patch.watched {
         current.watched = watched;
@@ -148,7 +153,7 @@ fn parse_settings_file(path: &Path) -> Result<Settings, String> {
     Ok(normalize(parsed))
 }
 
-fn read_settings(app: &tauri::AppHandle) -> Result<Settings, String> {
+pub fn read_settings(app: &tauri::AppHandle) -> Result<Settings, String> {
     let _guard = SETTINGS_IO_LOCK
         .lock()
         .map_err(|_| "settings lock poisoned".to_string())?;
