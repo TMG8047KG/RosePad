@@ -13,6 +13,7 @@ use tauri_plugin_updater::UpdaterExt;
 
 mod discord_rpc;
 
+mod project;
 mod settings;
 mod workspace;
 
@@ -113,7 +114,7 @@ pub fn run() {
             settings::settings
         ]) /*  */
         .setup(|app| {
-            workspace::init(app.handle().clone());
+            settings::init(app.handle());
             #[cfg(not(debug_assertions))]
             {
                 let handle = app.handle().clone();
@@ -126,7 +127,7 @@ pub fn run() {
 
     builder
         .run(tauri::generate_context!())
-        .expect("RosePad is kaput while trying to run!");
+        .expect("RosePad went kaput while trying to run!");
 }
 
 #[cfg(not(debug_assertions))]

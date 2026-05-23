@@ -6,6 +6,7 @@ use std::sync::Mutex;
 use tauri::{Emitter, Manager};
 
 use crate::discord_rpc::{DiscordCustomRPC, DiscordCustomRPCPatch};
+use crate::workspace;
 
 const SETTINGS_FILE: &str = "settings.json";
 const SETTINGS_TMP_FILE: &str = "settings.json.tmp";
@@ -85,7 +86,7 @@ fn normalize(mut s: Settings) -> Settings {
     s
 }
 
-fn merge_patch(mut current: Settings, patch: SettingsPatch) -> Settings {
+pub fn merge_patch(mut current: Settings, patch: SettingsPatch) -> Settings {
     if let Some(current_workspace) = patch.current_workspace {
         current.current_workspace = current_workspace;
     }
@@ -218,7 +219,7 @@ fn replace_file(tmp_path: &Path, final_path: &Path) -> Result<(), String> {
     }
 }
 
-fn write_settings(app: &tauri::AppHandle, settings: &Settings) -> Result<(), String> {
+pub fn write_settings(app: &tauri::AppHandle, settings: &Settings) -> Result<(), String> {
     let _guard = SETTINGS_IO_LOCK
         .lock()
         .map_err(|_| "settings lock poisoned".to_string())?;
@@ -289,6 +290,29 @@ pub async fn reset_settings(app: tauri::AppHandle) -> Result<Settings, String> {
     write_settings(&app, &next)?;
     let _ = app.emit(SETTINGS_EVENT, &next);
     Ok(next)
+}
+
+pub fn init(app: &tauri::AppHandle) {
+    println!("Settings Initialization started!");
+    if exist(app).unwrap() {
+        println!("Settings Initialization done!");
+        return;
+    }
+    let settings = Settings::default();
+    let _ = write_settings(app, &settings);
+    let _ = app.emit(SETTINGS_EVENT, &settings);
+    println!("Settings Initialization done!");
+    workspace::init(app.clone());
+}
+
+pub fn exist(app: &tauri::AppHandle) -> Result<bool, String> {
+    let has_settings = settings_path(app)?.exists();
+    //if let _has_backup = settings_backup_path(app)?.exists() {
+    //TODO: prompt user if they want to use the backup
+    //TODO: figure out why there is always a backup
+    //println!("There is a backup settings!");
+    //}
+    Ok(has_settings)
 }
 
 //==================

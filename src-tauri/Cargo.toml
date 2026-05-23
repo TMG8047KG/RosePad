@@ -39,3 +39,4 @@ tauri-plugin-updater = "2"
 discord-ipc-rp = "0.1.1"
 lazy_static = "1.4"
 directories = "6.0.0"
+rusqlite = { version = "0.39.0", features = ["bundled"] }

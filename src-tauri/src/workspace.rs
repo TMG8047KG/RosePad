@@ -1,54 +1,38 @@
-use anyhow::Ok;
 use directories::UserDirs;
 use notify_rust::Notification;
 use serde::{Deserialize, Serialize};
-use std::str;
+use std::fs::File;
+use std::io::ErrorKind;
+use std::sync::{Mutex, OnceLock};
 use std::{fs, path::PathBuf};
 
-use crate::{settings, workspace};
+use crate::settings;
 
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct WorkspaceFolder {
+    pub name: String,
+    pub path: PathBuf,
+}
+
+impl Default for WorkspaceFolder {
+    fn default() -> Self {
+        Self {
+            name: "RosePad Workspace".to_string(),
+            path: PathBuf::new(),
+        }
+    }
+}
+
+const WORKSPACE_DATA_FOLDER: &str = ".rpwdata";
+const WORKSPACE_DATA_QUERY: &str = "query.sqlite3";
+const WORKSPACE_DATA_METADATA: &str = "meta.json";
+
+static ACTIVE_WORKSPACE: OnceLock<Mutex<PathBuf>> = OnceLock::new();
 // ====================
 // Seperator
 // ==No======Idea======
 
-#[derive(Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct ProjectStructure {
-    pub id: String,            //Indentify
-    pub name: String,          //File name
-    pub path: String,          //File Path
-    pub ext: Option<String>,   //File extension, becаuse... file rasicm
-    pub title: Option<String>, //UI name of the file (aka file name: "gosho_pedala" = UI name = "gosho pedala")
-    pub last_modified_ms: i64,
-    //TODO: Find out why the AI added this shit
-    pub size: i64,                     //Can't seem to remember why we have you
-    pub parent_folder: Option<String>, //Is project in a folder or not (root doesn't count)
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct FolderScanStructure {
-    pub path: String, //where the hell is the folder
-    pub name: String,
-    pub color: String, //What gay color it has
-}
-
-//TODO: Add a rescan and reseed when root changes
-
-//Startup Scan
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ScanResult {
-    pub root_projects: Vec<ProjectStructure>,
-    pub folders: Vec<(FolderScanStructure, Vec<ProjectStructure>)>,
-}
-
-pub struct WorkspaceStructure {
-    pub path: String,
-    pub alias: String, //name
-}
-
-//TODO:
 //Projects:
 //- rename
 //- create
@@ -69,12 +53,24 @@ pub struct WorkspaceStructure {
 // IMMA DO IT MYSELF AS I HAD BEFORE THAT
 //================================================
 
-//TODO: Don't hardcode the workspace names
+fn active_workspace() -> &'static Mutex<PathBuf> {
+    ACTIVE_WORKSPACE.get_or_init(|| Mutex::new(PathBuf::new()))
+}
+
+//Workspace setup
 pub fn init(app: tauri::AppHandle) {
-    let settings = settings::read_settings(&app).unwrap_or_default();
-    if settings.current_workspace.is_none() {
-        return;
+    println!("Workspace Initialization started!");
+    let mut setting = settings::read_settings(&app).unwrap_or_default();
+    if let Some(ref settings_workspace) = setting.current_workspace {
+        if settings_workspace.exists() {
+            *active_workspace().lock().unwrap() = settings_workspace.clone();
+            println!("Found workspace in settings!");
+            println!("{:?}", active_workspace().lock().unwrap().clone());
+            return;
+        }
     };
+
+    //Fetching the user OS-specific documents folder (if any)
     let doc_dir: PathBuf;
     if let Some(user_dirs) = UserDirs::new() {
         doc_dir = user_dirs.document_dir().unwrap().to_path_buf();
@@ -88,21 +84,20 @@ pub fn init(app: tauri::AppHandle) {
             .map_err(|e| e.to_string());
         return;
     }
-    //Default workspace name (mainly used on first launch)
-    if fs::create_dir_all(doc_dir.join("RosePad Workspace")).is_err() {
-        let _ = Notification::new()
-            .summary("RosePad Issue")
-            .body("Unable to create workspace folder!")
-            .icon("rosepad")
-            .show();
-    }
-    doc_dir.canonicalize().map_err(|e| e.to_string());
 
-    settings::update_settings(
-        app,
+    let workspace = create_workspace(doc_dir, "RosePad Workspace".to_string()).unwrap();
+
+    println!("Active workspace folder: {}", workspace.display());
+
+    if !setting.workspaces.contains(&workspace) {
+        setting.workspaces.push(workspace.clone());
+    }
+
+    let patch = settings::merge_patch(
+        setting.clone(),
         settings::SettingsPatch {
-            current_workspace: Some(Some(doc_dir)),
-            workspaces: Some(settings.workspaces.push(doc_dir).clone()),
+            current_workspace: Some(Some(workspace)),
+            workspaces: Some(setting.workspaces),
             watched: None,
             autosave: None,
             theme: None,
@@ -111,7 +106,51 @@ pub fn init(app: tauri::AppHandle) {
             initialized: None,
         },
     );
+
+    if let Err(_e) = settings::write_settings(&app, &patch) {
+        let _ = Notification::new()
+            .summary("RosePad Error")
+            .body("Failed to save settings during init!")
+            .icon("rosepad")
+            .show();
+    }
+    println!("Workspace Initialization done!");
 }
+
+pub fn create_workspace(dir: PathBuf, alias: String) -> Result<PathBuf, ()> {
+    let path = &dir.join(alias);
+    match fs::create_dir_all(path) {
+        Ok(_) => {
+            println!("Workspace folder created successfully!");
+            let data_path = path.join(WORKSPACE_DATA_FOLDER);
+            match fs::create_dir_all(&data_path) {
+                Ok(_) => {
+                    println!("Workspace data folder created successfully!");
+                    *active_workspace().lock().unwrap() = path.clone();
+                    //folder seeding
+                    let _ = File::create_new(data_path.join(WORKSPACE_DATA_QUERY));
+                    let _ = File::create_new(data_path.join(WORKSPACE_DATA_METADATA));
+                    Ok(path.clone())
+                }
+                Err(e) => {
+                    if e.kind() == ErrorKind::PermissionDenied {
+                        println!("No permission to create hidden workspace data folder!");
+                    }
+                    println!("Deep Error: {:?}", e);
+                    Err(())
+                }
+            }
+        }
+        Err(e) => {
+            if e.kind() == ErrorKind::PermissionDenied {
+                println!("No permission to create folder!");
+            }
+            println!("Error: {:?}", e);
+            Err(())
+        }
+    }
+}
+
 //AI SLOP (Works, but I don't understand it and It doesn't work the way I want it)
 
 //Not sure why do we have this extra check except maybe prevent some path problems?c

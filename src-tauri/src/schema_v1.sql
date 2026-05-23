@@ -1,58 +1,232 @@
-CREATE TABLE IF NOT EXISTS projects (
-  rowid INTEGER PRIMARY KEY,
-  id TEXT NOT NULL UNIQUE,
-  path TEXT NOT NULL UNIQUE,
-  name TEXT NOT NULL,
-  kind TEXT NOT NULL,
-  ext TEXT,
-  title TEXT,
-  last_modified_ms INTEGER NOT NULL,
-  size INTEGER NOT NULL,
-  parent_physical_folder TEXT
+PRAGMA foreign_keys = ON;
+
+-- =========================================
+-- WORKSPACES
+-- =========================================
+
+CREATE TABLE workspaces (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    name            TEXT NOT NULL,
+    root_path       TEXT NOT NULL UNIQUE,
+
+    created_at      INTEGER NOT NULL,
+    updated_at      INTEGER NOT NULL,
+    last_opened_at  INTEGER,
+
+    settings_json   TEXT
 );
 
-CREATE TABLE IF NOT EXISTS physical_folders (
-  path TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  color TEXT
+CREATE INDEX idx_workspaces_root_path
+ON workspaces(root_path);
+
+-- =========================================
+-- PROJECTS
+-- =========================================
+
+CREATE TABLE projects (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    workspace_id        INTEGER NOT NULL,
+
+    name                TEXT NOT NULL,
+    path                TEXT NOT NULL UNIQUE,
+
+    description         TEXT,
+
+    is_open             INTEGER NOT NULL DEFAULT 0,
+    is_pinned           INTEGER NOT NULL DEFAULT 0,
+
+    created_at          INTEGER NOT NULL,
+    updated_at          INTEGER NOT NULL,
+    last_opened_at      INTEGER,
+
+    git_branch          TEXT,
+    git_remote          TEXT,
+
+    metadata_json       TEXT,
+
+    FOREIGN KEY(workspace_id)
+        REFERENCES workspaces(id)
+        ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS tags ( name TEXT PRIMARY KEY );
+CREATE INDEX idx_projects_workspace
+ON projects(workspace_id);
 
-CREATE TABLE IF NOT EXISTS project_tags (
-  project_id TEXT NOT NULL,
-  tag_name TEXT NOT NULL,
-  PRIMARY KEY (project_id, tag_name),
-  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-  FOREIGN KEY (tag_name) REFERENCES tags(name) ON DELETE CASCADE
+CREATE INDEX idx_projects_path
+ON projects(path);
+
+-- =========================================
+-- FILE TREE
+-- =========================================
+
+CREATE TABLE nodes (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    workspace_id        INTEGER NOT NULL,
+    project_id          INTEGER,
+
+    parent_id           INTEGER,
+
+    name                TEXT NOT NULL,
+    path                TEXT NOT NULL UNIQUE,
+
+    node_type           TEXT NOT NULL
+                        CHECK(node_type IN ('file', 'folder')),
+
+    extension           TEXT,
+
+    size_bytes          INTEGER,
+
+    created_at          INTEGER,
+    modified_at         INTEGER,
+
+    is_hidden           INTEGER NOT NULL DEFAULT 0,
+    is_symlink          INTEGER NOT NULL DEFAULT 0,
+
+    checksum            TEXT,
+
+    indexed             INTEGER NOT NULL DEFAULT 0,
+
+    FOREIGN KEY(workspace_id)
+        REFERENCES workspaces(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY(project_id)
+        REFERENCES projects(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY(parent_id)
+        REFERENCES nodes(id)
+        ON DELETE CASCADE
 );
 
-CREATE VIRTUAL TABLE IF NOT EXISTS project_fts USING fts5(
-  name, title, tags, content='projects', content_rowid='rowid'
+CREATE INDEX idx_nodes_workspace
+ON nodes(workspace_id);
+
+CREATE INDEX idx_nodes_project
+ON nodes(project_id);
+
+CREATE INDEX idx_nodes_parent
+ON nodes(parent_id);
+
+CREATE INDEX idx_nodes_path
+ON nodes(path);
+
+CREATE INDEX idx_nodes_type
+ON nodes(node_type);
+
+CREATE INDEX idx_nodes_extension
+ON nodes(extension);
+
+-- =========================================
+-- FILE CONTENT CACHE
+-- =========================================
+
+CREATE TABLE file_cache (
+    node_id             INTEGER PRIMARY KEY,
+
+    encoding            TEXT,
+    line_count          INTEGER,
+
+    last_read_at        INTEGER,
+
+    cached_content      TEXT,
+
+    FOREIGN KEY(node_id)
+        REFERENCES nodes(id)
+        ON DELETE CASCADE
 );
 
-CREATE TRIGGER IF NOT EXISTS projects_ai AFTER INSERT ON projects BEGIN
-  INSERT INTO project_fts(rowid,name,title,tags)
-  VALUES (new.rowid,new.name,new.title,COALESCE((SELECT group_concat(tag_name,' ') FROM project_tags WHERE project_id=new.id),''));
-END;
+-- =========================================
+-- OPEN TABS
+-- =========================================
 
-CREATE TRIGGER IF NOT EXISTS projects_au AFTER UPDATE ON projects BEGIN
-  INSERT INTO project_fts(project_fts,rowid,name,title,tags) VALUES('delete',old.rowid,old.name,old.title,'');
-  INSERT INTO project_fts(rowid,name,title,tags)
-  VALUES (new.rowid,new.name,new.title,COALESCE((SELECT group_concat(tag_name,' ') FROM project_tags WHERE project_id=new.id),''));
-END;
+CREATE TABLE open_tabs (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
 
-CREATE TRIGGER IF NOT EXISTS projects_ad AFTER DELETE ON projects BEGIN
-  INSERT INTO project_fts(project_fts,rowid,name,title,tags) VALUES('delete',old.rowid,old.name,old.title,'');
-END;
+    workspace_id        INTEGER NOT NULL,
 
-CREATE TRIGGER IF NOT EXISTS project_tags_ai AFTER INSERT ON project_tags BEGIN
-  UPDATE project_fts SET tags=COALESCE((SELECT group_concat(tag_name,' ') FROM project_tags WHERE project_id=new.project_id),'') WHERE rowid=(SELECT rowid FROM projects WHERE id=new.project_id);
-END;
+    node_id             INTEGER NOT NULL,
 
-CREATE TRIGGER IF NOT EXISTS project_tags_ad AFTER DELETE ON project_tags BEGIN
-  UPDATE project_fts SET tags=COALESCE((SELECT group_concat(tag_name,' ') FROM project_tags WHERE project_id=old.project_id),'') WHERE rowid=(SELECT rowid FROM projects WHERE id=old.project_id);
-END;
+    tab_index           INTEGER NOT NULL,
 
-CREATE INDEX IF NOT EXISTS idx_projects_parent ON projects(parent_physical_folder);
-CREATE INDEX IF NOT EXISTS idx_projects_mtime ON projects(last_modified_ms);
+    is_active           INTEGER NOT NULL DEFAULT 0,
+    is_pinned           INTEGER NOT NULL DEFAULT 0,
+
+    cursor_line         INTEGER DEFAULT 0,
+    cursor_column       INTEGER DEFAULT 0,
+
+    scroll_x            REAL DEFAULT 0,
+    scroll_y            REAL DEFAULT 0,
+
+    unsaved             INTEGER NOT NULL DEFAULT 0,
+
+    FOREIGN KEY(workspace_id)
+        REFERENCES workspaces(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY(node_id)
+        REFERENCES nodes(id)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX idx_tabs_workspace
+ON open_tabs(workspace_id);
+
+-- =========================================
+-- FILE WATCH EVENTS
+-- =========================================
+
+CREATE TABLE filesystem_events (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    workspace_id        INTEGER NOT NULL,
+
+    node_path           TEXT NOT NULL,
+
+    event_type          TEXT NOT NULL
+                        CHECK(event_type IN (
+                            'created',
+                            'modified',
+                            'deleted',
+                            'renamed'
+                        )),
+
+    timestamp           INTEGER NOT NULL,
+
+    processed           INTEGER NOT NULL DEFAULT 0,
+
+    FOREIGN KEY(workspace_id)
+        REFERENCES workspaces(id)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX idx_fs_events_processed
+ON filesystem_events(processed);
+
+-- =========================================
+-- SEARCH INDEX
+-- =========================================
+
+CREATE VIRTUAL TABLE file_search
+USING fts5(
+    path,
+    content
+);
+
+-- =========================================
+-- UI STATE
+-- =========================================
+
+CREATE TABLE ui_state (
+    workspace_id        INTEGER PRIMARY KEY,
+
+    sidebar_width       INTEGER,
+    explorer_expanded   TEXT,
+    panel_state_json    TEXT,
+
+    FOREIGN KEY(workspace_id)
+        REFERENCES workspaces(id)
+        ON DELETE CASCADE
+);
