@@ -5,8 +5,8 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use tauri::{Emitter, Manager};
 
-use crate::discord_rpc::{DiscordCustomRPC, DiscordCustomRPCPatch};
-use crate::workspace;
+use crate::config::discord_rpc::{DiscordCustomRPC, DiscordCustomRPCPatch};
+use crate::workspace::workspace;
 
 const SETTINGS_FILE: &str = "settings.json";
 const SETTINGS_TMP_FILE: &str = "settings.json.tmp";

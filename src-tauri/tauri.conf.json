@@ -44,7 +44,7 @@
       {
         "name": "Word Document",
         "description": "Microsoft Word",
-        "ext": ["doc","docx"],
+        "ext": ["doc", "docx"],
         "role": "Viewer"
       }
     ],
@@ -52,10 +52,5 @@
     "copyright": "© 2025 Alexandar Goranov(TMG8047KG)",
     "license": "GNU GPL-3",
     "licenseFile": "../LICENSE"
-  },
-  "plugins": {
-    "sql":{
-      "preload": ["sqlite:rosepad.db"]
-    }
   }
 }

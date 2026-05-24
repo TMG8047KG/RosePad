@@ -6,15 +6,10 @@ use std::{env, path::Path};
 use lazy_static::lazy_static;
 use tauri::{Emitter, Manager};
 
-use tauri_plugin_sql::{Migration, MigrationKind};
-
 #[cfg(not(debug_assertions))]
 use tauri_plugin_updater::UpdaterExt;
 
-mod discord_rpc;
-
-mod project;
-mod settings;
+mod config;
 mod workspace;
 
 lazy_static! {
@@ -66,22 +61,10 @@ async fn take_pending_open_paths() -> Vec<String> {
 pub fn run() {
     enqueue_open_paths(&env::args().collect::<Vec<_>>());
 
-    let migrations = vec![Migration {
-        version: 1,
-        description: "init",
-        sql: include_str!("schema_v1.sql"),
-        kind: MigrationKind::Up,
-    }];
-    let _ = discord_rpc::connect_rpc();
+    let _ = config::discord_rpc::connect_rpc();
     let mut builder = tauri::Builder::default()
-        .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
-        .plugin(
-            tauri_plugin_sql::Builder::new()
-                .add_migrations("sqlite:rosepad.db", migrations)
-                .build(),
-        )
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
@@ -106,15 +89,15 @@ pub fn run() {
             is_hyprland,
             get_default_workspace,
             take_pending_open_paths,
-            discord_rpc::update_activity,
-            discord_rpc::clear_activity,
-            settings::get_settings,
-            settings::update_settings,
-            settings::reset_settings,
-            settings::settings
+            config::discord_rpc::update_activity,
+            config::discord_rpc::clear_activity,
+            config::settings::get_settings,
+            config::settings::update_settings,
+            config::settings::reset_settings,
+            config::settings::settings
         ]) /*  */
         .setup(|app| {
-            settings::init(app.handle());
+            config::settings::init(app.handle());
             #[cfg(not(debug_assertions))]
             {
                 let handle = app.handle().clone();
