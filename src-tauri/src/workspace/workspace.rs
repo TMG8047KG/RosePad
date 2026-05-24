@@ -39,6 +39,8 @@ static ACTIVE_WORKSPACE: OnceLock<Mutex<PathBuf>> = OnceLock::new();
 // Seperator
 // ==No======Idea======
 
+//This project logic will probably live inside the project.rs file
+//TODO:
 //Projects:
 //- rename
 //- create
@@ -48,11 +50,15 @@ static ACTIVE_WORKSPACE: OnceLock<Mutex<PathBuf>> = OnceLock::new();
 //- create
 //- delete
 //- rename
+//TODO:
 //Workspaces:
-//- create
-//- switch
+//- create X
+//- switch /
 //- delete
-//- "rename"
+//- "rename" ?
+//- move (maybe, maybe not)
+//TODO: Add tauri commands or allow for the frontend to be able to invoke workspace functions like
+//create, rename, delete, and get info or something like that
 
 //================================================
 // FUCK AI
@@ -123,6 +129,8 @@ pub fn init(app: tauri::AppHandle) {
     println!("Workspace Initialization done!");
 }
 
+//TODO: check if it's needed or okay to add I/O lock for the workspace creation and the setting up
+//of the files
 pub fn create_workspace(dir: PathBuf, alias: String) -> Result<PathBuf, ()> {
     let path = &dir.join(alias);
     match fs::create_dir_all(path) {
