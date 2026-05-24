@@ -31,7 +31,8 @@ impl Default for WorkspaceFolder {
 const WORKSPACE_DATA_FOLDER: &str = ".rpwdata";
 const WORKSPACE_DATA_QUERY: &str = "query.db";
 const WORKSPACE_DATA_METADATA: &str = "meta.json";
-const WORKSPACE_QUERY_SCHEMA: &str = "./workspace_schema_v1.sql";
+
+const WORKSPACE_QUERY_SCHEMA: &str = include_str!("workspace_schema_v1.sql");
 
 static ACTIVE_WORKSPACE: OnceLock<Mutex<PathBuf>> = OnceLock::new();
 // ====================
@@ -134,7 +135,8 @@ pub fn create_workspace(dir: PathBuf, alias: String) -> Result<PathBuf, ()> {
                     *active_workspace().lock().unwrap() = path.clone();
                     //folder seeding
                     let _ = File::create_new(data_path.join(WORKSPACE_DATA_METADATA));
-                    let _ = create_workspace_db(data_path.join(WORKSPACE_DATA_QUERY).as_path());
+                    create_workspace_db(data_path.join(WORKSPACE_DATA_QUERY).as_path())
+                        .unwrap_or_else(|e| eprintln!("Failed to init db! Error: {}", e));
                     Ok(path.clone())
                 }
                 Err(e) => {
@@ -156,12 +158,11 @@ pub fn create_workspace(dir: PathBuf, alias: String) -> Result<PathBuf, ()> {
     }
 }
 
-fn create_workspace_db(workspace_dir: &Path) -> Result<Connection, String> {
+fn create_workspace_db(workspace_dir: &Path) -> Result<(), String> {
     let conn = Connection::open(workspace_dir)
         .map_err(|e| format!("Failed to create/open workspace db. Error: {}", e))?;
-
     migrate_workspace(&conn)?;
-    Ok(conn)
+    Ok(())
 }
 
 fn migrate_workspace(conn: &Connection) -> Result<(), String> {

@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS nodes (
   size_bytes  INTEGER,
   modified_at INTEGER,
   indexed     INTEGER NOT NULL DEFAULT 0
-)
+);
 
 CREATE INDEX idx_nodes_parent ON nodes(parent_id);
 CREATE INDEX idx_nodes_path   ON nodes(path);
