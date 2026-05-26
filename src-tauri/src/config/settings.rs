@@ -6,6 +6,7 @@ use std::sync::Mutex;
 use tauri::{Emitter, Manager};
 
 use crate::config::discord_rpc::{DiscordCustomRPC, DiscordCustomRPCPatch};
+use crate::config::global;
 use crate::workspace::workspace;
 
 const SETTINGS_FILE: &str = "settings.json";
@@ -302,6 +303,8 @@ pub fn init(app: &tauri::AppHandle) {
     let _ = write_settings(app, &settings);
     let _ = app.emit(SETTINGS_EVENT, &settings);
     println!("Settings Initialization done!");
+
+    let _ = global::create(app);
     workspace::init(app.clone());
 }
 

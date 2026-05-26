@@ -9,6 +9,8 @@ use tauri::{Emitter, Manager};
 #[cfg(not(debug_assertions))]
 use tauri_plugin_updater::UpdaterExt;
 
+use crate::config::global;
+
 mod config;
 mod workspace;
 
