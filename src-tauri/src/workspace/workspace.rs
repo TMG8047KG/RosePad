@@ -5,12 +5,14 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::ErrorKind;
 use std::sync::{Mutex, OnceLock};
+use std::time::{SystemTime, UNIX_EPOCH};
 use std::{
     fs,
     path::{Path, PathBuf},
 };
 
-use crate::config::settings;
+use crate::config::global::GWorkspace;
+use crate::config::{global, settings};
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -132,7 +134,7 @@ pub fn init(app: tauri::AppHandle) {
 //TODO: check if it's needed or okay to add I/O lock for the workspace creation and the setting up
 //of the files
 pub fn create_workspace(dir: PathBuf, alias: String) -> Result<PathBuf, ()> {
-    let path = &dir.join(alias);
+    let path = &dir.join(&alias);
     match fs::create_dir_all(path) {
         Ok(_) => {
             println!("Workspace folder created successfully!");
@@ -145,6 +147,14 @@ pub fn create_workspace(dir: PathBuf, alias: String) -> Result<PathBuf, ()> {
                     let _ = File::create_new(data_path.join(WORKSPACE_DATA_METADATA));
                     create_workspace_db(data_path.join(WORKSPACE_DATA_QUERY).as_path())
                         .unwrap_or_else(|e| eprintln!("Failed to init db! Error: {}", e));
+
+                    let _ = global::add_workspace(GWorkspace {
+                        name: alias,
+                        path: path.clone(),
+                        created_at: 0,
+                        last_opened_at: 0,
+                    });
+
                     Ok(path.clone())
                 }
                 Err(e) => {

@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS workspaces (
   name TEXT NOT NULL UNIQUE,
   path TEXT NOT NULL UNIQUE,
   last_opened_at INTEGER,
-  created_at INTEGER NOT NULL,
+  created_at INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS external_files (
@@ -14,5 +14,5 @@ CREATE TABLE IF NOT EXISTS external_files (
   name TEXT,
   ext TEXT,
   last_opened INTEGER,
-  verified_at INTEGER,
+  verified_at INTEGER
 );
