@@ -1,21 +1,22 @@
-use std::env;
+use directories::UserDirs;
+use std::fs;
 use std::sync::Mutex;
+use std::{env, path::Path};
 
 use lazy_static::lazy_static;
 use tauri::{Emitter, Manager};
 
-use tauri_plugin_sql::{Migration, MigrationKind};
-
 #[cfg(not(debug_assertions))]
 use tauri_plugin_updater::UpdaterExt;
 
-mod discord_rpc;
+use crate::config::global;
 
-mod settings;
+mod config;
 mod workspace;
 
 lazy_static! {
     static ref PENDING_OPEN_PATHS: Mutex<Vec<String>> = Mutex::new(Vec::new());
+    static ref DEFAULT_WORKSPACE: Mutex<Option<String>> = Mutex::new(None);
 }
 
 fn enqueue_open_paths(args: &[String]) {
@@ -27,12 +28,12 @@ fn enqueue_open_paths(args: &[String]) {
         Err(poisoned) => poisoned.into_inner(),
     };
     // Skip the executable path and only keep meaningful payload
-    guard.extend(
-        args.iter()
-            .skip(1)
-            .filter(|s| !s.is_empty())
-            .cloned(),
-    );
+    guard.extend(args.iter().skip(1).filter(|s| !s.is_empty()).cloned());
+}
+
+#[tauri::command]
+fn get_default_workspace() -> Option<String> {
+    DEFAULT_WORKSPACE.lock().ok()?.clone()
 }
 
 #[tauri::command]
@@ -62,21 +63,10 @@ async fn take_pending_open_paths() -> Vec<String> {
 pub fn run() {
     enqueue_open_paths(&env::args().collect::<Vec<_>>());
 
-    let migrations = vec![Migration {
-        version: 1,
-        description: "init",
-        sql: include_str!("schema_v1.sql"),
-        kind: MigrationKind::Up,
-    }];
-    let _ = discord_rpc::connect_rpc();
+    let _ = config::discord_rpc::connect_rpc();
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
-        .plugin(
-            tauri_plugin_sql::Builder::new()
-                .add_migrations("sqlite:rosepad.db", migrations)
-                .build(),
-        )
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
@@ -99,27 +89,19 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_args,
             is_hyprland,
-            workspace::scan_workspace,
-            workspace::analyze_paths,
-            workspace::rename_project,
-            workspace::delete_project,
-            workspace::move_project,
-            workspace::rename_physical_folder,
-            workspace::delete_physical_folder,
-            workspace::create_physical_folder,
-            workspace::watch_physical_folders,
-            workspace::read_rpad_data,
-            workspace::write_rpad_html,
-            workspace::write_text_atomic,
-            workspace::import_project,
-            workspace::create_rpad_project,
-            discord_rpc::update_activity,
-            discord_rpc::clear_activity,
-            settings::settings,
-            take_pending_open_paths
-        ])/*  */
+            get_default_workspace,
+            take_pending_open_paths,
+            config::discord_rpc::update_activity,
+            config::discord_rpc::clear_activity,
+            config::settings::get_settings,
+            config::settings::update_settings,
+            config::settings::reset_settings,
+            config::settings::settings
+        ]) /*  */
         .setup(|app| {
-            #[cfg(not(debug_assertions))] {
+            config::settings::init(app.handle());
+            #[cfg(not(debug_assertions))]
+            {
                 let handle = app.handle().clone();
                 tauri::async_runtime::spawn(async move {
                     let _ = update(handle).await;
@@ -130,7 +112,7 @@ pub fn run() {
 
     builder
         .run(tauri::generate_context!())
-        .expect("RosePad is kaput while trying to run!");
+        .expect("RosePad went kaput while trying to run!");
 }
 
 #[cfg(not(debug_assertions))]

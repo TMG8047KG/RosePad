@@ -20,6 +20,7 @@ import { rSchema } from "./core/editor/rSchema"
 import ProjectPickerModal from "./components/editor/projectPickerModal"
 import { useWorkspace } from "./core/workspaceContext"
 import { useToast } from "./core/toast"
+import { useSettings } from './core/settingsContext'
 
 const DOC_CACHE_TTL_MS = 5 * 60 * 1000
 
@@ -77,6 +78,7 @@ async function loadCurrentFile(path: string): Promise<string> {
 export default function Editor() {
   const navigator = useNavigate()
   const { tree } = useWorkspace()
+  const { settings } = useSettings()
   const pushToast = useToast()
   const [characters, setCharacters] = useState(0)
   const [words, setWords] = useState(0)
@@ -107,6 +109,8 @@ export default function Editor() {
   const isSwitchingRef = useRef(false)
   const pendingSwitchRef = useRef<OpenProject | null>(null)
   const loadRequestIdRef = useRef(0)
+  const autoSaveEnabledRef = useRef(true)
+  const autoSaveIntervalRef = useRef(2)
   const [unsavedPaths, setUnsavedPaths] = useState<Set<string>>(() => {
     try {
       const raw = sessionStorage.getItem("unsavedPaths")
@@ -263,12 +267,13 @@ export default function Editor() {
     })
   }
 
+  const isAutoSaveEnabled = () => autoSaveEnabledRef.current
+
   const getIntervalMs = () => {
-    const raw = localStorage.getItem("autoSaveInterval")
-    const n = raw ? parseInt(raw, 10) : 2
-    const safe = Number.isFinite(n) ? n : 2
+    const interval = autoSaveIntervalRef.current
+    const safe = Number.isFinite(interval) ? interval : 2
     return Math.max(1, safe) * 1000
-  }
+  };
 
   const cancelAutoSaveTimer = () => {
     if (autoSaveTimer.current) {
@@ -276,12 +281,6 @@ export default function Editor() {
       autoSaveTimer.current = undefined
     }
     autoSaveTargetRef.current = null
-  }
-
-  const isAutoSaveEnabled = () => {
-    const v = localStorage.getItem("autoSave")
-    if (v === null) return true
-    return v === "true"
   }
 
   const readOpenProjects = (): OpenProject[] => {
@@ -469,11 +468,25 @@ export default function Editor() {
   }
 
   useEffect(() => {
+    autoSaveEnabledRef.current = settings?.autosave.enabled ?? true
+    autoSaveIntervalRef.current = settings?.autosave.interval ?? 2
+
+    if (!autoSaveEnabledRef.current) {
+      cancelAutoSaveTimer()
+      return
+    }
+
+    if (unsavedPathsRef.current.size > 0) {
+      scheduleAutoSave()
+    }
+  }, [settings?.autosave.enabled, settings?.autosave.interval])
+
+  useEffect(() => {
     return () => {
       cancelAutoSaveTimer()
     }
   }, [])
-
+ 
   useEffect(() => {
     const off = onDocChange(() => {
       if (isRestoring.current) {

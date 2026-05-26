@@ -29,8 +29,6 @@
     "core:app:allow-set-app-theme",
     "os:default",
     "store:default",
-    "sql:default",
-    "sql:allow-execute",
     "updater:default",
     "updater:allow-download-and-install",
     "dialog:default",

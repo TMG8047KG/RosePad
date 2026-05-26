@@ -4,40 +4,47 @@ import { selectDir } from './core/projectHandler';
 import { useEffect, useState } from 'react';
 import NavSettings from './components/settings/navSettings';
 import { getVersion, setTheme } from '@tauri-apps/api/app';
-import { getTheme, setThemeCache } from './core/cache';
+import { applyThemeToDocument, getTheme, setThemeCache } from './core/cache';
 import { themes } from './core/themeManager';
 import { useWorkspace } from './core/workspaceContext';
-import { isRpcEnabled, rpc_from_last_page, rpc_settings, setRpcEnabled } from './core/discord_rpc';
+import { rpc_from_last_page, rpc_settings, setRpcEnabled, syncRpcEnabled } from './core/discord_rpc';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { Window } from '@tauri-apps/api/window';
 import { emit } from '@tauri-apps/api/event';
+import { useSettings } from './core/settingsContext';
 
 function Settings() {
     const [version, setVersion] = useState<string>();
-    const [autoSave, setAutoSaveActive] = useState(localStorage.getItem("autoSave")==="true");
-    const [autoSaveInterval, setAutoSaveInterval] = useState(2);
     const [theme, setThemeButton] = useState<themes>(null);
-    const [richPresenceEnabled, setRichPresenceEnabled] = useState<boolean>(isRpcEnabled());
     const { setRoot, rootPath } = useWorkspace();
+    const { settings, update } = useSettings();
 
     const handleAutoSaveChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         const checked = event.target.checked;
-        setAutoSaveActive(checked);
-        localStorage.setItem("autoSave", checked.toString());
+        void update({
+            autosave: {
+                enabled: checked,
+            },
+        });
     }
 
     const handleAutoSaveIntervalChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
         let value = parseInt(event.target.value);
         if(value < 1) value = 1;
         if(value > 60) value = 60;
-        setAutoSaveInterval(value);
-        localStorage.setItem("autoSaveInterval", value.toString());
+        void update({
+            autosave: {
+                interval: value,
+            },
+        });
     }
 
     const handleRichPresenceChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const enabled = event.target.checked;
-        setRichPresenceEnabled(enabled);
         await setRpcEnabled(enabled);
+        await update({
+            discordRpc: enabled,
+        });
         if(enabled) await rpc_settings();
     }
 
@@ -52,36 +59,36 @@ function Settings() {
         if(tooltip) tooltip.innerHTML = "Copy tmg8047kg";
     }
 
+
     const changeTheme = async (theme: themes) => {
         await setTheme(theme);
         await setThemeCache(theme);
         setThemeButton(theme);
+        applyThemeToDocument(theme);
+        await emit('theme-changed', theme);
     }
 
     useEffect(() => {
         const handleVersion = async () => {
             setVersion(`${await getVersion()}`);
         };
-        handleVersion();
-        const loadAutoSave = () => {
-            const savedAutoSave = localStorage.getItem("autoSave");
-            setAutoSaveActive(savedAutoSave === "true")
-        }
-        loadAutoSave();
-        const loadAutoSaveInterval = () => {
-            const value = localStorage.getItem("autoSaveInterval");
-            if(value) setAutoSaveInterval(parseInt(value));
-        }
-        loadAutoSaveInterval();
+        void handleVersion();
+
         const loadThemeState = async () => {
             setThemeButton(await getTheme());
         }
-        loadThemeState();
-        const loadRpcState = () => {
-            setRichPresenceEnabled(isRpcEnabled());
-        }
-        loadRpcState();
+        void loadThemeState();
     }, []);
+
+    useEffect(() => {
+        if (!settings) return;
+
+        syncRpcEnabled(settings.discordRpc);
+
+        if (settings.workspaceDir && settings.workspaceDir !== rootPath) {
+            void setRoot(settings.workspaceDir);
+        }
+    }, [rootPath, setRoot, settings]);
 
     useEffect(() => {
         const updateActivity = () => rpc_settings();
@@ -101,7 +108,10 @@ function Settings() {
         const newDir = await selectDir()
         if(newDir) {
             await setRoot(newDir)
-         }
+            await update({
+                workspaceDir: newDir,
+            });
+        }
     }
 
     const fetchChangeLog = async () => {
@@ -135,11 +145,11 @@ function Settings() {
                     <div className={style.option}>
                         <p>Auto-Save</p>
                         <label className={style.switch}>
-                            <input type="checkbox" checked={autoSave} onChange={handleAutoSaveChange}/>
+                            <input type="checkbox" checked={settings?.autosave.enabled ?? false} onChange={handleAutoSaveChange}/>
                             <span className={style.slider}></span>
                         </label>
                         <p>Auto-Save interval <span>(in seconds)</span></p>
-                        <input className={style.inputNumber} type="number" min={1} max={60} value={autoSaveInterval} onChange={handleAutoSaveIntervalChange} placeholder='s' />
+                        <input className={style.inputNumber} type="number" min={1} max={60} value={settings?.autosave.interval ?? 2} onChange={handleAutoSaveIntervalChange} placeholder='s' />
                     </div>
                 </div>
                  <div>
@@ -147,7 +157,7 @@ function Settings() {
                     <div className={style.option}>
                         <p>Rich Presence</p>
                         <label className={style.switch}>
-                            <input type="checkbox" checked={richPresenceEnabled} onChange={handleRichPresenceChange}/>
+                            <input type="checkbox" checked={settings?.discordRpc ?? false} onChange={handleRichPresenceChange}/>
                             <span className={style.slider}></span>
                         </label>
                     </div>

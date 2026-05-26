@@ -13,8 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 
 import { rpc_main_menu, rpc_project } from './core/discord_rpc'
-import { applyTheme, setup } from './core/cache'
-import { addProject, settings } from './core/projectHandler'
+import { applyTheme } from './core/cache'
 import { setPhysicalFolderColor, createPhysicalFolder } from './core/db'
 
 import { useWorkspace } from './core/workspaceContext'
@@ -23,9 +22,7 @@ import { useHandleFileOpen } from './hooks/useHandleFileOpen'
 import formattedChangeLog from './core/changelog'
 import { useToast } from './core/toast'
 
-setup()
 applyTheme()
-settings()
 
 async function createRpadFile(dir: string, name: string) {
   const filePath = await invoke<string>('create_rpad_project', { destDir: dir, name })
@@ -175,7 +172,6 @@ function HomeShell() {
       sessionStorage.setItem("name", name)
       sessionStorage.setItem("projectName", name)
       sessionStorage.setItem("path", filePath)
-      await addProject(name, filePath)
 
       // First reindex so the new project is in the DB
       await reindex()

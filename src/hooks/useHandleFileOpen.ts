@@ -4,7 +4,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 import { rpc_project } from "../core/discord_rpc";
-import { addProject, projectExists, selectDir } from "../core/projectHandler";
+import { selectDir } from "../core/projectHandler";
 import { getWorkspaceRoot } from "../core/cache";
 import { useWorkspace } from "../core/workspaceContext";
 
@@ -36,17 +36,29 @@ export function useHandleFileOpen() {
   const { rootPath, setRoot, reindex, applyFsChanges } = useWorkspace();
 
   const ensureWorkspace = useCallback(async () => {
-    if (rootPath) return rootPath;
-    const persisted = await getWorkspaceRoot();
+    if (rootPath) return rootPath
+    
+    const persisted = await getWorkspaceRoot()
     if (persisted) {
-      await setRoot(persisted);
-      return persisted;
+        await setRoot(persisted)
+        return persisted
     }
-    const dir = await selectDir();
-    if (!dir) throw new Error("No workspace selected");
-    await setRoot(dir);
-    return dir;
-  }, [rootPath, setRoot]);
+    
+    // Try the OS default before bothering the user
+    try {
+        const defaultPath = await invoke<string | null>('get_default_workspace')
+        if (defaultPath) {
+            await setRoot(defaultPath)
+            return defaultPath
+        }
+    } catch {}
+    
+    // Last resort: ask
+    const dir = await selectDir()
+    if (!dir) throw new Error('No workspace selected')
+    await setRoot(dir)
+    return dir
+}, [rootPath, setRoot])
 
   const importIntoWorkspace = useCallback(
     async (filePath: string) => {
@@ -82,10 +94,6 @@ export function useHandleFileOpen() {
       const insidePath = await importIntoWorkspace(filePath);
       const name = deriveName(insidePath);
 
-      if (!(await projectExists(insidePath))) {
-        await addProject(name, insidePath);
-      }
-
       try {
         await applyFsChanges([insidePath]);
       } catch (err) {
@@ -96,7 +104,7 @@ export function useHandleFileOpen() {
       await rpc_project(name, insidePath);
       navigate(`/editor/${name}`);
     },
-    [importIntoWorkspace, reindex, setActiveProject, navigate]
+    [applyFsChanges, importIntoWorkspace, navigate, reindex, setActiveProject]
   );
 
   const processPaths = useCallback(

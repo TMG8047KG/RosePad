@@ -5,7 +5,6 @@
 
 ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads-pre/TMG8047KG/RosePad/latest/total?style=flat-square&label=Download%40Latest&color=green)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/TMG8047KG/RosePad/main.yml?style=flat-square)
-![AUR Version](https://img.shields.io/aur/version/rosepad?label=AUR&style=flat-square)
 ![GitHub Tag](https://img.shields.io/github/v/tag/TMG8047KG/RosePad?style=flat-square&label=Tag)
 ![GitHub Repo stars](https://img.shields.io/github/stars/TMG8047KG/RosePad?style=flat-square&color=gold)
 <br>

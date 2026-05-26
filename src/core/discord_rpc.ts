@@ -1,14 +1,17 @@
 import { invoke } from "@tauri-apps/api/core";
 
-const STORAGE_KEY = "discordRichPresence";
+let rpcEnabled = true;
 
 export function isRpcEnabled(): boolean {
-  const value = localStorage.getItem(STORAGE_KEY);
-  return value === null ? true : value === "true";
+  return rpcEnabled;
+}
+
+export function syncRpcEnabled(enabled: boolean) {
+  rpcEnabled = enabled;
 }
 
 export async function setRpcEnabled(enabled: boolean) {
-  localStorage.setItem(STORAGE_KEY, String(enabled));
+  rpcEnabled = enabled;
   if (!enabled) {
     try {
       await invoke("clear_activity");
